@@ -568,7 +568,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
           <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center justify-between">
             <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
               Danh Mục Cài Đặt
-            </span
+            </span>
           </div>
 
           {SETTING_NAV_ITEMS.map((tab) => {
