@@ -85,7 +85,7 @@ const SETTING_NAV_ITEMS: Array<{
   { id: 'categories', label: 'Danh Mục Thu Chi', sublabel: 'Phân loại thu & chi', icon: Tag, iconColor: 'text-rose-500', activeColor: 'border-rose-600 text-rose-700 bg-rose-50/90 dark:bg-rose-950/80 dark:text-rose-300' },
   { id: 'backup', label: 'Sao Lưu & Đồng Bộ', sublabel: 'Cloud Firestore & JSON', icon: Cloud, iconColor: 'text-blue-500', activeColor: 'border-blue-600 text-blue-700 bg-blue-50/90 dark:bg-blue-950/80 dark:text-blue-300' },
   { id: 'language', label: 'Văn Bản Tiếng Việt', sublabel: 'Tùy biến từ ngữ giao diện', icon: Globe, iconColor: 'text-cyan-500', activeColor: 'border-cyan-600 text-cyan-700 bg-cyan-50/90 dark:bg-cyan-950/80 dark:text-cyan-300' },
-  { id: 'all', label: 'Tất Cả Cài Đặt', sublabel: 'Xem toàn bộ 9 mục', icon: Sliders, iconColor: 'text-slate-500', activeColor: 'border-slate-800 text-slate-900 bg-slate-100 dark:bg-slate-800 dark:text-white dark:border-slate-300' },
+  { id: 'all', label: 'Tất Cả Cài Đặt', sublabel: 'Xem toàn bộ', icon: Sliders, iconColor: 'text-slate-500', activeColor: 'border-slate-800 text-slate-900 bg-slate-100 dark:bg-slate-800 dark:text-white dark:border-slate-300' },
 ];
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({
@@ -568,10 +568,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
           <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center justify-between">
             <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
               Danh Mục Cài Đặt
-            </span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
-              9 mục
-            </span>
+            </span
           </div>
 
           {SETTING_NAV_ITEMS.map((tab) => {
