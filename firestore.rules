@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 64;
+    }
+
+    // Collective Fund Settings and Shared Application State
+    match /qunlqu_settings/{docId} {
+      allow read, write: if isValidId(docId);
+    }
+
+    // Test connectivity check
+    match /test/{testId} {
+      allow read, write: if isValidId(testId);
+    }
+
+    // Default deny for all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+

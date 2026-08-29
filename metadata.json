@@ -1,0 +1,8 @@
+{
+  "name": "AE Cây Khế",
+  "description": "Ứng dụng quản lý thu chi quỹ nhóm AE Cây Khế",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

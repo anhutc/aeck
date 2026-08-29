@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "AppState": {
+      "title": "AppState",
+      "description": "Shared collective treasury state including funds, transactions, campaigns, members, and settings",
+      "type": "object",
+      "properties": {
+        "funds": {
+          "type": "array",
+          "description": "List of funds in the treasury"
+        },
+        "transactions": {
+          "type": "array",
+          "description": "Historical transactions and ledger entries"
+        },
+        "categories": {
+          "type": "array",
+          "description": "Transaction categories"
+        },
+        "campaigns": {
+          "type": "array",
+          "description": "Contribution campaigns and collection progress"
+        },
+        "members": {
+          "type": "array",
+          "description": "Group member directory"
+        },
+        "bankSettings": {
+          "type": "object",
+          "description": "VietQR and bank account configuration"
+        },
+        "groupNotice": {
+          "type": "object",
+          "description": "Group announcement and rule banner"
+        },
+        "branding": {
+          "type": "object",
+          "description": "Visual customization and contact details"
+        },
+        "adminPassword": {
+          "type": "string",
+          "description": "Hashed or secret admin pin"
+        },
+        "viewPermissions": {
+          "type": "object",
+          "description": "Member view permissions"
+        },
+        "language": {
+          "type": "string",
+          "description": "Active UI language"
+        },
+        "customDictionary": {
+          "type": "object",
+          "description": "Custom phrase replacements"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last update"
+        }
+      }
+    },
+    "TestConnection": {
+      "title": "TestConnection",
+      "description": "Connectivity test document",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Connection test status"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/qunlqu_settings/{docId}": {
+      "schema": "AppState",
+      "description": "Stores collective fund configuration, transactions, and group settings"
+    },
+    "/test/{testId}": {
+      "schema": "TestConnection",
+      "description": "Used to verify Firestore server connectivity"
+    }
+  }
+}
