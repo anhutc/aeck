@@ -12,8 +12,7 @@ import {
   Legend,
   CartesianGrid,
   AreaChart,
-  Area,
-  Line
+  Area
 } from 'recharts';
 import {
   Printer,
@@ -23,9 +22,6 @@ import {
   ArrowUpRight,
   PieChart as PieIcon,
   Calendar,
-  Wallet,
-  CheckCircle2,
-  Award,
   BarChart3,
   LineChart as LineChartIcon,
   CalendarDays

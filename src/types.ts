@@ -1,3 +1,5 @@
+export type AuthRole = 'member' | 'admin';
+
 export type TransactionType = 'income' | 'expense';
 
 export interface Category {

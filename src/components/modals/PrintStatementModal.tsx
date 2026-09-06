@@ -90,7 +90,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-600" />
             <h2 className="text-sm sm:text-base font-bold text-slate-800">
-              {t('print.preview_title', 'Bản xem trước sao kê sổ quỹ & in ấn')}
+              {t('print.preview_title', 'Bản xem trước sao kê quỹ')}
             </h2>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -245,11 +245,11 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                 {subtitle}
               </p>
               <p className="text-sm text-slate-600 font-medium mt-1">
-                {t('print.scope_label', 'Phạm vi:')} <span className="font-bold text-slate-900">{fund.name}</span> ({t('print.current_balance_label', 'Số dư hiện tại:')} {formatVND(fund.balance)})
+                <span className="font-bold text-slate-900"></span> ({t('print.current_balance_label', 'Số dư hiện tại:')} {formatVND(fund.balance)})
               </p>
             </div>
             <div className="text-right text-xs text-slate-500 font-mono">
-              <p>{t('print.created_date_label', 'Ngày lập:')} {new Date().toLocaleDateString('vi-VN')}</p>
+              <p>{t('print.created_date_label', 'Ngày in:')} {new Date().toLocaleDateString('vi-VN')}</p>
               <p>{t('print.doc_code_label', 'Mã tài liệu:')} SKQ-{new Date().toISOString().slice(0, 10).replace(/-/g, '')}</p>
             </div>
           </div>

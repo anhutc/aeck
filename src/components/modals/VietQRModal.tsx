@@ -87,7 +87,7 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                {t('vietqr.title', 'Mã QR Thu Quỹ Tự Động')}
+                {t('vietqr.title', 'Mã QR Thu Quỹ')}
               </h2>
               <p className="text-xs text-slate-500">
                 {t('vietqr.subtitle', 'Quét mã VietQR chuyển khoản nhanh chính xác')}

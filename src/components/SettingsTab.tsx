@@ -30,17 +30,18 @@ import {
   Activity,
   Zap,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Copy,
+  Lock
 } from 'lucide-react';
 import { BankSettings, Category, GroupNotice, AppBranding, MemberViewPermissions } from '../types';
 import { VIETNAMESE_BANKS, INITIAL_BRANDING, INITIAL_VIEW_PERMISSIONS } from '../data/initialData';
-import { LanguageAndTextEditor } from './settings/LanguageAndTextEditor';
 import { CloudDataSourceModal } from './settings/CloudDataSourceModal';
 import { getSavedCustomFirebaseConfig, getActiveFirebaseConfig } from '../lib/firebase';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback } from '../context/FeedbackContext';
 
-export type SettingSubTab = 'branding' | 'statement' | 'notice' | 'permissions' | 'security' | 'bank' | 'categories' | 'backup' | 'language' | 'all';
+export type SettingSubTab = 'branding' | 'statement' | 'notice' | 'permissions' | 'security' | 'bank' | 'categories' | 'backup' | 'all';
 
 interface SettingsTabProps {
   bankSettings: BankSettings;
@@ -60,6 +61,8 @@ interface SettingsTabProps {
   cloudLatency?: number | null;
   adminPassword?: string;
   onUpdateAdminPassword: (newPass: string) => void;
+  memberPassword?: string;
+  onUpdateMemberPassword?: (newPass: string) => void;
   groupNotice: GroupNotice;
   onUpdateGroupNotice: (notice: GroupNotice) => void;
   branding?: AppBranding;
@@ -76,16 +79,15 @@ const SETTING_NAV_ITEMS: Array<{
   iconColor: string;
   activeColor: string;
 }> = [
-  { id: 'branding', label: 'Nhận Diện & Nhóm', sublabel: 'Tên, biểu tượng, khẩu hiệu', icon: Type, iconColor: 'text-blue-500', activeColor: 'border-blue-600 text-blue-700 bg-blue-50/90 dark:bg-blue-950/80 dark:text-blue-300' },
-  { id: 'statement', label: 'Mẫu In Sao Kê & Chữ Ký', sublabel: 'Tiêu đề, người ký duyệt', icon: FileText, iconColor: 'text-indigo-500', activeColor: 'border-indigo-600 text-indigo-700 bg-indigo-50/90 dark:bg-indigo-950/80 dark:text-indigo-300' },
-  { id: 'notice', label: 'Nội Quy Hoạt Động', sublabel: 'Quy chế & điều khoản quỹ', icon: ScrollText, iconColor: 'text-emerald-500', activeColor: 'border-emerald-600 text-emerald-700 bg-emerald-50/90 dark:bg-emerald-950/80 dark:text-emerald-300' },
-  { id: 'permissions', label: 'Phân Quyền Thành Viên', sublabel: 'Bảo mật & quyền hiển thị', icon: Sliders, iconColor: 'text-purple-500', activeColor: 'border-purple-600 text-purple-700 bg-purple-50/90 dark:bg-purple-950/80 dark:text-purple-300' },
-  { id: 'security', label: 'Mật Khẩu Quản Trị', sublabel: 'Mã PIN bảo vệ Admin', icon: KeyRound, iconColor: 'text-amber-500', activeColor: 'border-amber-600 text-amber-700 bg-amber-50/90 dark:bg-amber-950/80 dark:text-amber-300' },
-  { id: 'bank', label: 'Tài Khoản & VietQR', sublabel: 'STK ngân hàng nhận tiền', icon: Building2, iconColor: 'text-teal-500', activeColor: 'border-teal-600 text-teal-700 bg-teal-50/90 dark:bg-teal-950/80 dark:text-teal-300' },
-  { id: 'categories', label: 'Danh Mục Thu Chi', sublabel: 'Phân loại thu & chi', icon: Tag, iconColor: 'text-rose-500', activeColor: 'border-rose-600 text-rose-700 bg-rose-50/90 dark:bg-rose-950/80 dark:text-rose-300' },
-  { id: 'backup', label: 'Sao Lưu & Đồng Bộ', sublabel: 'Cloud Firestore & JSON', icon: Cloud, iconColor: 'text-blue-500', activeColor: 'border-blue-600 text-blue-700 bg-blue-50/90 dark:bg-blue-950/80 dark:text-blue-300' },
-  { id: 'language', label: 'Văn Bản Tiếng Việt', sublabel: 'Tùy biến từ ngữ giao diện', icon: Globe, iconColor: 'text-cyan-500', activeColor: 'border-cyan-600 text-cyan-700 bg-cyan-50/90 dark:bg-cyan-950/80 dark:text-cyan-300' },
-  { id: 'all', label: 'Tất Cả Cài Đặt', sublabel: 'Xem toàn bộ', icon: Sliders, iconColor: 'text-slate-500', activeColor: 'border-slate-800 text-slate-900 bg-slate-100 dark:bg-slate-800 dark:text-white dark:border-slate-300' },
+  { id: 'branding', label: 'Nhận Diện & Nhóm', sublabel: 'Tên, biểu tượng, khẩu hiệu', icon: Type, iconColor: 'text-blue-500', activeColor: 'border-blue-600 text-blue-700 bg-blue-50' },
+  { id: 'statement', label: 'Mẫu In Sao Kê & Chữ Ký', sublabel: 'Tiêu đề, người ký duyệt', icon: FileText, iconColor: 'text-indigo-500', activeColor: 'border-indigo-600 text-indigo-700 bg-indigo-50' },
+  { id: 'notice', label: 'Nội Quy Hoạt Động', sublabel: 'Quy chế & điều khoản quỹ', icon: ScrollText, iconColor: 'text-emerald-500', activeColor: 'border-emerald-600 text-emerald-700 bg-emerald-50' },
+  { id: 'permissions', label: 'Phân Quyền Thành Viên', sublabel: 'Bảo mật & quyền hiển thị', icon: Sliders, iconColor: 'text-purple-500', activeColor: 'border-purple-600 text-purple-700 bg-purple-50' },
+  { id: 'security', label: 'Bảo Mật & Mật Khẩu', sublabel: 'Mật khẩu Admin & Thành viên', icon: KeyRound, iconColor: 'text-amber-500', activeColor: 'border-amber-600 text-amber-700 bg-amber-50' },
+  { id: 'bank', label: 'Tài Khoản & VietQR', sublabel: 'STK ngân hàng nhận tiền', icon: Building2, iconColor: 'text-teal-500', activeColor: 'border-teal-600 text-teal-700 bg-teal-50' },
+  { id: 'categories', label: 'Danh Mục Thu Chi', sublabel: 'Phân loại thu & chi', icon: Tag, iconColor: 'text-rose-500', activeColor: 'border-rose-600 text-rose-700 bg-rose-50' },
+  { id: 'backup', label: 'Sao Lưu & Đồng Bộ', sublabel: 'Cloud Firestore & JSON', icon: Cloud, iconColor: 'text-blue-500', activeColor: 'border-blue-600 text-blue-700 bg-blue-50' },
+  { id: 'all', label: 'Tất Cả Cài Đặt', sublabel: 'Xem toàn bộ', icon: Sliders, iconColor: 'text-slate-500', activeColor: 'border-slate-800 text-slate-900 bg-slate-100' },
 ];
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({
@@ -106,6 +108,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   cloudLatency,
   adminPassword = 'admin',
   onUpdateAdminPassword,
+  memberPassword = '123',
+  onUpdateMemberPassword,
   groupNotice,
   onUpdateGroupNotice,
   branding = INITIAL_BRANDING,
@@ -217,14 +221,25 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     }
   }, [groupNotice]);
 
-  // Password change state
+  // Admin Password change state
   const [currentPassInput, setCurrentPassInput] = useState('');
   const [newPassInput, setNewPassInput] = useState('');
   const [confirmPassInput, setConfirmPassInput] = useState('');
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
+  const [showAdminPassValue, setShowAdminPassValue] = useState(false);
   const [passError, setPassError] = useState('');
   const [passSuccess, setPassSuccess] = useState('');
+
+  // Member Password change state
+  const [currentMemberPassInput, setCurrentMemberPassInput] = useState('');
+  const [newMemberPassInput, setNewMemberPassInput] = useState('');
+  const [confirmMemberPassInput, setConfirmMemberPassInput] = useState('');
+  const [showCurrentMemberPass, setShowCurrentMemberPass] = useState(false);
+  const [showNewMemberPass, setShowNewMemberPass] = useState(false);
+  const [showMemberPassValue, setShowMemberPassValue] = useState(false);
+  const [memberPassError, setMemberPassError] = useState('');
+  const [memberPassSuccess, setMemberPassSuccess] = useState('');
 
   // New Category state
   const [newCatName, setNewCatName] = useState('');
@@ -283,76 +298,52 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     }
   }, [viewPermissions]);
 
-  // Synchronized toggle for permissions & notice
+  // Toggle local draft state ONLY - NO auto-save!
   const handleTogglePerm = (key: keyof MemberViewPermissions) => {
-    const newVal = !perms[key];
-    const newPerms = {
-      ...perms,
-      [key]: newVal,
-    };
-    setPerms(newPerms);
-    onUpdateViewPermissions(newPerms);
-
-    // If toggling notice, also immediately synchronize with groupNotice
-    if (key === 'showNotice') {
-      setNoticeEnabled(newVal);
-      onUpdateGroupNotice({
-        ...groupNotice,
-        enabled: newVal,
-        title: noticeTitle.trim() || 'Nội quy & Quy định hoạt động quỹ',
-        content: noticeContent.trim(),
-        type: noticeType,
-        updatedAt: noticeUpdatedAt || new Date().toISOString().split('T')[0],
-      });
-    }
+    setPerms((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
   const handleToggleAllPerms = (enabled: boolean) => {
-    const newPerms: MemberViewPermissions = {
+    setPerms({
       showNotice: enabled,
       showCampaigns: enabled,
       showExpenseStructure: enabled,
       showFullLedger: enabled,
       allowPublicPrint: enabled,
       allowQuickQR: enabled,
-    };
-    setPerms(newPerms);
-    onUpdateViewPermissions(newPerms);
-
-    setNoticeEnabled(enabled);
-    onUpdateGroupNotice({
-      ...groupNotice,
-      enabled,
-      title: noticeTitle.trim() || 'Nội quy & Quy định hoạt động quỹ',
-      content: noticeContent.trim(),
-      type: noticeType,
-      updatedAt: noticeUpdatedAt || new Date().toISOString().split('T')[0],
     });
+  };
+
+  const handleResetPerms = () => {
+    if (viewPermissions) {
+      setPerms(viewPermissions);
+      showToast('Đã hủy thay đổi phân quyền!', 'info');
+    }
   };
 
   const handleToggleNoticeDirectly = (enabled: boolean) => {
     setNoticeEnabled(enabled);
-    onUpdateGroupNotice({
-      ...groupNotice,
-      enabled,
-      title: noticeTitle.trim() || 'Nội quy & Quy định hoạt động quỹ',
-      content: noticeContent.trim(),
-      type: noticeType,
-      updatedAt: noticeUpdatedAt || new Date().toISOString().split('T')[0],
-    });
+  };
 
-    const newPerms = {
-      ...perms,
-      showNotice: enabled,
-    };
-    setPerms(newPerms);
-    onUpdateViewPermissions(newPerms);
+  const handleResetNotice = () => {
+    if (groupNotice) {
+      setNoticeEnabled(groupNotice.enabled !== false);
+      setNoticeTitle(groupNotice.title || 'Nội quy & Quy định hoạt động quỹ');
+      setNoticeContent(groupNotice.content || '');
+      setNoticeType(groupNotice.type || 'info');
+      setNoticeUpdatedAt(groupNotice.updatedAt || '2026-08-28');
+      showToast('Đã hủy thay đổi nội quy!', 'info');
+    }
   };
 
   const handleSavePerms = (e: React.FormEvent) => {
     e.preventDefault();
     onUpdateViewPermissions(perms);
     setPermsSaved(true);
+    showToast('Đã lưu & áp dụng phân quyền thành viên!', 'success');
     setTimeout(() => setPermsSaved(false), 2500);
   };
 
@@ -387,6 +378,43 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     });
     setStatementSaved(true);
     setTimeout(() => setStatementSaved(false), 2500);
+  };
+
+  const handleResetBranding = () => {
+    if (branding) {
+      setAppTitle(branding.appTitle || 'Quản Lý Quỹ');
+      setAppSubtitle(branding.appSubtitle || 'Sổ thu chi & đóng quỹ minh bạch');
+      setTreasurerName(branding.treasurerName || 'Thủ quỹ');
+      setTreasurerPhone(branding.treasurerPhone || '');
+      setTransferSyntaxPrefix(branding.transferSyntaxPrefix || 'DONG QUY');
+      setGroupEmoji(branding.groupEmoji || '💼');
+      showToast('Đã hủy thay đổi nhận diện thương hiệu!', 'info');
+    }
+  };
+
+  const handleResetStatement = () => {
+    if (branding) {
+      setStatementHeaderTitle(branding.statementHeaderTitle || 'BÁO CÁO THU CHI & SAO KÊ QUỸ NHÓM');
+      setStatementSubtitle(branding.statementSubtitle || 'Bảng kê khai chi tiết các khoản thu, chi và tồn quỹ');
+      setStatementSignatory1Title(branding.statementSignatory1Title || 'Người lập biểu');
+      setStatementSignatory1Name(branding.statementSignatory1Name || 'Thủ quỹ ghi sổ');
+      setStatementSignatory2Title(branding.statementSignatory2Title || 'Kế toán / Kiểm soát');
+      setStatementSignatory2Name(branding.statementSignatory2Name || 'Người kiểm tra số liệu');
+      setStatementSignatory3Title(branding.statementSignatory3Title || 'Trưởng ban duyệt');
+      setStatementSignatory3Name(branding.statementSignatory3Name || 'Đại diện ban quản lý');
+      setStatementFooterNote(branding.statementFooterNote || 'Báo cáo này được trích xuất tự động từ hệ thống quản lý thu chi minh bạch và có giá trị lưu hành nội bộ.');
+      showToast('Đã hủy thay đổi mẫu in sao kê!', 'info');
+    }
+  };
+
+  const handleResetBank = () => {
+    if (bankSettings) {
+      setBankId(bankSettings.bankId || 'MB');
+      setAccountNumber(bankSettings.accountNumber || '');
+      setAccountName(bankSettings.accountName || '');
+      setQrTemplate(bankSettings.qrTemplate || 'compact');
+      showToast('Đã hủy thay đổi tài khoản ngân hàng!', 'info');
+    }
   };
 
   const scrollToSection = (id: string) => {
@@ -454,11 +482,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       updatedAt: noticeUpdatedAt || new Date().toISOString().split('T')[0],
     });
 
-    const newPerms = { ...perms, showNotice: noticeEnabled };
-    setPerms(newPerms);
-    onUpdateViewPermissions(newPerms);
-
     setNoticeSaved(true);
+    showToast('Đã lưu nội quy hoạt động quỹ!', 'success');
     setTimeout(() => setNoticeSaved(false), 2500);
   };
 
@@ -467,27 +492,102 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     setPassError('');
     setPassSuccess('');
 
-    if (currentPassInput !== adminPassword && currentPassInput !== 'admin') {
-      setPassError('Mật khẩu hiện tại không chính xác');
-      return;
-    }
+    const newPass = newPassInput.trim();
+    const confirmPass = confirmPassInput.trim();
 
-    if (newPassInput.length < 4) {
+    if (newPass.length < 4) {
       setPassError('Mật khẩu mới phải có tối thiểu 4 ký tự');
       return;
     }
 
-    if (newPassInput !== confirmPassInput) {
+    if (newPass !== confirmPass) {
       setPassError('Xác nhận mật khẩu mới không khớp');
       return;
     }
 
-    onUpdateAdminPassword(newPassInput);
-    setPassSuccess('Đã đổi mật khẩu Admin thành công và đồng bộ lên Đám mây!');
+    onUpdateAdminPassword(newPass);
+    showToast('Đã đổi mật khẩu Quản trị viên thành công và đồng bộ!', 'success');
+    setPassSuccess('Đã đổi mật khẩu Quản trị viên thành công!');
     setCurrentPassInput('');
     setNewPassInput('');
     setConfirmPassInput('');
     setTimeout(() => setPassSuccess(''), 3000);
+  };
+
+  const handleResetAdminPasswordToDefault = () => {
+    showConfirm({
+      title: 'Khôi phục mật khẩu Quản trị viên',
+      message: 'Bạn có chắc chắn muốn đặt lại mật khẩu Quản trị viên về mặc định "admin"?',
+      confirmText: 'Khôi phục "admin"',
+      type: 'warning',
+      onConfirm: () => {
+        onUpdateAdminPassword('admin');
+        showToast('Đã khôi phục mật khẩu Quản trị viên về mặc định (admin)!', 'success');
+        setPassError('');
+        setPassSuccess('Đã khôi phục về "admin"');
+        setCurrentPassInput('');
+        setNewPassInput('');
+        setConfirmPassInput('');
+        setTimeout(() => setPassSuccess(''), 3000);
+      },
+    });
+  };
+
+  const handleChangeMemberPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setMemberPassError('');
+    setMemberPassSuccess('');
+
+    const newPass = newMemberPassInput.trim();
+    const confirmPass = confirmMemberPassInput.trim();
+
+    if (newPass.length < 3) {
+      setMemberPassError('Mật khẩu Thành viên mới phải có tối thiểu 3 ký tự');
+      return;
+    }
+
+    if (newPass !== confirmPass) {
+      setMemberPassError('Xác nhận mật khẩu Thành viên mới không khớp');
+      return;
+    }
+
+    if (onUpdateMemberPassword) {
+      onUpdateMemberPassword(newPass);
+    }
+    showToast('Đã đổi mật khẩu Thành viên thành công và đồng bộ!', 'success');
+    setMemberPassSuccess('Đã đổi mật khẩu Thành viên thành công!');
+    setCurrentMemberPassInput('');
+    setNewMemberPassInput('');
+    setConfirmMemberPassInput('');
+    setTimeout(() => setMemberPassSuccess(''), 3000);
+  };
+
+  const handleResetMemberPasswordToDefault = () => {
+    showConfirm({
+      title: 'Khôi phục mật khẩu Thành viên',
+      message: 'Bạn có chắc chắn muốn đặt lại mật khẩu Thành viên về mặc định "123"?',
+      confirmText: 'Khôi phục "123"',
+      type: 'warning',
+      onConfirm: () => {
+        if (onUpdateMemberPassword) {
+          onUpdateMemberPassword('123');
+        }
+        showToast('Đã khôi phục mật khẩu Thành viên về mặc định (123)!', 'success');
+        setMemberPassError('');
+        setMemberPassSuccess('Đã khôi phục về "123"');
+        setCurrentMemberPassInput('');
+        setNewMemberPassInput('');
+        setConfirmMemberPassInput('');
+        setTimeout(() => setMemberPassSuccess(''), 3000);
+      },
+    });
+  };
+
+  const handleCopyPassword = (pass: string, roleName: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(pass);
+    }
+    showToast(`Đã sao chép mật khẩu ${roleName} (${pass})!`, 'info');
   };
 
   const handleAddCategorySubmit = (e: React.FormEvent) => {
@@ -768,13 +868,22 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       </p>
                     </div>
 
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                    >
-                      {brandingSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                      <span>{brandingSaved ? 'Đã lưu & đồng bộ nhận diện thương hiệu!' : 'Lưu Tùy Chỉnh Nhận Diện & Thương Hiệu'}</span>
-                    </button>
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleResetBranding}
+                        className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                      >
+                        Hủy thay đổi
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      >
+                        {brandingSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                        <span>{brandingSaved ? 'Đã lưu & đồng bộ nhận diện thương hiệu!' : 'Lưu Tùy Chỉnh Nhận Diện & Thương Hiệu'}</span>
+                      </button>
+                    </div>
                   </form>
                 </div>
               )}
@@ -914,13 +1023,22 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    {statementSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                    <span>{statementSaved ? 'Đã lưu mẫu in sao kê & chữ ký!' : 'Lưu Cấu Hình Mẫu In Sao Kê'}</span>
-                  </button>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={handleResetStatement}
+                      className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                    >
+                      Hủy thay đổi
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      {statementSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                      <span>{statementSaved ? 'Đã lưu mẫu in sao kê & chữ ký!' : 'Lưu Cấu Hình Mẫu In Sao Kê'}</span>
+                    </button>
+                  </div>
                 </form>
               </div>
             )}
@@ -985,13 +1103,22 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    {noticeSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                    <span>{noticeSaved ? 'Đã lưu & đồng bộ nội quy lên Đám Mây!' : 'Lưu Bảng Nội Quy Quỹ'}</span>
-                  </button>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={handleResetNotice}
+                      className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                    >
+                      Hủy thay đổi
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      {noticeSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                      <span>{noticeSaved ? 'Đã lưu & áp dụng nội quy!' : 'Lưu Bảng Nội Quy Quỹ'}</span>
+                    </button>
+                  </div>
                 </form>
               </div>
             )}
@@ -1012,7 +1139,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                           </span>
                         </h3>
                         <p className="text-xs text-slate-500">
-                          Kiểm soát các phần nội dung mà người xem/thành viên được phép thấy (Tự động lưu và đồng bộ tức thì)
+                          Kiểm soát các phần nội dung mà người xem/thành viên được phép thấy. Bấm Lưu Cài Đặt để áp dụng.
                         </p>
                       </div>
                     </div>
@@ -1302,110 +1429,271 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       </div>
                     </div>
 
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                    >
-                      {permsSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                      <span>{permsSaved ? 'Đã lưu & áp dụng phân quyền thành viên!' : 'Lưu Cài Đặt Phân Quyền'}</span>
-                    </button>
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleResetPerms}
+                        className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                      >
+                        Hủy thay đổi
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      >
+                        {permsSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                        <span>{permsSaved ? 'Đã lưu & áp dụng phân quyền thành viên!' : 'Lưu Cài Đặt Phân Quyền'}</span>
+                      </button>
+                    </div>
                   </form>
                 </div>
             )}
 
-            {/* 5. ADMIN PASSWORD CARD */}
+            {/* 5. SECURITY & PASSWORDS CARD */}
             {(activeSubTab === 'security' || activeSubTab === 'all') && (
-              <div id="settings-security" className="scroll-mt-28 sm:scroll-mt-24 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-600 flex items-center justify-center text-white shadow-sm shadow-amber-500/20">
-                    <KeyRound className="w-5 h-5" />
+              <div id="settings-security" className="scroll-mt-28 sm:scroll-mt-24 space-y-5">
+                {/* Information Header */}
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5">
+                    <KeyRound className="w-4 h-4" />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                      Mật Khẩu Quản Trị Viên (Admin)
-                    </h3>
-                    <p className="text-xs text-slate-500">Mã PIN/Mật khẩu để mở khóa các tính năng quản trị</p>
+                  <div className="space-y-1 text-xs">
+                    <h4 className="font-bold text-slate-900">
+                      Cơ Chế Phân Quyền 2 Mật Khẩu Độc Lập
+                    </h4>
+                    <p className="text-slate-600 leading-relaxed">
+                      Hệ thống hoạt động với 2 mật khẩu riêng biệt: <strong>Mật khẩu Admin</strong> (toàn quyền quản lý, thêm/sửa/xóa thu chi, cấu hình) và <strong>Mật khẩu Thành viên</strong> (chỉ mở xem bảng minh bạch số dư, giao dịch, nộp quỹ VietQR và in sao kê).
+                    </p>
                   </div>
                 </div>
 
-                <form onSubmit={handleChangePassword} className="space-y-3.5 pt-1">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                      Mật khẩu hiện tại
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showCurrentPass ? 'text' : 'password'}
-                        required
-                        placeholder="Nhập mật khẩu hiện tại (mặc định: admin)"
-                        value={currentPassInput}
-                        onChange={(e) => setCurrentPassInput(e.target.value)}
-                        className="w-full px-3 py-2 pr-10 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
-                      />
+                {/* Card 1: Admin Password */}
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-sm shadow-amber-500/20">
+                        <KeyRound className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm text-slate-900">
+                          1. Mật Khẩu Quản Trị Viên (Admin)
+                        </h3>
+                        <p className="text-xs text-slate-500">Mã khóa mở toàn bộ quyền can thiệp dữ liệu và cài đặt hệ thống</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Active Admin Password Display */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-slate-600">Mật khẩu Admin hiện tại:</span>
+                      <span className="font-mono text-sm font-bold text-slate-900 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200 tracking-wider">
+                        {showAdminPassValue ? (adminPassword || 'admin') : '••••••••'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 self-end sm:self-auto">
                       <button
                         type="button"
-                        onClick={() => setShowCurrentPass(!showCurrentPass)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                        onClick={() => setShowAdminPassValue(!showAdminPassValue)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 transition-colors flex items-center gap-1 cursor-pointer"
+                        title={showAdminPassValue ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                       >
-                        {showCurrentPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showAdminPassValue ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        <span>{showAdminPassValue ? 'Ẩn' : 'Hiện'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyPassword(adminPassword || 'admin', 'Admin')}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 transition-colors flex items-center gap-1 cursor-pointer"
+                        title="Sao chép mật khẩu Admin"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Sao chép</span>
                       </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                        Mật khẩu mới
-                      </label>
-                      <div className="relative">
+                  {/* Change Admin Password Form */}
+                  <form onSubmit={handleChangePassword} className="space-y-3.5 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                          Mật khẩu Admin mới
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showNewPass ? 'text' : 'password'}
+                            required
+                            placeholder="Tối thiểu 4 ký tự..."
+                            value={newPassInput}
+                            onChange={(e) => setNewPassInput(e.target.value)}
+                            className="w-full px-3 py-2 pr-10 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPass(!showNewPass)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                          >
+                            {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                          Xác nhận mật khẩu Admin mới
+                        </label>
                         <input
-                          type={showNewPass ? 'text' : 'password'}
+                          type="password"
                           required
-                          placeholder="Mật khẩu mới..."
-                          value={newPassInput}
-                          onChange={(e) => setNewPassInput(e.target.value)}
-                          className="w-full px-3 py-2 pr-10 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                          placeholder="Nhập lại mật khẩu Admin mới..."
+                          value={confirmPassInput}
+                          onChange={(e) => setConfirmPassInput(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                         />
-                        <button
-                          type="button"
-                          onClick={() => setShowNewPass(!showNewPass)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-                        >
-                          {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                        Xác nhận mật khẩu mới
-                      </label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="Nhập lại mật khẩu mới..."
-                        value={confirmPassInput}
-                        onChange={(e) => setConfirmPassInput(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
-                      />
+                    {passError && (
+                      <p className="text-xs text-rose-500 font-medium">{passError}</p>
+                    )}
+                    {passSuccess && (
+                      <p className="text-xs text-emerald-600 font-medium">{passSuccess}</p>
+                    )}
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleResetAdminPasswordToDefault}
+                        className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                        title="Đặt lại mật khẩu Admin về 'admin'"
+                      >
+                        Khôi phục về "admin"
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-[0.99] text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      >
+                        <KeyRound className="w-4 h-4" />
+                        <span>Lưu mật khẩu Admin mới</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Card 2: Member Password */}
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm shadow-blue-500/20">
+                        <Lock className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm text-slate-900">
+                          2. Mật Khẩu Thành Viên (Chỉ Xem)
+                        </h3>
+                        <p className="text-xs text-slate-500">Mật khẩu cung cấp cho các thành viên trong nhóm để truy cập cổng tra cứu</p>
+                      </div>
                     </div>
                   </div>
 
-                  {passError && (
-                    <p className="text-xs text-rose-500 font-medium">{passError}</p>
-                  )}
-                  {passSuccess && (
-                    <p className="text-xs text-emerald-600 font-medium">{passSuccess}</p>
-                  )}
+                  {/* Active Member Password Display */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-slate-600">Mật khẩu Thành viên hiện tại:</span>
+                      <span className="font-mono text-sm font-bold text-blue-700 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200 tracking-wider">
+                        {showMemberPassValue ? (memberPassword || '123') : '••••••'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                      <button
+                        type="button"
+                        onClick={() => setShowMemberPassValue(!showMemberPassValue)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 transition-colors flex items-center gap-1 cursor-pointer"
+                        title={showMemberPassValue ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                      >
+                        {showMemberPassValue ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        <span>{showMemberPassValue ? 'Ẩn' : 'Hiện'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyPassword(memberPassword || '123', 'Thành viên')}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-1.5 cursor-pointer border border-blue-200/60"
+                        title="Sao chép mật khẩu gửi cho thành viên trong nhóm"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Sao chép gửi nhóm</span>
+                      </button>
+                    </div>
+                  </div>
 
-                  <button
-                    type="submit"
-                    className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    <KeyRound className="w-4 h-4" />
-                    <span>Cập nhật mật khẩu Admin</span>
-                  </button>
-                </form>
+                  {/* Change Member Password Form */}
+                  <form onSubmit={handleChangeMemberPassword} className="space-y-3.5 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                          Mật khẩu Thành viên mới
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showNewMemberPass ? 'text' : 'password'}
+                            required
+                            placeholder="Tối thiểu 3 ký tự..."
+                            value={newMemberPassInput}
+                            onChange={(e) => setNewMemberPassInput(e.target.value)}
+                            className="w-full px-3 py-2 pr-10 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewMemberPass(!showNewMemberPass)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                          >
+                            {showNewMemberPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                          Xác nhận mật khẩu Thành viên mới
+                        </label>
+                        <input
+                          type="password"
+                          required
+                          placeholder="Nhập lại mật khẩu Thành viên mới..."
+                          value={confirmMemberPassInput}
+                          onChange={(e) => setConfirmMemberPassInput(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                        />
+                      </div>
+                    </div>
+
+                    {memberPassError && (
+                      <p className="text-xs text-rose-500 font-medium">{memberPassError}</p>
+                    )}
+                    {memberPassSuccess && (
+                      <p className="text-xs text-emerald-600 font-medium">{memberPassSuccess}</p>
+                    )}
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleResetMemberPasswordToDefault}
+                        className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                        title="Đặt lại mật khẩu Thành viên về '123'"
+                      >
+                        Khôi phục về "123"
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      >
+                        <Lock className="w-4 h-4" />
+                        <span>Lưu mật khẩu Thành viên mới</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
 
@@ -1470,13 +1758,22 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    className="w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    {bankSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                    <span>{bankSaved ? 'Đã lưu thông tin tài khoản!' : 'Lưu Cài Đặt Ngân Hàng'}</span>
-                  </button>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={handleResetBank}
+                      className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                    >
+                      Hủy thay đổi
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      {bankSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                      <span>{bankSaved ? 'Đã lưu thông tin tài khoản!' : 'Lưu Cài Đặt Ngân Hàng'}</span>
+                    </button>
+                  </div>
                 </form>
               </div>
             )}
@@ -1917,12 +2214,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 </div>
             )}
 
-            {/* 9. LANGUAGE & CUSTOM TEXT EDITOR */}
-            {(activeSubTab === 'language' || activeSubTab === 'all') && (
-              <div id="settings-language" className={`scroll-mt-28 sm:scroll-mt-24 ${activeSubTab === 'all' ? 'lg:col-span-2' : ''}`}>
-                <LanguageAndTextEditor />
-              </div>
-            )}
             </div>
           </div>
         </div>

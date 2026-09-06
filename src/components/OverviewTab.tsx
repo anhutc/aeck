@@ -158,29 +158,28 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   return (
     <div id="overview-tab-content" className="space-y-6 pb-12">
-      {/* 1. Main Fund Balance Banner (Compact, Sleek & Modern) */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white p-4 sm:p-5 shadow-md border border-blue-900/40">
-        <div className="absolute -right-6 -bottom-6 w-36 h-36 bg-blue-500/10 rounded-full blur-xl pointer-events-none" />
+      {/* 1. Main Fund Balance Banner (Light, Clean, High Contrast) */}
+      <div className="relative overflow-hidden rounded-2xl bg-white text-slate-900 p-4 sm:p-5 shadow-xs border border-slate-200">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30 backdrop-blur-xs flex items-center gap-1.5">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5">
                 <Wallet className="w-3 h-3" />
                 {fund.name === 'Quỹ Hoạt Động' ? t('funds.default_fund_name', 'Quỹ Hoạt Động') : (fund.name || t('funds.default_fund_name', 'Quỹ Hoạt Động'))}
               </span>
               {isBelowMin && (
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30 flex items-center gap-1">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
                   <ShieldAlert className="w-3 h-3" />
                   {t('funds.warning_min_balance', 'Dưới hạn mức')}
                 </span>
               )}
-              <span className="text-xs text-blue-200/70 font-medium hidden sm:inline">
+              <span className="text-xs text-slate-500 font-medium hidden sm:inline">
                 {t('funds.current_available_balance', 'Số Dư Khả Dụng')}
               </span>
             </div>
 
             <div className="flex items-baseline gap-3">
-              <div className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+              <div className="text-2xl sm:text-3xl font-mono font-black tracking-tight text-slate-900">
                 {formatVND(totalBalance)}
               </div>
             </div>
@@ -191,7 +190,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <button
                     id="overview-reset-fund-btn"
                     onClick={onOpenResetFundModal}
-                    className="px-2.5 py-1 rounded-lg border border-amber-300/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                   >
                     <RotateCcw className="w-3 h-3" />
                     <span>{t('funds.btn_reset', 'Đặt Lại Quỹ')}</span>
@@ -201,9 +200,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <button
                     id="overview-print-statement-btn"
                     onClick={onOpenPrintModal}
-                    className="px-2.5 py-1 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer"
                   >
-                    <Printer className="w-3 h-3 text-blue-300" />
+                    <Printer className="w-3 h-3 text-slate-500" />
                     <span>{t('reports.print_statement', 'In Báo Cáo')}</span>
                   </button>
                 )}
@@ -213,29 +212,29 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
           {/* All-time Accumulated Income & Expense Responsive Cards */}
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3 w-full sm:w-auto mt-2 sm:mt-0">
-            <div className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100 flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
                 <ArrowDownLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-[9px] sm:text-[10px] text-emerald-300/90 font-medium block uppercase tracking-wider truncate">
+                <span className="text-[9px] sm:text-[10px] text-emerald-700 font-bold block uppercase tracking-wider truncate">
                   {t('funds.total_income', 'Tổng Đã Thu')}
                 </span>
-                <span className="text-xs xs:text-sm sm:text-base font-bold text-white block truncate" title={`+${formatVND(totalIncome)}`}>
+                <span className="text-xs xs:text-sm sm:text-base font-mono font-bold text-emerald-700 block truncate" title={`+${formatVND(totalIncome)}`}>
                   +{formatVND(totalIncome)}
                 </span>
               </div>
             </div>
 
-            <div className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+            <div className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-xl bg-rose-50/70 border border-rose-100 flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
                 <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-[9px] sm:text-[10px] text-rose-300/90 font-medium block uppercase tracking-wider truncate">
+                <span className="text-[9px] sm:text-[10px] text-rose-700 font-bold block uppercase tracking-wider truncate">
                   {t('funds.total_expense', 'Tổng Đã Chi')}
                 </span>
-                <span className="text-xs xs:text-sm sm:text-base font-bold text-white block truncate" title={`-${formatVND(totalExpense)}`}>
+                <span className="text-xs xs:text-sm sm:text-base font-mono font-bold text-rose-700 block truncate" title={`-${formatVND(totalExpense)}`}>
                   -{formatVND(totalExpense)}
                 </span>
               </div>

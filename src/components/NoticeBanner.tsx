@@ -32,39 +32,39 @@ export const NoticeBanner: React.FC<NoticeBannerProps> = ({
 
   const typeConfig = {
     info: {
-      bg: 'bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 text-white',
-      border: 'border-blue-900/40 shadow-md',
-      text: 'text-blue-100/90',
-      titleColor: 'text-white',
-      dateColor: 'text-blue-200/70',
-      dateStrong: 'text-blue-100',
-      iconBg: 'bg-blue-500/20 text-blue-300 border border-blue-400/30 backdrop-blur-xs',
-      btnBg: 'bg-white/10 hover:bg-white/20 text-white border-white/20',
-      toggleBtn: 'hover:bg-white/10 text-blue-200',
+      bg: 'bg-linear-to-r from-blue-50/90 via-sky-50/50 to-indigo-50/60 text-slate-900',
+      border: 'border-blue-200/90 shadow-2xs',
+      text: 'text-slate-700',
+      titleColor: 'text-slate-900 font-bold',
+      dateColor: 'text-slate-500',
+      dateStrong: 'text-slate-700',
+      iconBg: 'bg-blue-600 text-white shadow-xs',
+      btnBg: 'bg-white hover:bg-blue-50 text-blue-700 border-blue-200 shadow-2xs',
+      toggleBtn: 'hover:bg-blue-100/70 text-slate-500 hover:text-slate-800',
       icon: <ScrollText className="w-4 h-4" />
     },
     warning: {
-      bg: 'bg-gradient-to-br from-slate-900 via-amber-950/60 to-slate-900 text-white',
-      border: 'border-amber-900/40 shadow-md',
-      text: 'text-amber-100/90',
-      titleColor: 'text-amber-200',
-      dateColor: 'text-amber-200/70',
-      dateStrong: 'text-amber-100',
-      iconBg: 'bg-amber-500/20 text-amber-300 border border-amber-400/30 backdrop-blur-xs',
-      btnBg: 'bg-white/10 hover:bg-white/20 text-white border-white/20',
-      toggleBtn: 'hover:bg-white/10 text-amber-200',
+      bg: 'bg-linear-to-r from-amber-50/90 via-orange-50/40 to-amber-50/60 text-slate-900',
+      border: 'border-amber-200/90 shadow-2xs',
+      text: 'text-slate-700',
+      titleColor: 'text-slate-900 font-bold',
+      dateColor: 'text-slate-500',
+      dateStrong: 'text-slate-700',
+      iconBg: 'bg-amber-500 text-white shadow-xs',
+      btnBg: 'bg-white hover:bg-amber-50 text-amber-800 border-amber-200 shadow-2xs',
+      toggleBtn: 'hover:bg-amber-100/70 text-slate-500 hover:text-slate-800',
       icon: <AlertCircle className="w-4 h-4" />
     },
     success: {
-      bg: 'bg-gradient-to-br from-slate-900 via-emerald-950/60 to-slate-900 text-white',
-      border: 'border-emerald-900/40 shadow-md',
-      text: 'text-emerald-100/90',
-      titleColor: 'text-emerald-200',
-      dateColor: 'text-emerald-200/70',
-      dateStrong: 'text-emerald-100',
-      iconBg: 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 backdrop-blur-xs',
-      btnBg: 'bg-white/10 hover:bg-white/20 text-white border-white/20',
-      toggleBtn: 'hover:bg-white/10 text-emerald-200',
+      bg: 'bg-linear-to-r from-emerald-50/90 via-teal-50/40 to-emerald-50/60 text-slate-900',
+      border: 'border-emerald-200/90 shadow-2xs',
+      text: 'text-slate-700',
+      titleColor: 'text-slate-900 font-bold',
+      dateColor: 'text-slate-500',
+      dateStrong: 'text-slate-700',
+      iconBg: 'bg-emerald-600 text-white shadow-xs',
+      btnBg: 'bg-white hover:bg-emerald-50 text-emerald-800 border-emerald-200 shadow-2xs',
+      toggleBtn: 'hover:bg-emerald-100/70 text-slate-500 hover:text-slate-800',
       icon: <Sparkles className="w-4 h-4" />
     },
   }[notice.type || 'info'];
@@ -113,7 +113,7 @@ export const NoticeBanner: React.FC<NoticeBannerProps> = ({
               title={t('overview.edit_rules_title', 'Chỉnh sửa nội dung & ngày hiệu lực')}
               className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 transition-all shadow-xs cursor-pointer backdrop-blur-xs ${typeConfig.btnBg}`}
             >
-              <Info className="w-3.5 h-3.5 text-blue-300" />
+              <Info className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{t('overview.edit_notice_btn', 'Sửa thông báo')}</span>
             </button>
           )}

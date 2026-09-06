@@ -46,6 +46,7 @@ export interface CloudAppState {
   groupNotice?: GroupNotice;
   branding?: AppBranding;
   adminPassword?: string;
+  memberPassword?: string;
   viewPermissions?: MemberViewPermissions;
   language?: string;
   customDictionary?: Record<string, Record<string, string>>;

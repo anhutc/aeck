@@ -88,31 +88,27 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
   return (
     <div id="member-portal-container" className="space-y-6 pb-16">
       {/* Top Welcome & Transparency Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 text-white p-5 sm:p-7 shadow-xl border border-blue-900/40">
+      <div className="relative overflow-hidden rounded-2xl bg-white text-slate-900 p-5 sm:p-6 shadow-xs border border-slate-200">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-1.5 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-semibold border border-blue-400/30">
-              <Lock className="w-3.5 h-3.5 text-blue-300" />
-              <span>Chế độ Thành viên • Chỉ xem minh bạch dữ liệu</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
               {branding?.appTitle || branding?.portalTitle || t('portal.header_title', 'Sổ Quỹ & Tài Chính Minh Bạch')}
             </h1>
-            <p className="text-xs text-blue-100/80 leading-relaxed">
+            <p className="text-xs text-slate-600 leading-relaxed">
               {branding?.appSubtitle || branding?.portalSubtitle || t('portal.header_subtitle', 'Tất cả số dư, khoản thu, hóa đơn chi tiêu và đợt đóng quỹ được công khai minh bạch 100% theo thời gian thực.')}
             </p>
           </div>
 
           {/* Quick Balance & Action Card */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/20">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
             <div>
-              <span className="text-[11px] text-blue-200 block font-medium">{t('portal.current_total_fund', 'Tổng tồn quỹ hiện tại')}</span>
-              <span className="text-xl font-black text-white">
+              <span className="text-[11px] text-slate-500 block font-medium">{t('portal.current_total_fund', 'Tổng tồn quỹ hiện tại')}</span>
+              <span className="text-xl font-bold text-slate-900 font-mono">
                 {formatVND(totalBalance)}
               </span>
             </div>
 
-            <div className="h-px sm:h-9 sm:w-px bg-white/20 my-0.5 sm:my-0" />
+            <div className="h-px sm:h-9 sm:w-px bg-slate-200 my-0.5 sm:my-0" />
 
             <div className="flex flex-col sm:flex-row gap-2">
               {viewPermissions.allowQuickQR && (
@@ -122,7 +118,7 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
                     const appTitle = branding?.appTitle || 'QUY NHOM';
                     onOpenQRModal(undefined, `${prefix} ${appTitle}`.trim().toUpperCase());
                   }}
-                  className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-bold shadow-md shadow-emerald-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
                   <QrCode className="w-4 h-4" />
                   <span>{t('portal.scan_qr_pay', 'Quét mã nộp quỹ')}</span>
@@ -133,7 +129,7 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
                 <button
                   id="member-print-statement-btn"
                   onClick={() => onOpenPrintModal()}
-                  className="px-3.5 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
                   <span>{t('reports.print_statement', 'In sao kê')}</span>
@@ -144,26 +140,17 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
         </div>
 
         {/* Switch to Admin Mode banner & Treasurer Contact */}
-        <div className="mt-5 pt-3.5 border-t border-white/15 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-blue-200 gap-2">
+        <div className="mt-4 pt-3.5 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-600 gap-2">
           <div className="flex items-center gap-3 flex-wrap">
             {branding?.treasurerName && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-white font-medium text-[11px]">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium text-[11px] border border-slate-200">
                 👤 {t('members.role_treasurer', 'Thủ quỹ')}: <strong>{branding.treasurerName}</strong>
                 {branding.treasurerPhone && (
-                  <span className="opacity-90">• 📞 {branding.treasurerPhone}</span>
+                  <span className="text-slate-500">• 📞 {branding.treasurerPhone}</span>
                 )}
               </span>
             )}
-            <span className="text-[11px] text-blue-200/90">{t('portal.treasurer_question', 'Bạn là Thủ quỹ / Ban quản lý sổ sách?')}</span>
           </div>
-          <button
-            id="switch-to-admin-mode-btn"
-            onClick={onSwitchToAdmin}
-            className="inline-flex items-center gap-1.5 text-white font-bold underline hover:text-blue-100 transition-colors shrink-0 cursor-pointer text-xs"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>{t('nav.switch_to_admin', 'Chuyển sang giao diện Quản trị (Admin)')}</span>
-          </button>
         </div>
       </div>
 

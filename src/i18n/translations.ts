@@ -25,15 +25,13 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
 
   // === 1. Menu Điều Hướng & Tiêu Đề Chung (nav.* / header) ===
   "nav.overview": "Tổng quan",
-  "nav.transactions": "Sổ thu chi",
-  "nav.campaigns": "Đợt đóng quỹ",
+  "nav.transactions": "Giao dịch",
+  "nav.campaigns": "Đóng quỹ",
   "nav.members": "Thành viên",
   "nav.reports": "Báo cáo & sao kê",
   "nav.settings": "Cài đặt",
   "nav.switch_to_member": "Chế độ Thành Viên",
   "nav.switch_to_admin": "Chế độ Quản Trị",
-  "nav.member_badge": "THÀNH VIÊN",
-  "nav.admin_badge": "QUẢN TRỊ VIÊN",
   "nav.cloud_sync_connected": "Đã kết nối Firestore",
   "nav.cloud_sync_syncing": "Đang đồng bộ...",
   "nav.cloud_sync_error": "Mất kết nối Cloud",
@@ -71,6 +69,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "nav.create_vietqr_tooltip": "Tạo mã VietQR thu tiền",
   "nav.share_link_tooltip": "Chia sẻ liên kết sổ quỹ cho thành viên",
   "nav.admin_login_tooltip": "Đăng nhập quyền Quản trị (Admin) - Yêu cầu nhập mật khẩu",
+  "nav.admin_login_btn": "Đăng nhập Admin",
   "nav.member_view_tooltip": "Chuyển sang chế độ Thành viên",
   "nav.income_tooltip": "Ghi nhận khoản thu tiền (+)",
   "nav.expense_tooltip": "Ghi nhận khoản chi tiêu (-)",
@@ -107,7 +106,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "overview.active_campaigns_subtitle": "Tiến độ nộp hội phí và các khoản đóng góp theo kế hoạch",
   "overview.view_all_campaigns": "Xem tất cả đợt thu",
   "overview.cashflow_chart_title": "Dòng tiền thu & chi 6 tháng gần nhất",
-  "overview.cashflow_chart_desc": "So sánh lưu lượng tiền mặt vào và ra",
+  "overview.cashflow_chart_desc": "So sánh lưu lượng tiền vào và ra",
   "overview.expense_structure_title": "Cơ Cấu Chi Tiêu Theo Danh Mục",
   "overview.no_expense_data": "Chưa có dữ liệu chi tiêu trong kỳ",
   "overview.no_campaigns_running": "Hiện không có đợt thu quỹ nào đang mở",
@@ -146,11 +145,11 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "overview.paid_count": "Đã nộp",
   "overview.no_campaigns": "Không có đợt thu quỹ nào đang mở",
   "overview.recent_transactions": "Giao Dịch Thu Chi Mới Nhất",
-  "overview.open_ledger": "Mở sổ cái",
+  "overview.open_ledger": "Xem tất cả",
   "overview.no_transactions": "Chưa có giao dịch nào",
 
   // === 4. Sổ Thu Chi & Giao Dịch (transactions.*) ===
-  "transactions.title": "Sổ Cái Thu Chi Minh Bạch",
+  "transactions.title": "Lịch sử giao dịch",
   "transactions.subtitle": "Quản lý và tra cứu toàn bộ dòng tiền vào/ra chi tiết theo thời gian thực",
   "transactions.search_placeholder": "Tìm theo lý do chi tiêu, người nộp/nhận, danh mục...",
   "transactions.filter_all": "Tất Cả",
@@ -224,10 +223,10 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "campaigns.amount_per_member_label": "Mức đóng / người:",
   "campaigns.total_expected_label": "Tổng thu dự kiến:",
   "campaigns.collected_label": "Đã thu vào:",
-  "campaigns.progress_label": "Tiến độ hoàn thành:",
+  "campaigns.progress_label": "Tiến độ hoàn thành",
   "campaigns.member_list_title": "Danh Sách Thành Viên & Tình Trạng Đóng Quỹ",
   "campaigns.btn_quick_qr": "Mã QR Nộp",
-  "campaigns.copy_zalo": "Sao Chép Báo Cáo Zalo",
+  "campaigns.copy_zalo": "Sao Chép Báo Cáo",
   "campaigns.pay_in_full_btn": "Nộp đủ",
   "campaigns.paid_label": "Đã nộp",
   "campaigns.unpaid_label": "Chưa nộp",
@@ -267,7 +266,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "campaigns.unmark_paid_btn": "Đánh dấu chưa nộp",
   "campaigns.confirm_unmark_paid": "Hủy trạng thái đã nộp của thành viên này?",
   "campaigns.copy_options_title": "Tùy chọn sao chép",
-  "campaigns.copy_full_report": "Báo cáo Zalo đầy đủ",
+  "campaigns.copy_full_report": "Báo cáo đầy đủ",
   "campaigns.copy_full_report_desc": "Gồm tiến độ, đã nộp & chưa nộp",
   "campaigns.copy_reminder_list": "Danh sách nhắc nộp",
   "campaigns.copy_reminder_list_desc": "Chỉ người chưa hoàn thành",
@@ -300,7 +299,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "campaigns.expand_tooltip": "Mở rộng xem chi tiết từng người",
   "campaigns.sort_tooltip": "Sắp xếp danh sách đóng quỹ",
   "campaigns.qr_btn_tooltip": "Tạo mã QR chuyển khoản nhanh",
-  "campaigns.copy_menu_tooltip": "Sao chép danh sách, báo cáo Zalo hoặc cú pháp chuyển khoản",
+  "campaigns.copy_menu_tooltip": "Sao chép danh sách, báo cáo hoặc cú pháp chuyển khoản",
   "campaigns.record_custom_pay_tooltip": "Ghi nhận nộp quỹ (chọn ngày & số tiền tùy chỉnh)",
   "campaigns.scan_qr_tooltip": "Quét mã VietQR để đóng quỹ",
 
@@ -317,7 +316,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "modal_pay.quick_full_btn": "Nộp đủ 100%",
 
   // === 8. Quản Lý Thành Viên (members.*) ===
-  "members.title": "Danh Sách Thành Viên & Quản Lý Hội Phí",
+  "members.title": "Danh Sách Thành Viên",
   "members.subtitle": "Quản lý thông tin liên lạc, chức danh và theo dõi tổng thể lịch sử nộp quỹ của từng người",
   "members.btn_add_member": "+ Thêm Thành Viên Mới",
   "members.search_placeholder": "Tìm theo họ tên, số điện thoại, vai trò...",
@@ -341,7 +340,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "members.modal_subtitle": "Thông tin thành viên sẽ được lưu trữ và đồng bộ an toàn",
   "members.name_label": "Họ và tên thành viên",
   "members.name_placeholder": "Ví dụ: Nguyễn Văn An, Trần Thị Bình...",
-  "members.phone_label": "Số điện thoại / Zalo",
+  "members.phone_label": "Số điện thoại",
   "members.phone_placeholder": "0912 345 678",
   "members.role_label": "Chức vụ / Vai trò trong nhóm",
   "members.role_leader": "Trưởng Nhóm / Lớp Trưởng",
@@ -362,7 +361,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "members.status_debt": "Còn nợ",
 
   // === 9. Báo Cáo, Sao Kê & In Ấn (reports.* / print.*) ===
-  "reports.title": "Báo Cáo Tài Chính & Sao Kê Thu Chi",
+  "reports.title": "Báo Cáo & Sao Kê Thu Chi",
   "reports.subtitle": "Bảng tổng hợp thu chi minh bạch, thống kê dòng tiền và hỗ trợ in ấn mẫu sao kê A4 chuẩn mực",
   "reports.btn_print_a4": "In Mẫu Sao Kê (Khổ A4)",
   "reports.btn_export_excel": "Xuất Bảng Kê (CSV/Excel)",
@@ -496,10 +495,10 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
 
   // === 14. Chia Sẻ & Mẫu Tin Nhắn (share.*) ===
   "share.title": "Chia Sẻ Sổ Quỹ Đến Thành Viên",
-  "share.subtitle": "Gửi liên kết xem công khai hoặc sao chép mẫu tin nhắn gửi vào nhóm Zalo / Messenger",
+  "share.subtitle": "Gửi liên kết xem công khai hoặc sao chép mẫu tin nhắn",
   "share.link_label": "Liên kết xem sổ quỹ trực tuyến:",
   "share.btn_copy_link": "Sao Chép Liên Kết",
-  "share.zalo_template_title": "Mẫu tin nhắn gửi vào nhóm Zalo / Messenger:",
+  "share.zalo_template_title": "Mẫu tin nhắn:",
   "share.btn_copy_zalo": "Sao Chép Mẫu Tin Nhắn",
 
   // === 15. Hộp Thoại, Xác Nhận & Cảnh Báo (dialog.* / toast.*) ===
@@ -587,7 +586,7 @@ export const ALL_DICTIONARY_KEYS: TranslationItem[] = Object.entries(DEFAULT_VI_
   } else if (key.startsWith('campaigns.') || key.startsWith('modal_pay.')) {
     category = 'campaigns';
     categoryName = 'Đợt Đóng Quỹ & Chỉ Tiêu';
-    description = 'Tiến độ thu quỹ theo đợt, danh sách người nộp, ghi nhận nộp tiền và báo cáo Zalo';
+    description = 'Tiến độ thu quỹ theo đợt, danh sách người nộp, ghi nhận nộp tiền và báo cáo';
   } else if (key.startsWith('members.')) {
     category = 'members';
     categoryName = 'Quản Lý Thành Viên';

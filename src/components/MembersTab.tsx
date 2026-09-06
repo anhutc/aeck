@@ -54,7 +54,6 @@ export const MembersTab: React.FC<MembersTabProps> = ({
   isAdmin = true,
   onOpenMemberModal,
   onDeleteMember,
-  onSelectMemberForPortal,
   onOpenQRModal,
   onUpdateParticipantPayment,
 }) => {
@@ -659,109 +658,211 @@ export const MembersTab: React.FC<MembersTabProps> = ({
         </div>
       ) : (
         /* Table View */
-        <div className="overflow-x-auto no-scrollbar sm:custom-scrollbar rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-          <table className="w-full min-w-[720px] text-left text-xs border-collapse">
-            <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200/80 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">{t('members.th_member', 'Thành viên')}</th>
-                <th className="py-3 px-4">{t('members.th_phone', 'Số điện thoại')}</th>
-                <th className="py-3 px-4">{t('members.th_role', 'Vai trò')}</th>
-                <th className="py-3 px-4">{t('members.th_contribution_mode', 'Chế độ đóng')}</th>
-                <th className="py-3 px-4 text-right">{t('members.th_paid', 'Đã đóng')}</th>
-                <th className="py-3 px-4 text-right">{t('members.th_debt', 'Còn thiếu')}</th>
-                <th className="py-3 px-4 text-center">{t('members.th_status', 'Trạng thái')}</th>
-                <th className="py-3 px-4 text-right">{t('members.th_actions', 'Thao tác')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-              {filteredMembers.map((member) => {
-                const roles = getMemberRoles(member);
-                const stats = computeMemberContributionStats(member);
+        <div>
+          {/* Mobile Card List (< md) */}
+          <div className="block md:hidden space-y-3">
+            {filteredMembers.map((member) => {
+              const roles = getMemberRoles(member);
+              const stats = computeMemberContributionStats(member);
 
-                return (
-                  <tr key={member.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
-                          {member.name.slice(0, 1).toUpperCase()}
+              return (
+                <div
+                  key={member.id}
+                  className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                        {member.name.slice(0, 1).toUpperCase()}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm">{member.name}</h4>
+                        <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                          <span className="font-mono">{member.phone || 'Chưa có SĐT'}</span>
+                          {roles.map(r => (
+                            <span key={r} className="px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 text-[10px] font-bold">
+                              {r}
+                            </span>
+                          ))}
                         </div>
-                        <span>{member.name}</span>
                       </div>
-                    </td>
-                    <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">
-                      {member.phone || '---'}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex flex-wrap gap-1">
-                        {roles.map(r => (
-                          <span key={r} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
-                            {r}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                      {member.contributionType === 'yearly' && t('members.mode_yearly_short', 'Theo năm')}
-                      {member.contributionType === 'exempt' && t('members.mode_exempt_short', 'Miễn đóng')}
-                      {(!member.contributionType || member.contributionType === 'campaign') && t('members.mode_campaign_short', 'Theo đợt')}
-                    </td>
-                    <td className="py-3 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400">
-                      {formatVND(stats.totalPaid)}
-                    </td>
-                    <td className="py-3 px-4 text-right font-bold text-rose-600 dark:text-rose-400">
-                      {formatVND(stats.totalRemaining)}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${stats.badgeColor}`}>
-                        {stats.statusText}
+                    </div>
+
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${stats.badgeColor} shrink-0`}>
+                      {stats.statusText}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-xs">
+                    <div>
+                      <span className="text-slate-400 block text-[10px] uppercase font-semibold">Đã đóng</span>
+                      <span className="font-mono font-bold text-emerald-600">
+                        {formatVND(stats.totalPaid)}
                       </span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => setDetailMember(member)}
-                          title="Xem & cập nhật lịch sử đóng quỹ"
-                          className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50 cursor-pointer"
-                        >
-                          <ReceiptText className="w-4 h-4" />
-                        </button>
-                        {isAdmin && (
-                          <>
-                            <button
-                              onClick={() => onOpenMemberModal(member)}
-                              title="Chỉnh sửa thông tin"
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                showConfirm({
-                                  title: t('dialog.confirm_delete_title', 'Xác Nhận Xóa Dữ Liệu'),
-                                  message: `${t('dialog.confirm_delete_member', 'Bạn có chắc chắn muốn xóa thành viên này khỏi danh sách nhóm?')}\n(${member.name})`,
-                                  type: 'danger',
-                                  confirmText: t('dialog.confirm_delete_btn', 'Đồng Ý Xóa'),
-                                  cancelText: t('common.cancel', 'Hủy bỏ'),
-                                  onConfirm: () => {
-                                    onDeleteMember(member.id);
-                                    showToast(t('common.saved_success', 'Đã xóa thành viên thành công!'), 'success');
-                                  },
-                                });
-                              }}
-                              title="Xóa thành viên"
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px] uppercase font-semibold">Còn thiếu</span>
+                      <span className="font-mono font-bold text-rose-600">
+                        {formatVND(stats.totalRemaining)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                    <span className="text-xs text-slate-500">
+                      Chế độ: {member.contributionType === 'yearly' ? 'Theo năm' : member.contributionType === 'exempt' ? 'Miễn đóng' : 'Theo đợt'}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setDetailMember(member)}
+                        title="Xem & cập nhật lịch sử đóng quỹ"
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        <ReceiptText className="w-3.5 h-3.5" />
+                        <span>Sổ quỹ</span>
+                      </button>
+                      {isAdmin && (
+                        <>
+                          <button
+                            onClick={() => onOpenMemberModal(member)}
+                            title="Chỉnh sửa thông tin"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              showConfirm({
+                                title: t('dialog.confirm_delete_title', 'Xác Nhận Xóa Dữ Liệu'),
+                                message: `${t('dialog.confirm_delete_member', 'Bạn có chắc chắn muốn xóa thành viên này khỏi danh sách nhóm?')}\n(${member.name})`,
+                                type: 'danger',
+                                confirmText: t('dialog.confirm_delete_btn', 'Đồng Ý Xóa'),
+                                cancelText: t('common.cancel', 'Hủy bỏ'),
+                                onConfirm: () => {
+                                  onDeleteMember(member.id);
+                                  showToast(t('common.saved_success', 'Đã xóa thành viên thành công!'), 'success');
+                                },
+                              });
+                            }}
+                            title="Xóa thành viên"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table (hidden on mobile, block on md+) */}
+          <div className="hidden md:block overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200 bg-white shadow-xs">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200">
+                <tr>
+                  <th className="py-3 px-4">{t('members.th_member', 'Thành viên')}</th>
+                  <th className="py-3 px-4">{t('members.th_phone', 'Số điện thoại')}</th>
+                  <th className="py-3 px-4">{t('members.th_role', 'Vai trò')}</th>
+                  <th className="py-3 px-4">{t('members.th_contribution_mode', 'Chế độ đóng')}</th>
+                  <th className="py-3 px-4 text-right">{t('members.th_paid', 'Đã đóng')}</th>
+                  <th className="py-3 px-4 text-right">{t('members.th_debt', 'Còn thiếu')}</th>
+                  <th className="py-3 px-4 text-center">{t('members.th_status', 'Trạng thái')}</th>
+                  <th className="py-3 px-4 text-right">{t('members.th_actions', 'Thao tác')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredMembers.map((member) => {
+                  const roles = getMemberRoles(member);
+                  const stats = computeMemberContributionStats(member);
+
+                  return (
+                    <tr key={member.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-3 px-4 font-bold text-slate-900">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
+                            {member.name.slice(0, 1).toUpperCase()}
+                          </div>
+                          <span>{member.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-slate-600">
+                        {member.phone || '---'}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex flex-wrap gap-1">
+                          {roles.map(r => (
+                            <span key={r} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700">
+                              {r}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-slate-600">
+                        {member.contributionType === 'yearly' && t('members.mode_yearly_short', 'Theo năm')}
+                        {member.contributionType === 'exempt' && t('members.mode_exempt_short', 'Miễn đóng')}
+                        {(!member.contributionType || member.contributionType === 'campaign') && t('members.mode_campaign_short', 'Theo đợt')}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono font-bold text-emerald-600">
+                        {formatVND(stats.totalPaid)}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono font-bold text-rose-600">
+                        {formatVND(stats.totalRemaining)}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${stats.badgeColor}`}>
+                          {stats.statusText}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => setDetailMember(member)}
+                            title="Xem & cập nhật lịch sử đóng quỹ"
+                            className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 cursor-pointer transition-colors"
+                          >
+                            <ReceiptText className="w-4 h-4" />
+                          </button>
+                          {isAdmin && (
+                            <>
+                              <button
+                                onClick={() => onOpenMemberModal(member)}
+                                title="Chỉnh sửa thông tin"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 cursor-pointer transition-colors"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  showConfirm({
+                                    title: t('dialog.confirm_delete_title', 'Xác Nhận Xóa Dữ Liệu'),
+                                    message: `${t('dialog.confirm_delete_member', 'Bạn có chắc chắn muốn xóa thành viên này khỏi danh sách nhóm?')}\n(${member.name})`,
+                                    type: 'danger',
+                                    confirmText: t('dialog.confirm_delete_btn', 'Đồng Ý Xóa'),
+                                    cancelText: t('common.cancel', 'Hủy bỏ'),
+                                    onConfirm: () => {
+                                      onDeleteMember(member.id);
+                                      showToast(t('common.saved_success', 'Đã xóa thành viên thành công!'), 'success');
+                                    },
+                                  });
+                                }}
+                                title="Xóa thành viên"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 cursor-pointer transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

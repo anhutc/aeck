@@ -11,7 +11,8 @@ import {
   GroupNotice,
   AppBranding,
   ResetCustomOptions,
-  MemberViewPermissions
+  MemberViewPermissions,
+  AuthRole
 } from './types';
 import {
   INITIAL_BANK_SETTINGS,
@@ -21,11 +22,13 @@ import {
   INITIAL_MEMBERS,
   INITIAL_TRANSACTIONS,
   DEFAULT_ADMIN_PASSWORD,
+  DEFAULT_MEMBER_PASSWORD,
   INITIAL_GROUP_NOTICE,
   INITIAL_BRANDING,
   INITIAL_VIEW_PERMISSIONS
 } from './data/initialData';
 import { Navbar } from './components/Navbar';
+import { LoginScreen } from './components/LoginScreen';
 import { OverviewTab } from './components/OverviewTab';
 import { TransactionsTab } from './components/TransactionsTab';
 import { CampaignsTab } from './components/CampaignsTab';
@@ -56,6 +59,8 @@ const STORAGE_KEYS = {
   NOTICE: 'quanlyquy_notice_v2',
   BRANDING: 'quanlyquy_branding_v2',
   ADMIN_PASS: 'quanlyquy_admin_pass_v2',
+  MEMBER_PASS: 'quanlyquy_member_pass_v2',
+  AUTH_ROLE: 'quanlyquy_auth_role_v2',
   VIEW_PERMISSIONS: 'quanlyquy_view_permissions_v2',
 };
 
@@ -73,13 +78,31 @@ function deduplicateById<T extends { id: string }>(items: T[]): T[] {
 export default function App() {
   const { showToast, showConfirm } = useFeedback();
 
-  // Always default to Member View on initial load for high privacy & security
-  const [isMemberView, setIsMemberView] = useState<boolean>(true);
+  // User Authentication State (dual-password: 'member' or 'admin')
+  const [currentUserRole, setCurrentUserRole] = useState<AuthRole | null>(() => {
+    const saved = sessionStorage.getItem(STORAGE_KEYS.AUTH_ROLE) || localStorage.getItem(STORAGE_KEYS.AUTH_ROLE);
+    if (saved === 'admin' || saved === 'member') {
+      return saved as AuthRole;
+    }
+    return null;
+  });
+
+  // Always default to Member View on initial load or if role is member
+  const [isMemberView, setIsMemberView] = useState<boolean>(() => {
+    const saved = sessionStorage.getItem(STORAGE_KEYS.AUTH_ROLE) || localStorage.getItem(STORAGE_KEYS.AUTH_ROLE);
+    return saved !== 'admin';
+  });
 
   // Admin Password
   const [adminPassword, setAdminPassword] = useState<string>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.ADMIN_PASS);
     return saved || DEFAULT_ADMIN_PASSWORD;
+  });
+
+  // Member Password
+  const [memberPassword, setMemberPassword] = useState<string>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.MEMBER_PASS);
+    return saved || DEFAULT_MEMBER_PASSWORD;
   });
 
   const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
@@ -208,6 +231,10 @@ export default function App() {
           setAdminPassword(cloudData.adminPassword);
           localStorage.setItem(STORAGE_KEYS.ADMIN_PASS, cloudData.adminPassword);
         }
+        if (cloudData.memberPassword) {
+          setMemberPassword(cloudData.memberPassword);
+          localStorage.setItem(STORAGE_KEYS.MEMBER_PASS, cloudData.memberPassword);
+        }
         setCloudSyncStatus('connected');
       } else if (!exists) {
         // Initial setup for first time ever run on cloud
@@ -222,6 +249,7 @@ export default function App() {
           viewPermissions,
           branding,
           adminPassword,
+          memberPassword,
         }).then(() => {
           setCloudSyncStatus('connected');
         }).catch(() => {
@@ -305,6 +333,10 @@ export default function App() {
     localStorage.setItem(STORAGE_KEYS.ADMIN_PASS, adminPassword);
   }, [adminPassword]);
 
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.MEMBER_PASS, memberPassword);
+  }, [memberPassword]);
+
   // Consolidated Debounced Auto-Sync to Cloud Firestore (Atomic Full State)
   useEffect(() => {
     if (!hasInitializedCloud.current || isSyncingFromCloud.current) return;
@@ -322,6 +354,7 @@ export default function App() {
         viewPermissions,
         branding,
         adminPassword,
+        memberPassword,
       })
         .then(() => {
           setCloudSyncStatus('connected');
@@ -333,16 +366,26 @@ export default function App() {
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [funds, transactions, categories, campaigns, members, bankSettings, groupNotice, viewPermissions, branding, adminPassword]);
+  }, [funds, transactions, categories, campaigns, members, bankSettings, groupNotice, viewPermissions, branding, adminPassword, memberPassword]);
 
-  // Admin authentication: ALWAYS prompts for password whenever accessing Admin mode
+  // Admin authentication
   const handleRequestAdminAccess = () => {
     setIsAdminAuthModalOpen(true);
   };
 
-  const handleAdminAuthSuccess = () => {
-    setIsMemberView(false);
-    updateUrlParam(false);
+  const handleAdminAuthSuccess = (role: AuthRole = 'admin') => {
+    setCurrentUserRole(role);
+    sessionStorage.setItem(STORAGE_KEYS.AUTH_ROLE, role);
+    localStorage.setItem(STORAGE_KEYS.AUTH_ROLE, role);
+    if (role === 'admin') {
+      setIsMemberView(false);
+      updateUrlParam(false);
+      showToast('Đã đăng nhập thành công quyền Quản trị viên!', 'success');
+    } else {
+      setIsMemberView(true);
+      updateUrlParam(true);
+      showToast('Đã đăng nhập thành công quyền Thành viên!', 'info');
+    }
   };
 
   const handleSwitchToMemberView = () => {
@@ -351,11 +394,30 @@ export default function App() {
   };
 
   const handleToggleViewMode = () => {
-    if (isMemberView) {
-      handleRequestAdminAccess();
+    if (currentUserRole === 'admin') {
+      const nextView = !isMemberView;
+      setIsMemberView(nextView);
+      updateUrlParam(nextView);
     } else {
-      handleSwitchToMemberView();
+      setIsAdminAuthModalOpen(true);
     }
+  };
+
+  const handleLogout = () => {
+    showConfirm({
+      title: 'Đăng Xuất',
+      message: 'Bạn có chắc chắn muốn đăng xuất khỏi phiên làm việc hiện tại không?',
+      type: 'warning',
+      confirmText: 'Đăng xuất',
+      cancelText: 'Hủy bỏ',
+      onConfirm: () => {
+        setCurrentUserRole(null);
+        sessionStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
+        localStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
+        setIsMemberView(true);
+        showToast('Đã đăng xuất!', 'info');
+      },
+    });
   };
 
   const updateUrlParam = (memberMode: boolean) => {
@@ -713,7 +775,7 @@ export default function App() {
   // Full Export & Import JSON
   const handleExportAllData = () => {
     const fullBackup = {
-      version: '2.2',
+      version: '2.3',
       exportedAt: new Date().toISOString(),
       funds,
       transactions,
@@ -722,7 +784,10 @@ export default function App() {
       members,
       bankSettings,
       groupNotice,
+      viewPermissions,
       branding,
+      adminPassword,
+      memberPassword,
     };
 
     const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: 'application/json' });
@@ -735,15 +800,23 @@ export default function App() {
   };
 
   const handleImportAllData = (jsonString: string) => {
-    const data = JSON.parse(jsonString);
-    if (data.funds) setFunds(data.funds);
-    if (data.transactions) setTransactions(data.transactions);
-    if (data.categories) setCategories(data.categories);
-    if (data.campaigns) setCampaigns(data.campaigns);
-    if (data.members) setMembers(data.members);
-    if (data.bankSettings) setBankSettings(data.bankSettings);
-    if (data.groupNotice) setGroupNotice(data.groupNotice);
-    if (data.branding) setBranding(data.branding);
+    try {
+      const data = JSON.parse(jsonString);
+      if (data.funds) setFunds(data.funds);
+      if (data.transactions) setTransactions(data.transactions);
+      if (data.categories) setCategories(data.categories);
+      if (data.campaigns) setCampaigns(data.campaigns);
+      if (data.members) setMembers(data.members);
+      if (data.bankSettings) setBankSettings(data.bankSettings);
+      if (data.groupNotice) setGroupNotice(data.groupNotice);
+      if (data.branding) setBranding(data.branding);
+      if (data.viewPermissions) setViewPermissions(data.viewPermissions);
+      if (data.adminPassword) setAdminPassword(data.adminPassword);
+      if (data.memberPassword) setMemberPassword(data.memberPassword);
+      showToast('Đã nhập dữ liệu sao lưu thành công!', 'success');
+    } catch (err) {
+      showToast('Tệp dữ liệu không hợp lệ!', 'error');
+    }
   };
 
   // Quick Open Modal helpers (handles create & edit)
@@ -796,6 +869,7 @@ export default function App() {
         viewPermissions,
         branding,
         adminPassword,
+        memberPassword,
       });
       const now = new Date();
       setLastCloudSyncTime(now.toLocaleTimeString('vi-VN') + ' ' + now.toLocaleDateString('vi-VN'));
@@ -864,6 +938,10 @@ export default function App() {
               setAdminPassword(cloudData.adminPassword);
               localStorage.setItem(STORAGE_KEYS.ADMIN_PASS, cloudData.adminPassword);
             }
+            if (cloudData.memberPassword) {
+              setMemberPassword(cloudData.memberPassword);
+              localStorage.setItem(STORAGE_KEYS.MEMBER_PASS, cloudData.memberPassword);
+            }
 
             const now = new Date();
             setLastCloudSyncTime(now.toLocaleTimeString('vi-VN') + ' ' + now.toLocaleDateString('vi-VN'));
@@ -896,8 +974,21 @@ export default function App() {
   const pendingTransactionsCount = transactions.filter(t => t.status === 'pending').length;
   const currentFund = funds[0] || { id: 'fund_general', name: 'Quỹ Chung', balance: 0 };
 
+  if (!currentUserRole) {
+    return (
+      <LoginScreen
+        branding={branding}
+        adminPassword={adminPassword}
+        memberPassword={memberPassword}
+        onLoginSuccess={(role) => {
+          handleAdminAuthSuccess(role);
+        }}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors selection:bg-blue-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Header & Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -908,10 +999,11 @@ export default function App() {
         onOpenQRModal={() => handleOpenQRModal()}
         onOpenShareModal={() => setIsShareModalOpen(true)}
         isMemberView={isMemberView}
-        onToggleViewMode={handleToggleViewMode}
+        onRequestAdminLogin={handleRequestAdminAccess}
         pendingTransactionsCount={pendingTransactionsCount}
         cloudSyncStatus={cloudSyncStatus}
         onForceSyncToCloud={handleForceSyncToCloud}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Area */}
@@ -1023,6 +1115,8 @@ export default function App() {
                 cloudLatency={cloudLatency}
                 adminPassword={adminPassword}
                 onUpdateAdminPassword={setAdminPassword}
+                memberPassword={memberPassword}
+                onUpdateMemberPassword={setMemberPassword}
                 groupNotice={groupNotice}
                 onUpdateGroupNotice={setGroupNotice}
                 branding={branding}
@@ -1046,8 +1140,12 @@ export default function App() {
       <AdminAuthModal
         isOpen={isAdminAuthModalOpen}
         onClose={() => setIsAdminAuthModalOpen(false)}
+        adminPassword={adminPassword}
+        memberPassword={memberPassword}
         correctPassword={adminPassword}
         savedAdminPin={adminPassword}
+        mode={currentUserRole === 'member' ? 'upgrade_admin' : 'login'}
+        appTitle={branding?.appTitle}
         onSuccess={handleAdminAuthSuccess}
       />
 

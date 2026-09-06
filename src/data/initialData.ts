@@ -48,6 +48,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [];
 export const INITIAL_CAMPAIGNS: ContributionCampaign[] = [];
 
 export const DEFAULT_ADMIN_PASSWORD = 'admin';
+export const DEFAULT_MEMBER_PASSWORD = '123';
 
 export const INITIAL_BANK_SETTINGS: BankSettings = {
   bankId: 'MB',
