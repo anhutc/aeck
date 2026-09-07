@@ -42,7 +42,6 @@ import { MemberModal } from './components/modals/MemberModal';
 import { VietQRModal } from './components/modals/VietQRModal';
 import { PrintStatementModal } from './components/modals/PrintStatementModal';
 import { ShareModal } from './components/modals/ShareModal';
-import { AdminAuthModal } from './components/modals/AdminAuthModal';
 import { ResetFundModal } from './components/modals/ResetFundModal';
 import { NoticeEditModal } from './components/modals/NoticeEditModal';
 import { MemberPortalView } from './components/MemberPortalView';
@@ -105,9 +104,6 @@ export default function App() {
     return saved || DEFAULT_MEMBER_PASSWORD;
   });
 
-  const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
-  const [isResetFundModalOpen, setIsResetFundModalOpen] = useState(false);
-
   // App Title / Branding Personalization State
   const [branding, setBranding] = useState<AppBranding>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.BRANDING);
@@ -159,17 +155,6 @@ export default function App() {
   });
 
   const [isNoticeEditModalOpen, setIsNoticeEditModalOpen] = useState(false);
-
-  // Check URL parameters on mount: if user navigated with ?view=admin, prompt password modal!
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const wantsAdmin = params.get('view') === 'admin' || params.get('mode') === 'admin';
-      if (wantsAdmin) {
-        setIsAdminAuthModalOpen(true);
-      }
-    }
-  }, []);
 
   // Cloud connection & synchronization status
   const [cloudSyncStatus, setCloudSyncStatus] = useState<'connected' | 'connecting' | 'error' | 'syncing'>('connecting');
@@ -368,11 +353,6 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [funds, transactions, categories, campaigns, members, bankSettings, groupNotice, viewPermissions, branding, adminPassword, memberPassword]);
 
-  // Admin authentication
-  const handleRequestAdminAccess = () => {
-    setIsAdminAuthModalOpen(true);
-  };
-
   const handleAdminAuthSuccess = (role: AuthRole = 'admin') => {
     setCurrentUserRole(role);
     sessionStorage.setItem(STORAGE_KEYS.AUTH_ROLE, role);
@@ -391,16 +371,6 @@ export default function App() {
   const handleSwitchToMemberView = () => {
     setIsMemberView(true);
     updateUrlParam(true);
-  };
-
-  const handleToggleViewMode = () => {
-    if (currentUserRole === 'admin') {
-      const nextView = !isMemberView;
-      setIsMemberView(nextView);
-      updateUrlParam(nextView);
-    } else {
-      setIsAdminAuthModalOpen(true);
-    }
   };
 
   const handleLogout = () => {
@@ -999,7 +969,6 @@ export default function App() {
         onOpenQRModal={() => handleOpenQRModal()}
         onOpenShareModal={() => setIsShareModalOpen(true)}
         isMemberView={isMemberView}
-        onRequestAdminLogin={handleRequestAdminAccess}
         pendingTransactionsCount={pendingTransactionsCount}
         cloudSyncStatus={cloudSyncStatus}
         onForceSyncToCloud={handleForceSyncToCloud}
@@ -1021,7 +990,6 @@ export default function App() {
             viewPermissions={viewPermissions}
             onOpenQRModal={handleOpenQRModal}
             onOpenPrintModal={handleOpenPrintModal}
-            onSwitchToAdmin={handleRequestAdminAccess}
           />
         ) : (
           <>
@@ -1037,7 +1005,6 @@ export default function App() {
                 onOpenTransactionModal={(type, tx) => handleOpenTransactionModal(type, tx)}
                 onOpenQRModal={handleOpenQRModal}
                 onOpenShareModal={() => setIsShareModalOpen(true)}
-                onOpenResetFundModal={() => setIsResetFundModalOpen(true)}
                 onOpenPrintModal={() => handleOpenPrintModal()}
                 setActiveTab={setActiveTab}
               />
@@ -1106,7 +1073,6 @@ export default function App() {
                 onDeleteCategory={handleDeleteCategory}
                 onExportAllData={handleExportAllData}
                 onImportAllData={handleImportAllData}
-                onResetData={() => setIsResetFundModalOpen(true)}
                 onForceSyncToCloud={handleForceSyncToCloud}
                 onForcePullFromCloud={handleForcePullFromCloud}
                 onTestCloudConnection={handleTestCloudConnection}
@@ -1137,24 +1103,8 @@ export default function App() {
         onSaveNotice={setGroupNotice}
       />
 
-      <AdminAuthModal
-        isOpen={isAdminAuthModalOpen}
-        onClose={() => setIsAdminAuthModalOpen(false)}
-        adminPassword={adminPassword}
-        memberPassword={memberPassword}
-        correctPassword={adminPassword}
-        savedAdminPin={adminPassword}
-        mode={currentUserRole === 'member' ? 'upgrade_admin' : 'login'}
-        appTitle={branding?.appTitle}
-        onSuccess={handleAdminAuthSuccess}
-      />
-
       <ResetFundModal
-        isOpen={isResetFundModalOpen}
-        onClose={() => setIsResetFundModalOpen(false)}
         currentBalance={currentFund.balance}
-        onResetBalanceToZero={handleResetBalanceToZero}
-        onResetAllDataForNewPeriod={handleResetAllDataForNewPeriod}
         onRestoreDemoData={handleRestoreDemoData}
         onResetCustomOptions={handleResetCustomOptions}
       />
