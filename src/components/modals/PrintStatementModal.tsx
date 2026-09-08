@@ -399,13 +399,9 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                   {t('print.preview_title', 'Bản xem trước sao kê & báo cáo quỹ')}
                 </h2>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  {totalPages} {totalPages === 1 ? 'trang' : 'trang (có tiêu đề riêng)'}
+                  {totalPages} {totalPages === 1 ? 'trang' : 'trang'}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 hidden sm:flex items-center gap-1 mt-0.5">
-                <Info className="w-3 h-3 text-slate-400" />
-                <span>Tiêu đề, chữ ký và ẩn/hiện được quản lý tập trung trong tab Cài đặt</span>
-              </p>
             </div>
           </div>
 
