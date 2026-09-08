@@ -10,7 +10,6 @@ import {
   TransactionType,
   GroupNotice,
   AppBranding,
-  ResetCustomOptions,
   MemberViewPermissions,
   AuthRole
 } from './types';
@@ -42,7 +41,6 @@ import { MemberModal } from './components/modals/MemberModal';
 import { VietQRModal } from './components/modals/VietQRModal';
 import { PrintStatementModal } from './components/modals/PrintStatementModal';
 import { ShareModal } from './components/modals/ShareModal';
-import { ResetFundModal } from './components/modals/ResetFundModal';
 import { NoticeEditModal } from './components/modals/NoticeEditModal';
 import { MemberPortalView } from './components/MemberPortalView';
 import { subscribeToCloudState, saveCloudState, fetchCloudStateOnce, testCloudConnection, CloudConnectionResult, CLOUD_CONFIG_INFO } from './lib/cloudStore';
@@ -78,19 +76,11 @@ export default function App() {
   const { showToast, showConfirm } = useFeedback();
 
   // User Authentication State (dual-password: 'member' or 'admin')
-  const [currentUserRole, setCurrentUserRole] = useState<AuthRole | null>(() => {
-    const saved = sessionStorage.getItem(STORAGE_KEYS.AUTH_ROLE) || localStorage.getItem(STORAGE_KEYS.AUTH_ROLE);
-    if (saved === 'admin' || saved === 'member') {
-      return saved as AuthRole;
-    }
-    return null;
-  });
+  // Session is not saved across browser reloads, so refreshing the page always prompts for password
+  const [currentUserRole, setCurrentUserRole] = useState<AuthRole | null>(null);
 
-  // Always default to Member View on initial load or if role is member
-  const [isMemberView, setIsMemberView] = useState<boolean>(() => {
-    const saved = sessionStorage.getItem(STORAGE_KEYS.AUTH_ROLE) || localStorage.getItem(STORAGE_KEYS.AUTH_ROLE);
-    return saved !== 'admin';
-  });
+  // Default to Member View on initial load or if role is member
+  const [isMemberView, setIsMemberView] = useState<boolean>(true);
 
   // Admin Password
   const [adminPassword, setAdminPassword] = useState<string>(() => {
@@ -116,7 +106,16 @@ export default function App() {
   // Core Data States with LocalStorage Initialization
   const [funds, setFunds] = useState<Fund[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.FUNDS);
-    return saved ? deduplicateById(JSON.parse(saved)) : INITIAL_FUNDS;
+    const parsed: Fund[] = saved ? deduplicateById(JSON.parse(saved)) : INITIAL_FUNDS;
+    const savedBranding = localStorage.getItem(STORAGE_KEYS.BRANDING);
+    const parsedBranding: AppBranding = savedBranding ? JSON.parse(savedBranding) : INITIAL_BRANDING;
+    const appName = parsedBranding?.appTitle?.trim() || 'AE Cây Khế';
+    return parsed.map((f, idx) => {
+      if (idx === 0 && (f.name === 'Quỹ Hoạt Động' || f.name === 'Quỹ Chung' || !f.name)) {
+        return { ...f, name: appName };
+      }
+      return f;
+    });
   });
 
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
@@ -172,7 +171,13 @@ export default function App() {
 
       if (exists && cloudData) {
         if (cloudData.funds) {
-          const cleanFunds = deduplicateById(cloudData.funds);
+          const appName = cloudData.branding?.appTitle?.trim() || branding?.appTitle?.trim() || 'AE Cây Khế';
+          const cleanFunds = deduplicateById(cloudData.funds).map((f, idx) => {
+            if (idx === 0 && (f.name === 'Quỹ Hoạt Động' || f.name === 'Quỹ Chung' || !f.name)) {
+              return { ...f, name: appName };
+            }
+            return f;
+          });
           setFunds(cleanFunds);
           localStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(cleanFunds));
         }
@@ -355,8 +360,6 @@ export default function App() {
 
   const handleAdminAuthSuccess = (role: AuthRole = 'admin') => {
     setCurrentUserRole(role);
-    sessionStorage.setItem(STORAGE_KEYS.AUTH_ROLE, role);
-    localStorage.setItem(STORAGE_KEYS.AUTH_ROLE, role);
     if (role === 'admin') {
       setIsMemberView(false);
       updateUrlParam(false);
@@ -644,104 +647,6 @@ export default function App() {
     setCategories(prev => prev.filter(c => c.id !== id));
   };
 
-  // Reset Operations
-  const handleResetBalanceToZero = (reason: string, initialBalance: number = 0) => {
-    setFunds(prev =>
-      prev.map(f => ({
-        ...f,
-        balance: f.id === 'fund_general' ? initialBalance : 0,
-      }))
-    );
-
-    const uniqueSuffix = Math.random().toString(36).substring(2, 8);
-    const resetTx: Transaction = {
-      id: `tx_reset_${Date.now()}_${uniqueSuffix}`,
-      type: 'expense',
-      fundId: 'fund_general',
-      amount: 0,
-      categoryId: 'cat_exp_other',
-      date: new Date().toISOString().split('T')[0],
-      description: `Khởi tạo số dư ban đầu: ${reason}`,
-      status: 'completed',
-      createdAt: new Date().toISOString(),
-    };
-    setTransactions([resetTx]);
-  };
-
-  const handleResetAllDataForNewPeriod = (periodName: string, initialBalance: number = 0) => {
-    setFunds(prev =>
-      prev.map(f => ({
-        ...f,
-        balance: f.id === 'fund_general' ? initialBalance : 0,
-      }))
-    );
-
-    const uniqueSuffix = Math.random().toString(36).substring(2, 8);
-    const startTx: Transaction = {
-      id: `tx_new_period_${Date.now()}_${uniqueSuffix}`,
-      type: initialBalance > 0 ? 'income' : 'expense',
-      fundId: 'fund_general',
-      amount: initialBalance,
-      categoryId: initialBalance > 0 ? 'cat_inc_other' : 'cat_exp_other',
-      date: new Date().toISOString().split('T')[0],
-      description: `Bắt đầu kỳ hoạt động mới (${periodName})`,
-      status: 'completed',
-      createdAt: new Date().toISOString(),
-    };
-
-    setTransactions(initialBalance > 0 ? [startTx] : []);
-
-    // Reset campaign payments for new period
-    setCampaigns(prev =>
-      prev.map(camp => ({
-        ...camp,
-        status: 'closed',
-      }))
-    );
-  };
-
-  const handleRestoreDemoData = () => {
-    setFunds(INITIAL_FUNDS);
-    setTransactions(INITIAL_TRANSACTIONS);
-    setCampaigns(INITIAL_CAMPAIGNS);
-    setCategories(INITIAL_CATEGORIES);
-    setMembers(INITIAL_MEMBERS);
-    setBankSettings(INITIAL_BANK_SETTINGS);
-    setGroupNotice(INITIAL_GROUP_NOTICE);
-    setBranding(INITIAL_BRANDING);
-  };
-
-  // Granular Reset per user choice
-  const handleResetCustomOptions = (options: ResetCustomOptions) => {
-    if (options.resetBalanceOnly) {
-      setFunds(prev =>
-        prev.map(f => ({
-          ...f,
-          balance: 0,
-        }))
-      );
-    }
-    if (options.clearAllTransactions) {
-      setTransactions([]);
-    }
-    if (options.resetCampaigns) {
-      setCampaigns([]);
-    }
-    if (options.resetMembers) {
-      setMembers(INITIAL_MEMBERS);
-    }
-    if (options.resetCategories) {
-      setCategories(INITIAL_CATEGORIES);
-    }
-    if (options.resetNotice) {
-      setGroupNotice(INITIAL_GROUP_NOTICE);
-    }
-    if (options.resetBankAndBranding) {
-      setBankSettings(INITIAL_BANK_SETTINGS);
-      setBranding(INITIAL_BRANDING);
-    }
-  };
-
   // Full Export & Import JSON
   const handleExportAllData = () => {
     const fullBackup = {
@@ -864,7 +769,13 @@ export default function App() {
           const cloudData = await fetchCloudStateOnce();
           if (cloudData) {
             if (cloudData.funds) {
-              const cleanFunds = deduplicateById(cloudData.funds);
+              const appName = cloudData.branding?.appTitle?.trim() || branding?.appTitle?.trim() || 'AE Cây Khế';
+              const cleanFunds = deduplicateById(cloudData.funds).map((f, idx) => {
+                if (idx === 0 && (f.name === 'Quỹ Hoạt Động' || f.name === 'Quỹ Chung' || !f.name)) {
+                  return { ...f, name: appName };
+                }
+                return f;
+              });
               setFunds(cleanFunds);
               localStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(cleanFunds));
             }
@@ -941,8 +852,32 @@ export default function App() {
     return result;
   };
 
+  const handleUpdateBranding = (newBranding: AppBranding) => {
+    setBranding(newBranding);
+    localStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(newBranding));
+    const newAppName = newBranding?.appTitle?.trim() || 'AE Cây Khế';
+    setFunds(prev => {
+      if (prev.length === 0) return prev;
+      const updated = [{ ...prev[0], name: newAppName }, ...prev.slice(1)];
+      localStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Auto-migrate any legacy fund names in local state to match appTitle
+  useEffect(() => {
+    const targetName = branding?.appTitle?.trim() || 'AE Cây Khế';
+    if (funds.length > 0 && funds[0].name !== targetName && (funds[0].name === 'Quỹ Hoạt Động' || funds[0].name === 'Quỹ Chung' || !funds[0].name)) {
+      setFunds(prev => {
+        if (prev.length === 0) return prev;
+        const updated = [{ ...prev[0], name: targetName }, ...prev.slice(1)];
+        localStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(updated));
+        return updated;
+      });
+    }
+  }, [branding?.appTitle, funds]);
+
   const pendingTransactionsCount = transactions.filter(t => t.status === 'pending').length;
-  const currentFund = funds[0] || { id: 'fund_general', name: 'Quỹ Chung', balance: 0 };
 
   if (!currentUserRole) {
     return (
@@ -999,12 +934,8 @@ export default function App() {
                 transactions={transactions}
                 categories={categories}
                 campaigns={campaigns}
-                members={members}
-                bankSettings={bankSettings}
+                branding={branding}
                 isAdmin={true}
-                onOpenTransactionModal={(type, tx) => handleOpenTransactionModal(type, tx)}
-                onOpenQRModal={handleOpenQRModal}
-                onOpenShareModal={() => setIsShareModalOpen(true)}
                 onOpenPrintModal={() => handleOpenPrintModal()}
                 setActiveTab={setActiveTab}
               />
@@ -1016,6 +947,7 @@ export default function App() {
                 funds={funds}
                 categories={categories}
                 members={members}
+                branding={branding}
                 onOpenTransactionModal={(type, tx) => handleOpenTransactionModal(type, tx)}
                 onDeleteTransaction={handleDeleteTransaction}
                 onOpenPrintModal={handleOpenPrintModal}
@@ -1059,6 +991,7 @@ export default function App() {
                 transactions={transactions}
                 funds={funds}
                 categories={categories}
+                branding={branding}
                 onOpenPrintModal={() => handleOpenPrintModal()}
               />
             )}
@@ -1086,7 +1019,7 @@ export default function App() {
                 groupNotice={groupNotice}
                 onUpdateGroupNotice={setGroupNotice}
                 branding={branding}
-                onUpdateBranding={setBranding}
+                onUpdateBranding={handleUpdateBranding}
                 viewPermissions={viewPermissions}
                 onUpdateViewPermissions={setViewPermissions}
               />
@@ -1103,12 +1036,6 @@ export default function App() {
         onSaveNotice={setGroupNotice}
       />
 
-      <ResetFundModal
-        currentBalance={currentFund.balance}
-        onRestoreDemoData={handleRestoreDemoData}
-        onResetCustomOptions={handleResetCustomOptions}
-      />
-
       <TransactionModal
         isOpen={isTransactionModalOpen}
         onClose={() => setIsTransactionModalOpen(false)}
@@ -1117,6 +1044,7 @@ export default function App() {
         categories={categories}
         editingTransaction={editingTransaction}
         initialType={txModalType}
+        branding={branding}
       />
 
       <CampaignModal
@@ -1152,7 +1080,6 @@ export default function App() {
         categories={categories}
         activeFundId={printFundId}
         branding={branding}
-        onUpdateBranding={setBranding}
       />
 
       <ShareModal

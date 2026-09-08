@@ -6,6 +6,8 @@ import {
   ArrowUpRight,
   Plus,
   FileDown,
+  FileSpreadsheet,
+  ChevronDown,
   Printer,
   Trash2,
   Edit2,
@@ -16,8 +18,8 @@ import {
   ArrowUp,
   ArrowDown
 } from 'lucide-react';
-import { Category, Fund, Member, Transaction, TransactionType } from '../types';
-import { formatVND, formatDate, exportTransactionsToCSV } from '../utils/formatters';
+import { AppBranding, Category, Fund, Member, Transaction, TransactionType } from '../types';
+import { formatVND, formatDate, exportTransactionsToExcel, exportTransactionsToCSV } from '../utils/formatters';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback } from '../context/FeedbackContext';
 
@@ -26,6 +28,7 @@ interface TransactionsTabProps {
   funds: Fund[];
   categories: Category[];
   members: Member[];
+  branding?: AppBranding;
   isAdmin?: boolean;
   onOpenTransactionModal?: (type?: TransactionType, editingTx?: Transaction) => void;
   onDeleteTransaction?: (id: string) => void;
@@ -36,6 +39,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
   transactions,
   funds,
   categories,
+  branding,
   isAdmin = true,
   onOpenTransactionModal,
   onDeleteTransaction,
@@ -165,8 +169,34 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
     setEndDate('');
   };
 
+  const [isExporting, setIsExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+
+  const fundName = branding?.appTitle?.trim() || funds[0]?.name?.trim() || 'AE Cây Khế';
+
+  const handleExportExcel = async () => {
+    try {
+      setIsExporting(true);
+      setShowExportMenu(false);
+      await exportTransactionsToExcel(filteredTransactions, funds, categories, fundName);
+      showToast('Đã xuất file Excel sao kê (.xlsx) thành công!', 'success');
+    } catch (err) {
+      console.error('Lỗi khi xuất file Excel:', err);
+      showToast('Có lỗi xảy ra khi xuất file Excel', 'error');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleExportCSV = () => {
-    exportTransactionsToCSV(filteredTransactions, funds, categories);
+    try {
+      setShowExportMenu(false);
+      exportTransactionsToCSV(filteredTransactions, funds, categories, fundName);
+      showToast('Đã xuất file CSV thành công!', 'success');
+    } catch (err) {
+      console.error('Lỗi khi xuất file CSV:', err);
+      showToast('Có lỗi xảy ra khi xuất file CSV', 'error');
+    }
   };
 
   return (
@@ -183,14 +213,61 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            id="export-csv-btn"
-            onClick={handleExportCSV}
-            className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <FileDown className="w-4 h-4 text-emerald-600" />
-            <span className="hidden sm:inline">{t('reports.export_excel', 'Xuất CSV')}</span>
-          </button>
+          {/* Export Dropdown Group */}
+          <div className="relative inline-flex rounded-xl shadow-xs">
+            <button
+              id="export-excel-btn"
+              onClick={handleExportExcel}
+              disabled={isExporting}
+              className="px-3 py-2 rounded-l-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              title="Xuất bảng kê chi tiết ra file Excel (.xlsx) chuyên nghiệp có kẻ ô, màu sắc và tính tổng"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>{isExporting ? 'Đang xuất...' : 'Xuất Excel'}</span>
+            </button>
+            <button
+              type="button"
+              id="export-options-toggle-btn"
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              className="px-2 py-2 rounded-r-xl border-t border-r border-b border-l-0 border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-xs transition-colors cursor-pointer"
+              title="Tùy chọn định dạng xuất file (Excel / CSV)"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+
+            {showExportMenu && (
+              <>
+                <div 
+                  className="fixed inset-0 z-20"
+                  onClick={() => setShowExportMenu(false)}
+                />
+                <div className="absolute right-0 top-full mt-1.5 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-1.5 z-30 text-xs">
+                  <button
+                    type="button"
+                    onClick={handleExportExcel}
+                    className="w-full px-3.5 py-2.5 text-left flex items-center gap-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-800 dark:text-slate-200 font-semibold cursor-pointer transition-colors"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <div>
+                      <div className="font-bold text-emerald-700 dark:text-emerald-300">File Excel (.xlsx)</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Kẻ khung, màu sắc, tách cột thu chi</div>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExportCSV}
+                    className="w-full px-3.5 py-2.5 text-left flex items-center gap-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-300 cursor-pointer transition-colors"
+                  >
+                    <FileDown className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                    <div>
+                      <div className="font-bold">File CSV (.csv)</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Văn bản thuần UTF-8, mở nhanh</div>
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
 
           <button
             id="print-statement-btn"

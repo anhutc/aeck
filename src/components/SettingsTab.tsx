@@ -52,7 +52,6 @@ interface SettingsTabProps {
   onDeleteCategory: (id: string) => void;
   onExportAllData: () => void;
   onImportAllData: (jsonData: string) => void;
-  onResetData: () => void;
   onForceSyncToCloud?: () => void;
   onForcePullFromCloud?: () => void;
   onTestCloudConnection?: () => Promise<{ success: boolean; latencyMs: number; error?: string }>;
@@ -99,7 +98,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   onDeleteCategory,
   onExportAllData,
   onImportAllData,
-  onResetData,
   onForceSyncToCloud,
   onForcePullFromCloud,
   onTestCloudConnection,
@@ -162,6 +160,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [statementSignatory3Title, setStatementSignatory3Title] = useState(branding.statementSignatory3Title || 'Trưởng ban duyệt');
   const [statementSignatory3Name, setStatementSignatory3Name] = useState(branding.statementSignatory3Name || 'Đại diện ban quản lý');
   const [statementFooterNote, setStatementFooterNote] = useState(branding.statementFooterNote || 'Báo cáo này được trích xuất tự động từ hệ thống quản lý thu chi minh bạch và có giá trị lưu hành nội bộ.');
+  const [statementShowSummary, setStatementShowSummary] = useState(branding.statementShowSummary !== false);
+  const [statementShowSignatory1, setStatementShowSignatory1] = useState(branding.statementShowSignatory1 !== false);
+  const [statementShowSignatory2, setStatementShowSignatory2] = useState(branding.statementShowSignatory2 !== false);
+  const [statementShowSignatory3, setStatementShowSignatory3] = useState(branding.statementShowSignatory3 !== false);
+  const [statementShowFooterNote, setStatementShowFooterNote] = useState(branding.statementShowFooterNote !== false);
   const [statementSaved, setStatementSaved] = useState(false);
 
   // Sync branding when props change from Cloud Firestore
@@ -182,6 +185,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setStatementSignatory3Title(branding.statementSignatory3Title || 'Trưởng ban duyệt');
       setStatementSignatory3Name(branding.statementSignatory3Name || 'Đại diện ban quản lý');
       setStatementFooterNote(branding.statementFooterNote || 'Báo cáo này được trích xuất tự động từ hệ thống quản lý thu chi minh bạch và có giá trị lưu hành nội bộ.');
+      setStatementShowSummary(branding.statementShowSummary !== false);
+      setStatementShowSignatory1(branding.statementShowSignatory1 !== false);
+      setStatementShowSignatory2(branding.statementShowSignatory2 !== false);
+      setStatementShowSignatory3(branding.statementShowSignatory3 !== false);
+      setStatementShowFooterNote(branding.statementShowFooterNote !== false);
     }
   }, [branding]);
 
@@ -375,6 +383,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       statementSignatory3Title: statementSignatory3Title.trim(),
       statementSignatory3Name: statementSignatory3Name.trim(),
       statementFooterNote: statementFooterNote.trim(),
+      statementShowSummary,
+      statementShowSignatory1,
+      statementShowSignatory2,
+      statementShowSignatory3,
+      statementShowFooterNote,
     });
     setStatementSaved(true);
     setTimeout(() => setStatementSaved(false), 2500);
@@ -403,6 +416,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setStatementSignatory3Title(branding.statementSignatory3Title || 'Trưởng ban duyệt');
       setStatementSignatory3Name(branding.statementSignatory3Name || 'Đại diện ban quản lý');
       setStatementFooterNote(branding.statementFooterNote || 'Báo cáo này được trích xuất tự động từ hệ thống quản lý thu chi minh bạch và có giá trị lưu hành nội bộ.');
+      setStatementShowSummary(branding.statementShowSummary !== false);
+      setStatementShowSignatory1(branding.statementShowSignatory1 !== false);
+      setStatementShowSignatory2(branding.statementShowSignatory2 !== false);
+      setStatementShowSignatory3(branding.statementShowSignatory3 !== false);
+      setStatementShowFooterNote(branding.statementShowFooterNote !== false);
       showToast('Đã hủy thay đổi mẫu in sao kê!', 'info');
     }
   };
@@ -931,81 +949,189 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     />
                   </div>
 
+                  {/* General Component Visibility Toggles */}
+                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2">
+                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block">
+                      Tùy chọn Ẩn / Hiện các phần trên Báo cáo & Bản in:
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setStatementShowSummary(!statementShowSummary)}
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          statementShowSummary 
+                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700' 
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-300 dark:border-slate-700 line-through'
+                        }`}
+                      >
+                        {statementShowSummary ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                        <span>Bảng tổng hợp thu chi (KPI)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setStatementShowFooterNote(!statementShowFooterNote)}
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          statementShowFooterNote 
+                            ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700' 
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-300 dark:border-slate-700 line-through'
+                        }`}
+                      >
+                        {statementShowFooterNote ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                        <span>Ghi chú chân trang in ấn</span>
+                      </button>
+                    </div>
+                  </div>
+
                   {/* 3 Signatories Configuration */}
                   <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800">
-                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 block">
-                      3 Chức danh & Họ tên Người ký duyệt (Cuối bản in):
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                        Chức danh, Họ tên & Bật/Tắt 3 Vị trí Chữ ký:
+                      </span>
+                      <span className="text-[10px] text-slate-500">
+                        Bật/tắt để quyết định chữ ký có xuất hiện trên bản in hay không
+                      </span>
+                    </div>
 
                     {/* Signatory 1 */}
-                    <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/70 dark:border-slate-700/50">
-                      <div>
-                        <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Vị trí 1 (Bên trái)</label>
-                        <input
-                          type="text"
-                          placeholder="Chức danh (VD: Người lập biểu)"
-                          value={statementSignatory1Title}
-                          onChange={(e) => setStatementSignatory1Title(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-medium"
-                        />
+                    <div className={`p-3 rounded-xl border transition-all ${
+                      statementShowSignatory1 
+                        ? 'bg-slate-50 dark:bg-slate-800/40 border-indigo-200 dark:border-indigo-800/50' 
+                        : 'bg-slate-100/60 dark:bg-slate-800/20 border-slate-200 dark:border-slate-700 opacity-70'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                          Vị trí 1 (Bên trái)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setStatementShowSignatory1(!statementShowSignatory1)}
+                          className={`px-2 py-0.5 rounded-md text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                            statementShowSignatory1
+                              ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300'
+                              : 'bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-400'
+                          }`}
+                        >
+                          {statementShowSignatory1 ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                          <span>{statementShowSignatory1 ? 'Đang hiện' : 'Đã ẩn'}</span>
+                        </button>
                       </div>
-                      <div>
-                        <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Họ tên người ký 1</label>
-                        <input
-                          type="text"
-                          placeholder="Họ tên (VD: Kế toán quỹ)"
-                          value={statementSignatory1Name}
-                          onChange={(e) => setStatementSignatory1Name(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
-                        />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Chức danh</label>
+                          <input
+                            type="text"
+                            placeholder="Chức danh (VD: Người lập biểu)"
+                            value={statementSignatory1Title}
+                            onChange={(e) => setStatementSignatory1Title(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Họ tên người ký 1</label>
+                          <input
+                            type="text"
+                            placeholder="Họ tên (VD: Kế toán quỹ)"
+                            value={statementSignatory1Name}
+                            onChange={(e) => setStatementSignatory1Name(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                          />
+                        </div>
                       </div>
                     </div>
 
                     {/* Signatory 2 */}
-                    <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/70 dark:border-slate-700/50">
-                      <div>
-                        <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Vị trí 2 (Ở giữa)</label>
-                        <input
-                          type="text"
-                          placeholder="Chức danh (VD: Thủ quỹ)"
-                          value={statementSignatory2Title}
-                          onChange={(e) => setStatementSignatory2Title(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-medium"
-                        />
+                    <div className={`p-3 rounded-xl border transition-all ${
+                      statementShowSignatory2 
+                        ? 'bg-slate-50 dark:bg-slate-800/40 border-indigo-200 dark:border-indigo-800/50' 
+                        : 'bg-slate-100/60 dark:bg-slate-800/20 border-slate-200 dark:border-slate-700 opacity-70'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                          Vị trí 2 (Ở giữa)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setStatementShowSignatory2(!statementShowSignatory2)}
+                          className={`px-2 py-0.5 rounded-md text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                            statementShowSignatory2
+                              ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300'
+                              : 'bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-400'
+                          }`}
+                        >
+                          {statementShowSignatory2 ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                          <span>{statementShowSignatory2 ? 'Đang hiện' : 'Đã ẩn'}</span>
+                        </button>
                       </div>
-                      <div>
-                        <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Họ tên người ký 2</label>
-                        <input
-                          type="text"
-                          placeholder="Họ tên (VD: Trần Thị Mai)"
-                          value={statementSignatory2Name}
-                          onChange={(e) => setStatementSignatory2Name(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
-                        />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Chức danh</label>
+                          <input
+                            type="text"
+                            placeholder="Chức danh (VD: Thủ quỹ)"
+                            value={statementSignatory2Title}
+                            onChange={(e) => setStatementSignatory2Title(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Họ tên người ký 2</label>
+                          <input
+                            type="text"
+                            placeholder="Họ tên (VD: Trần Thị Mai)"
+                            value={statementSignatory2Name}
+                            onChange={(e) => setStatementSignatory2Name(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                          />
+                        </div>
                       </div>
                     </div>
 
                     {/* Signatory 3 */}
-                    <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/70 dark:border-slate-700/50">
-                      <div>
-                        <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Vị trí 3 (Bên phải)</label>
-                        <input
-                          type="text"
-                          placeholder="Chức danh (VD: Trưởng ban duyệt)"
-                          value={statementSignatory3Title}
-                          onChange={(e) => setStatementSignatory3Title(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-medium"
-                        />
+                    <div className={`p-3 rounded-xl border transition-all ${
+                      statementShowSignatory3 
+                        ? 'bg-slate-50 dark:bg-slate-800/40 border-indigo-200 dark:border-indigo-800/50' 
+                        : 'bg-slate-100/60 dark:bg-slate-800/20 border-slate-200 dark:border-slate-700 opacity-70'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                          Vị trí 3 (Bên phải)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setStatementShowSignatory3(!statementShowSignatory3)}
+                          className={`px-2 py-0.5 rounded-md text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                            statementShowSignatory3
+                              ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300'
+                              : 'bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-400'
+                          }`}
+                        >
+                          {statementShowSignatory3 ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                          <span>{statementShowSignatory3 ? 'Đang hiện' : 'Đã ẩn'}</span>
+                        </button>
                       </div>
-                      <div>
-                        <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Họ tên người ký 3</label>
-                        <input
-                          type="text"
-                          placeholder="Họ tên (VD: Đại diện ban quản lý)"
-                          value={statementSignatory3Name}
-                          onChange={(e) => setStatementSignatory3Name(e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
-                        />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Chức danh</label>
+                          <input
+                            type="text"
+                            placeholder="Chức danh (VD: Trưởng ban duyệt)"
+                            value={statementSignatory3Title}
+                            onChange={(e) => setStatementSignatory3Title(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Họ tên người ký 3</label>
+                          <input
+                            type="text"
+                            placeholder="Họ tên (VD: Đại diện ban quản lý)"
+                            value={statementSignatory3Name}
+                            onChange={(e) => setStatementSignatory3Name(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2002,25 +2128,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         className="hidden"
                       />
                     </label>
-                  </div>
-
-                  <div className="p-3.5 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 flex flex-col justify-between gap-3">
-                    <div>
-                      <span className="font-bold text-xs text-rose-800 dark:text-rose-300 block">
-                        Khởi tạo kỳ hoạt động mới
-                      </span>
-                      <span className="text-[11px] text-rose-600/80 dark:text-rose-400/80">
-                        Đặt lại số dư quỹ hoặc bắt đầu niên khóa/kỳ mới
-                      </span>
-                    </div>
-                    <button
-                      id="reset-sample-data-btn"
-                      onClick={onResetData}
-                      className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      <span>Tùy chọn đặt lại dữ liệu</span>
-                    </button>
                   </div>
                 </div>
               </div>

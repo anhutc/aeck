@@ -21,7 +21,7 @@ export const INITIAL_CATEGORIES: Category[] = [
 export const INITIAL_FUNDS: Fund[] = [
   {
     id: 'fund_general',
-    name: 'Quỹ Hoạt Động',
+    name: 'AE Cây Khế',
     description: 'Sổ quỹ chung của nhóm',
     balance: 0,
     initialBalance: 0,
@@ -68,7 +68,7 @@ export const INITIAL_GROUP_NOTICE: GroupNotice = {
 
 export const INITIAL_BRANDING: AppBranding = {
   // 1. Nhận diện chính & Thương hiệu
-  appTitle: 'Quản Lý Quỹ',
+  appTitle: 'AE Cây Khế',
   appSubtitle: 'Sổ thu chi & đóng quỹ minh bạch',
   groupEmoji: '💰',
   currencySymbol: 'VNĐ',
@@ -101,6 +101,11 @@ export const INITIAL_BRANDING: AppBranding = {
   statementSignatory3Title: 'Trưởng ban duyệt',
   statementSignatory3Name: 'Đại diện ban quản lý',
   statementFooterNote: 'Báo cáo này được trích xuất tự động từ hệ thống quản lý thu chi minh bạch và có giá trị lưu hành nội bộ.',
+  statementShowSignatory1: true,
+  statementShowSignatory2: true,
+  statementShowSignatory3: true,
+  statementShowFooterNote: true,
+  statementShowSummary: true,
 
   // 6. Tin nhắn Chia sẻ Zalo / Nhóm
   shareMessageGreeting: 'Kính gửi các thành viên,\nĐể đảm bảo tính công khai & minh bạch tài chính, mọi người có thể theo dõi số dư, xem sao kê và đóng quỹ theo liên kết dưới đây:',

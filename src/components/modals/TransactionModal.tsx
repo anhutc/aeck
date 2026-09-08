@@ -10,7 +10,7 @@ import {
   Check,
   AlertCircle
 } from 'lucide-react';
-import { Category, Fund, Transaction, TransactionType } from '../../types';
+import { AppBranding, Category, Fund, Transaction, TransactionType } from '../../types';
 import { formatVND } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
 
@@ -23,6 +23,7 @@ interface TransactionModalProps {
   initialType?: TransactionType;
   initialFundId?: string;
   editingTransaction?: Transaction | null;
+  branding?: AppBranding;
 }
 
 const QUICK_AMOUNTS = [50000, 100000, 200000, 500000, 1000000, 2000000, 5000000];
@@ -35,6 +36,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   categories,
   initialType = 'income',
   editingTransaction,
+  branding,
 }) => {
   const { t } = useTranslation();
   const [type, setType] = useState<TransactionType>('income');
@@ -44,7 +46,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [description, setDescription] = useState<string>('');
   const [error, setError] = useState<string>('');
 
-  const targetFund = funds[0] || { id: 'fund_general', name: 'Quỹ Chung' };
+  const appFundName = branding?.appTitle?.trim() || funds[0]?.name || 'AE Cây Khế';
+  const targetFund = funds[0] || { id: 'fund_general', name: appFundName };
 
   // Filter categories by type
   const availableCategories = categories.filter(c => c.type === type);
@@ -156,7 +159,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   : t('transactions.record_expense_title', 'Ghi nhận khoản chi')}
               </h2>
               <p className="text-xs text-slate-500">
-                {t('transactions.modal_subtitle', 'Ghi sổ Quỹ Chung • Chỉ 4 thông tin: Số tiền, Phân loại, Ngày, Lý do')}
+                {t('transactions.modal_subtitle', `Ghi sổ ${appFundName} • Số tiền, Phân loại, Ngày, Lý do`)}
               </p>
             </div>
           </div>

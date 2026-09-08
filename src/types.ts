@@ -134,6 +134,11 @@ export interface AppBranding {
   statementSignatory3Title?: string;
   statementSignatory3Name?: string;
   statementFooterNote?: string;
+  statementShowSignatory1?: boolean;
+  statementShowSignatory2?: boolean;
+  statementShowSignatory3?: boolean;
+  statementShowFooterNote?: boolean;
+  statementShowSummary?: boolean;
 
   // 6. Tin nhắn Chia sẻ Zalo / Nhóm
   shareMessageGreeting?: string;
@@ -141,16 +146,6 @@ export interface AppBranding {
   shareMessageBenefit2?: string;
   shareMessageBenefit3?: string;
   shareMessageClosing?: string;
-}
-
-export interface ResetCustomOptions {
-  resetBalanceOnly: boolean;
-  clearAllTransactions: boolean;
-  resetCampaigns: boolean;
-  resetMembers: boolean;
-  resetCategories: boolean;
-  resetNotice: boolean;
-  resetBankAndBranding: boolean;
 }
 
 export interface BankSettings {

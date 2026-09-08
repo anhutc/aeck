@@ -8,10 +8,10 @@ export interface TranslationItem {
 
 export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   // === 0. Tên Quỹ & Số Dư (funds.*) ===
-  "funds.default_fund_name": "Quỹ Hoạt Động",
-  "funds.single_fund_badge": "Quỹ Hoạt Động",
-  "funds.name_activity_fund": "Quỹ Hoạt Động",
-  "funds.name_general": "Quỹ Chung",
+  "funds.default_fund_name": "AE Cây Khế",
+  "funds.single_fund_badge": "AE Cây Khế",
+  "funds.name_activity_fund": "AE Cây Khế",
+  "funds.name_general": "AE Cây Khế",
   "funds.name_reserve": "Quỹ Dự Phòng",
   "funds.name_charity": "Quỹ Từ Thiện",
   "funds.warning_min_balance": "Dưới hạn mức",
@@ -217,7 +217,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   // === 6. Đợt Đóng Quỹ & Chỉ Tiêu (campaigns.*) ===
   "campaigns.title": "Quản Lý Đợt Thu Quỹ & Chỉ Tiêu Đóng Góp",
   "campaigns.subtitle": "Theo dõi tiến độ nộp tiền theo từng đợt, phát động thu quỹ và tạo mã QR đóng tiền cá nhân",
-  "campaigns.btn_add_campaign": "+ Tạo Đợt Thu Mới",
+  "campaigns.btn_add_campaign": "Tạo Đợt Thu Mới",
   "campaigns.campaign_label": "Đợt thu:",
   "campaigns.launch_date_prefix": "Phát động:",
   "campaigns.amount_per_member_label": "Mức đóng / người:",
@@ -364,9 +364,10 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "reports.title": "Báo Cáo & Sao Kê Thu Chi",
   "reports.subtitle": "Bảng tổng hợp thu chi minh bạch, thống kê dòng tiền và hỗ trợ in ấn mẫu sao kê A4 chuẩn mực",
   "reports.btn_print_a4": "In Mẫu Sao Kê (Khổ A4)",
-  "reports.btn_export_excel": "Xuất Bảng Kê (CSV/Excel)",
+  "reports.btn_export_excel": "Xuất Bảng Kê Excel (.xlsx)",
   "reports.print_statement": "In Báo Cáo",
-  "reports.export_excel": "Xuất CSV",
+  "reports.export_excel": "Xuất Excel",
+  "reports.export_csv": "Xuất CSV",
   "reports.time_filter_title": "Kỳ Báo Cáo:",
   "reports.time_all": "Toàn bộ thời gian",
   "reports.time_this_month": "Tháng này",
@@ -449,7 +450,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   // Section Text Editor UI (text_editor.*)
   "text_editor.banner_title": "Tùy Chỉnh Toàn Bộ Câu Chữ & Thuật Ngữ Trên Toàn Bộ Giao Diện",
   "text_editor.banner_desc": "Tất cả câu chữ (tiêu đề, nút bấm, bảng số liệu, thông báo popup, mã QR, mẫu in...) đã được nạp sẵn 100%. Bạn chỉ cần bấm nút [Sửa chữ] tại bất kỳ mục nào hoặc gõ từ vào ô tìm kiếm để đổi ngay!",
-  "text_editor.search_placeholder": "Gõ từ tiếng Việt, tên nút bấm hoặc nội dung cần sửa (VD: Tổng số dư, Quỹ Hoạt Động, Nộp tiền, VietQR)...",
+  "text_editor.search_placeholder": "Gõ từ tiếng Việt, tên nút bấm hoặc nội dung cần sửa (VD: Tổng số dư, Số dư khả dụng, Nộp tiền, VietQR)...",
   "text_editor.export_btn": "Xuất JSON",
   "text_editor.import_btn": "Nhập JSON",
   "text_editor.reset_all_btn": "Khôi phục gốc",
@@ -480,7 +481,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "reset.keep_categories": "Giữ lại các danh mục thu chi",
   "reset.btn_execute": "Tiến Hành Đặt Lại",
   "reset.confirm_phrase": "XAC NHAN",
-  "reset.opt_1_title": "1. Đưa số dư Quỹ Hoạt Động về 0 VNĐ",
+  "reset.opt_1_title": "1. Đưa số dư quỹ về 0 VNĐ",
 
   // === 13. Xác Thực & Phân Quyền (auth.*) ===
   "auth.title": "Xác Thực Quản Trị Viên",

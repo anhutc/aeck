@@ -4,14 +4,9 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   TrendingUp,
-  Target,
-  Users,
   ChevronRight,
   ShieldAlert,
-  RotateCcw,
   Printer,
-  Calendar,
-  Layers,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -25,7 +20,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { BankSettings, Category, ContributionCampaign, Fund, Member, TabType, Transaction, TransactionType } from '../types';
+import { AppBranding, Category, ContributionCampaign, Fund, TabType, Transaction } from '../types';
 import { formatVND, formatDate, formatNumberCompact } from '../utils/formatters';
 import { useTranslation } from '../i18n/LanguageContext';
 
@@ -34,13 +29,8 @@ interface OverviewTabProps {
   transactions: Transaction[];
   categories: Category[];
   campaigns: ContributionCampaign[];
-  members: Member[];
-  bankSettings: BankSettings;
+  branding?: AppBranding;
   isAdmin?: boolean;
-  onOpenTransactionModal?: (type?: TransactionType, editingTx?: Transaction) => void;
-  onOpenQRModal?: (amount?: number, content?: string) => void;
-  onOpenShareModal?: () => void;
-  onOpenResetFundModal?: () => void;
   onOpenPrintModal?: () => void;
   setActiveTab: (tab: TabType) => void;
 }
@@ -50,20 +40,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   transactions,
   categories,
   campaigns,
-  members,
-  bankSettings,
+  branding,
   isAdmin = true,
-  onOpenTransactionModal,
-  onOpenQRModal,
-  onOpenShareModal,
-  onOpenResetFundModal,
   onOpenPrintModal,
   setActiveTab,
 }) => {
   const { t } = useTranslation();
+  const appFundName = branding?.appTitle?.trim() || 'AE Cây Khế';
   const fund = funds[0] || {
     id: 'fund_general',
-    name: 'Quỹ Hoạt Động',
+    name: appFundName,
     balance: 0,
     minWarningBalance: 500000,
     color: '#3B82F6',
@@ -165,7 +151,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5">
                 <Wallet className="w-3 h-3" />
-                {fund.name === 'Quỹ Hoạt Động' ? t('funds.default_fund_name', 'Quỹ Hoạt Động') : (fund.name || t('funds.default_fund_name', 'Quỹ Hoạt Động'))}
+                {appFundName}
               </span>
               {isBelowMin && (
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
@@ -184,28 +170,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               </div>
             </div>
 
-            {isAdmin && (
+            {isAdmin && onOpenPrintModal && (
               <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                {onOpenResetFundModal && (
-                  <button
-                    id="overview-reset-fund-btn"
-                    onClick={onOpenResetFundModal}
-                    className="px-2.5 py-1 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    <span>{t('funds.btn_reset', 'Đặt Lại Quỹ')}</span>
-                  </button>
-                )}
-                {onOpenPrintModal && (
-                  <button
-                    id="overview-print-statement-btn"
-                    onClick={onOpenPrintModal}
-                    className="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <Printer className="w-3 h-3 text-slate-500" />
-                    <span>{t('reports.print_statement', 'In Báo Cáo')}</span>
-                  </button>
-                )}
+                <button
+                  id="overview-print-statement-btn"
+                  onClick={onOpenPrintModal}
+                  className="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <Printer className="w-3 h-3 text-slate-500" />
+                  <span>{t('reports.print_statement', 'In Báo Cáo')}</span>
+                </button>
               </div>
             )}
           </div>

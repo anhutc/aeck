@@ -1,4 +1,7 @@
 import { BankSettings, Category, Fund, Transaction } from '../types';
+import { exportTransactionsToExcelWithAnalytics } from './excelReport';
+
+export { exportTransactionsToExcelWithAnalytics };
 
 export function formatVND(amount: number): string {
   if (isNaN(amount)) return '0 ₫';
@@ -106,10 +109,25 @@ export function getRoleBadgeClass(role: string): string {
   }
 }
 
+export async function exportTransactionsToExcel(
+  transactions: Transaction[],
+  fundsOrCategories: (Fund | Category)[],
+  categoriesOrFunds?: (Category | Fund)[],
+  customFundName?: string
+): Promise<void> {
+  return exportTransactionsToExcelWithAnalytics(
+    transactions,
+    fundsOrCategories,
+    categoriesOrFunds,
+    customFundName
+  );
+}
+
 export function exportTransactionsToCSV(
   transactions: Transaction[],
   fundsOrCategories: (Fund | Category)[],
-  categoriesOrFunds?: (Category | Fund)[]
+  categoriesOrFunds?: (Category | Fund)[],
+  customFundName?: string
 ): void {
   const allItems = [...(fundsOrCategories || []), ...(categoriesOrFunds || [])];
   const catMap = new Map<string, string>();
@@ -119,20 +137,46 @@ export function exportTransactionsToCSV(
     }
   });
 
+  const fundItem = (fundsOrCategories || []).find(f => f && 'balance' in f) as Fund | undefined;
+  const fundName = customFundName?.trim() || fundItem?.name?.trim() || 'AE Cây Khế';
+
+  let totalIncome = 0;
+  let totalExpense = 0;
+  transactions.forEach(t => {
+    if (t.status === 'completed') {
+      if (t.type === 'income') totalIncome += t.amount;
+      else totalExpense += t.amount;
+    }
+  });
+
+  const now = new Date();
+  const dateStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+
+  const metaRows = [
+    `"SỔ QUỸ THU CHI - ${fundName.toUpperCase()}"`,
+    `"BẢNG KÊ CHI TIẾT GIAO DỊCH THU CHI MINH BẠCH"`,
+    `"Ngày xuất: ${dateStr}","Tổng số GD: ${transactions.length}","Tổng Thu: +${totalIncome}","Tổng Chi: -${totalExpense}","Chênh lệch: ${totalIncome - totalExpense}"`,
+    `""` // Empty spacer
+  ];
+
   const headers = [
     'STT',
     'Ngày giao dịch',
     'Phân loại',
     'Danh mục',
-    'Lý do / Nội dung',
-    'Số tiền (VNĐ)',
+    'Lý do / Nội dung diễn giải',
+    'Tiền Thu (+) VNĐ',
+    'Tiền Chi (-) VNĐ',
     'Trạng thái'
   ];
 
   const rows = transactions.map((t, idx) => {
-    const typeLabel = t.type === 'income' ? 'Thu (+)' : 'Chi (-)';
+    const isIncome = t.type === 'income';
+    const typeLabel = isIncome ? 'Thu (+)' : 'Chi (-)';
     const catName = catMap.get(t.categoryId) || 'Khác';
     const statusLabel = t.status === 'completed' ? 'Hoàn thành' : 'Đang xử lý';
+    const incomeVal = isIncome ? t.amount : '';
+    const expenseVal = !isIncome ? t.amount : '';
 
     return [
       `"${idx + 1}"`,
@@ -140,20 +184,27 @@ export function exportTransactionsToCSV(
       `"${typeLabel}"`,
       `"${catName.replace(/"/g, '""')}"`,
       `"${(t.description || '').replace(/"/g, '""')}"`,
-      `"${t.amount}"`,
+      `"${incomeVal}"`,
+      `"${expenseVal}"`,
       `"${statusLabel}"`
     ].join(',');
   });
 
-  const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+  // Summary row
+  const summaryRow = `"TỔNG CỘNG","","","","","${totalIncome}","${totalExpense}",""`;
+  const netRow = `"CHÊNH LỆCH RÒNG","","","","","${totalIncome - totalExpense}","",""`;
+
+  const csvContent = '\uFEFF' + [...metaRows, headers.join(','), ...rows, summaryRow, netRow].join('\r\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-  link.setAttribute('download', `Sao_ke_so_quy_${new Date().toISOString().slice(0, 10)}.csv`);
+  const safeName = fundName.replace(/[^a-zA-Z0-9\u00C0-\u024F\u1EA0-\u1EF9]/g, '_');
+  link.setAttribute('download', `Sao_ke_${safeName}_${new Date().toISOString().slice(0, 10)}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 export async function copyToClipboard(text: string): Promise<boolean> {
