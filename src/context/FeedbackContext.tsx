@@ -4,12 +4,17 @@ import {
   CheckCircle2, 
   XCircle, 
   Info, 
-  X, 
   HelpCircle,
   Trash2,
   AlertCircle
 } from 'lucide-react';
 import { useTranslation } from '../i18n/LanguageContext';
+import { 
+  ToastContainer, 
+  ToastItem, 
+  ToastPosition, 
+  ToastType 
+} from '../components/common/ToastContainer';
 
 export type DialogType = 'danger' | 'warning' | 'info' | 'success' | 'confirm';
 
@@ -32,18 +37,14 @@ export interface AlertOptions {
   onClose?: () => void;
 }
 
-export interface ToastItem {
-  id: string;
-  title?: string;
-  message: string;
-  type: 'success' | 'error' | 'warning' | 'info';
-  duration?: number;
-}
+export type { ToastItem, ToastPosition, ToastType };
 
 interface FeedbackContextValue {
   showConfirm: (options: ConfirmOptions) => void;
   showAlert: (options: AlertOptions | string) => void;
-  showToast: (message: string, type?: 'success' | 'error' | 'warning' | 'info', title?: string) => void;
+  showToast: (message: string, type?: ToastType, title?: string, duration?: number) => void;
+  toastPosition: ToastPosition;
+  setToastPosition: (pos: ToastPosition) => void;
 }
 
 const FeedbackContext = createContext<FeedbackContextValue | undefined>(undefined);
@@ -57,25 +58,49 @@ export const FeedbackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Alert Dialog State
   const [alertDialog, setAlertDialog] = useState<AlertOptions | null>(null);
 
+  // Toast Position State (Defaults to 'top-center' for optimal visual balance and no overlap on buttons)
+  const [toastPosition, setToastPositionState] = useState<ToastPosition>(() => {
+    try {
+      const saved = localStorage.getItem('app_toast_position');
+      if (saved && ['top-center', 'top-right', 'top-left', 'bottom-center', 'bottom-right'].includes(saved)) {
+        return saved as ToastPosition;
+      }
+    } catch {
+      // ignore
+    }
+    return 'top-center';
+  });
+
+  const setToastPosition = useCallback((pos: ToastPosition) => {
+    setToastPositionState(pos);
+    try {
+      localStorage.setItem('app_toast_position', pos);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // Toast State
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   // Show Toast
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success', title?: string) => {
+  const showToast = useCallback((
+    message: string, 
+    type: ToastType = 'success', 
+    title?: string,
+    duration: number = 3500
+  ) => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
     const newToast: ToastItem = {
       id,
       title,
       message,
       type,
-      duration: 3500,
+      duration,
     };
 
-    setToasts(prev => [...prev, newToast]);
-
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, newToast.duration);
+    // Keep at most 3 active toasts at once to prevent visual clutter
+    setToasts(prev => [...prev.slice(-2), newToast]);
   }, []);
 
   const removeToast = useCallback((id: string) => {
@@ -130,62 +155,24 @@ export const FeedbackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     showConfirm,
     showAlert,
     showToast,
-  }), [showConfirm, showAlert, showToast]);
+    toastPosition,
+    setToastPosition,
+  }), [showConfirm, showAlert, showToast, toastPosition, setToastPosition]);
 
   return (
     <FeedbackContext.Provider value={contextValue}>
       {children}
 
-      {/* 1. Toast Notification Container */}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-3">
-        {toasts.map(toast => {
-          let bgColor = 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100';
-          let iconColor = 'text-blue-500';
-          let IconComp = Info;
-
-          if (toast.type === 'success') {
-            bgColor = 'bg-emerald-50 dark:bg-emerald-950/90 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100';
-            iconColor = 'text-emerald-600 dark:text-emerald-400';
-            IconComp = CheckCircle2;
-          } else if (toast.type === 'error') {
-            bgColor = 'bg-rose-50 dark:bg-rose-950/90 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-100';
-            iconColor = 'text-rose-600 dark:text-rose-400';
-            IconComp = XCircle;
-          } else if (toast.type === 'warning') {
-            bgColor = 'bg-amber-50 dark:bg-amber-950/90 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-100';
-            iconColor = 'text-amber-600 dark:text-amber-400';
-            IconComp = AlertTriangle;
-          }
-
-          return (
-            <div
-              key={toast.id}
-              className={`pointer-events-auto flex items-start gap-3 p-3.5 rounded-2xl border shadow-xl backdrop-blur-md transition-all duration-300 animate-in fade-in slide-in-from-top-2 ${bgColor}`}
-            >
-              <div className={`p-1 rounded-lg shrink-0 ${iconColor}`}>
-                <IconComp className="w-5 h-5" />
-              </div>
-              <div className="flex-1 min-w-0 pr-1">
-                {toast.title && (
-                  <h4 className="text-xs font-bold leading-tight mb-0.5">{toast.title}</h4>
-                )}
-                <p className="text-xs font-medium leading-relaxed break-words">{toast.message}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => removeToast(toast.id)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg transition-colors cursor-pointer shrink-0"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          );
-        })}
-      </div>
+      {/* 1. Optimized Toast Notification Container */}
+      <ToastContainer
+        toasts={toasts}
+        onRemove={removeToast}
+        position={toastPosition}
+      />
 
       {/* 2. Custom Confirm Popup Modal */}
       {confirmDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div 
             className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl overflow-hidden p-6 animate-in zoom-in-95 duration-150"
             role="dialog"
@@ -259,7 +246,7 @@ export const FeedbackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       {/* 3. Custom Alert Popup Modal */}
       {alertDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div 
             className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl overflow-hidden p-6 animate-in zoom-in-95 duration-150"
             role="dialog"
