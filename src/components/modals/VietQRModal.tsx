@@ -3,6 +3,7 @@ import { X, QrCode, Copy, Check, Download, Share2, Sparkles, Building2 } from 'l
 import { BankSettings, AppBranding } from '../../types';
 import { formatVND, getVietQRUrl } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { AmountInput } from '../common/AmountInput';
 
 interface VietQRModalProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
   branding,
 }) => {
   const { t } = useTranslation();
-  const [amount, setAmount] = useState<string>(defaultAmount > 0 ? defaultAmount.toString() : '');
+  const [amount, setAmount] = useState<number | string>(defaultAmount > 0 ? defaultAmount : '');
   const [content, setContent] = useState<string>(() => {
     if (defaultContent) return defaultContent;
     const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
@@ -34,7 +35,7 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
   // Sync content and amount when modal opens or default props change
   useEffect(() => {
     if (isOpen) {
-      setAmount(defaultAmount > 0 ? defaultAmount.toString() : '');
+      setAmount(defaultAmount > 0 ? defaultAmount : '');
       if (defaultContent) {
         setContent(defaultContent);
       } else {
@@ -47,7 +48,7 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
 
   if (!isOpen) return null;
 
-  const numAmount = parseFloat(amount) || 0;
+  const numAmount = typeof amount === 'number' ? amount : (parseFloat(amount) || 0);
   const qrUrl = getVietQRUrl(bankSettings, numAmount > 0 ? numAmount : undefined, content.trim());
 
   const handleCopy = (text: string, fieldName: string) => {
@@ -122,21 +123,19 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
           </div>
 
           {/* Dynamic input controls for amount and content */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                {t('vietqr.amount_label', 'Số tiền chỉ định (VNĐ)')}
-              </label>
-              <input
-                id="qr-amount-input"
-                type="number"
-                step="10000"
-                placeholder={t('vietqr.amount_placeholder', 'Tự nhập khi chuyển...')}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden font-semibold"
-              />
-            </div>
+          <div className="space-y-3">
+            <AmountInput
+              id="qr-amount-input"
+              value={amount}
+              onChange={(val) => setAmount(val)}
+              type="income"
+              label={t('vietqr.amount_label', 'Số tiền chỉ định (VNĐ)')}
+              placeholder={t('vietqr.amount_placeholder', 'Tự nhập khi quét hoặc nhập số...')}
+              presets={[50000, 100000, 200000, 500000, 1000000]}
+              showAdders
+              showInWords
+              showPresets
+            />
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">

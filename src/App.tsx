@@ -32,9 +32,7 @@ import { OverviewTab } from './components/OverviewTab';
 import { TransactionsTab } from './components/TransactionsTab';
 import { CampaignsTab } from './components/CampaignsTab';
 import { MembersTab } from './components/MembersTab';
-import { ReportsTab } from './components/ReportsTab';
 import { SettingsTab } from './components/SettingsTab';
-import { NoticeBanner } from './components/NoticeBanner';
 import { TransactionModal } from './components/modals/TransactionModal';
 import { CampaignModal } from './components/modals/CampaignModal';
 import { MemberModal } from './components/modals/MemberModal';
@@ -43,7 +41,8 @@ import { PrintStatementModal } from './components/modals/PrintStatementModal';
 import { ShareModal } from './components/modals/ShareModal';
 import { NoticeEditModal } from './components/modals/NoticeEditModal';
 import { MemberPortalView } from './components/MemberPortalView';
-import { subscribeToCloudState, saveCloudState, fetchCloudStateOnce, testCloudConnection, CloudConnectionResult, CLOUD_CONFIG_INFO } from './lib/cloudStore';
+import { FloatingTransactionButton } from './components/common/FloatingTransactionButton';
+import { subscribeToCloudState, saveCloudState, fetchCloudStateOnce, testCloudConnection, CloudConnectionResult } from './lib/cloudStore';
 import { useFeedback } from './context/FeedbackContext';
 
 const STORAGE_KEYS = {
@@ -76,8 +75,31 @@ export default function App() {
   const { showToast, showConfirm } = useFeedback();
 
   // User Authentication State (dual-password: 'member' or 'admin')
-  // Session is not saved across browser reloads, so refreshing the page always prompts for password
+  // Session is strictly kept in-memory for the current page life only.
+  // Refreshing, reloading or reopening the page will ALWAYS reset role to null and require entering password.
   const [currentUserRole, setCurrentUserRole] = useState<AuthRole | null>(null);
+
+  // Clear any legacy cached tokens and handle bfcache (back-forward cache) to ensure password is required on reload
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
+      localStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
+    } catch {
+      // Ignore storage access errors
+    }
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        // Page was restored from back-forward cache; lock immediately
+        setCurrentUserRole(null);
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, []);
 
   // Default to Member View on initial load or if role is member
   const [isMemberView, setIsMemberView] = useState<boolean>(true);
@@ -883,6 +905,7 @@ export default function App() {
     return (
       <LoginScreen
         branding={branding}
+        bankSettings={bankSettings}
         adminPassword={adminPassword}
         memberPassword={memberPassword}
         onLoginSuccess={(role) => {
@@ -893,25 +916,24 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen w-full overflow-x-clip bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Header & Navigation */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         funds={funds}
         branding={branding}
-        onOpenTransactionModal={(type) => handleOpenTransactionModal(type)}
         onOpenQRModal={() => handleOpenQRModal()}
         onOpenShareModal={() => setIsShareModalOpen(true)}
         isMemberView={isMemberView}
         pendingTransactionsCount={pendingTransactionsCount}
+        activeCampaignsCount={campaigns.filter(c => c.status === 'active').length}
         cloudSyncStatus={cloudSyncStatus}
-        onForceSyncToCloud={handleForceSyncToCloud}
         onLogout={handleLogout}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-12 sm:pb-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 md:pb-8 space-y-6">
         {isMemberView ? (
           <MemberPortalView
             funds={funds}
@@ -925,6 +947,9 @@ export default function App() {
             viewPermissions={viewPermissions}
             onOpenQRModal={handleOpenQRModal}
             onOpenPrintModal={handleOpenPrintModal}
+            onLogout={handleLogout}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
           />
         ) : (
           <>
@@ -946,7 +971,6 @@ export default function App() {
                 transactions={transactions}
                 funds={funds}
                 categories={categories}
-                members={members}
                 branding={branding}
                 onOpenTransactionModal={(type, tx) => handleOpenTransactionModal(type, tx)}
                 onDeleteTransaction={handleDeleteTransaction}
@@ -983,16 +1007,6 @@ export default function App() {
                   setIsMemberModalOpen(true);
                 }}
                 onDeleteMember={handleDeleteMember}
-              />
-            )}
-
-            {activeTab === 'reports' && (
-              <ReportsTab
-                transactions={transactions}
-                funds={funds}
-                categories={categories}
-                branding={branding}
-                onOpenPrintModal={() => handleOpenPrintModal()}
               />
             )}
 
@@ -1090,6 +1104,12 @@ export default function App() {
         funds={funds}
         activeCampaigns={campaigns.filter(c => c.status === 'active')}
         branding={branding}
+      />
+
+      {/* Dedicated Floating Thu/Chi Action Button at bottom-right */}
+      <FloatingTransactionButton
+        onOpenTransactionModal={(type) => handleOpenTransactionModal(type)}
+        isMemberView={isMemberView}
       />
     </div>
   );

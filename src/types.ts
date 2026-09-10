@@ -181,6 +181,5 @@ export type TabType =
   | 'transactions' 
   | 'campaigns' 
   | 'members' 
-  | 'reports' 
   | 'settings';
 

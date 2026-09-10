@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import {
-  ShieldCheck,
   QrCode,
-  Printer,
   Users,
   LayoutDashboard,
   ReceiptText,
   Layers,
-  BarChart3,
-  Lock
+  LogOut
 } from 'lucide-react';
 import {
   BankSettings,
@@ -20,6 +17,7 @@ import {
   AppBranding,
   GroupNotice,
   MemberViewPermissions,
+  TabType,
 } from '../types';
 import { formatVND } from '../utils/formatters';
 import { NoticeBanner } from './NoticeBanner';
@@ -29,9 +27,8 @@ import { OverviewTab } from './OverviewTab';
 import { TransactionsTab } from './TransactionsTab';
 import { CampaignsTab } from './CampaignsTab';
 import { MembersTab } from './MembersTab';
-import { ReportsTab } from './ReportsTab';
 
-type MemberSubTab = 'overview' | 'transactions' | 'campaigns' | 'members' | 'reports';
+export type MemberSubTab = 'overview' | 'transactions' | 'campaigns' | 'members';
 
 interface MemberPortalViewProps {
   funds: Fund[];
@@ -45,7 +42,10 @@ interface MemberPortalViewProps {
   viewPermissions?: MemberViewPermissions;
   onOpenQRModal: (amount?: number, content?: string) => void;
   onOpenPrintModal: (fundId?: string) => void;
-  onSwitchToAdmin: () => void;
+  onSwitchToAdmin?: () => void;
+  onLogout?: () => void;
+  activeTab?: TabType;
+  setActiveTab?: (tab: TabType) => void;
 }
 
 export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
@@ -61,9 +61,24 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
   onOpenQRModal,
   onOpenPrintModal,
   onSwitchToAdmin,
+  onLogout,
+  activeTab: propsActiveTab,
+  setActiveTab: propsSetActiveTab,
 }) => {
   const { t } = useTranslation();
-  const [activeSubTab, setActiveSubTab] = useState<MemberSubTab>('overview');
+  const [internalSubTab, setInternalSubTab] = useState<MemberSubTab>('overview');
+
+  const activeSubTab: MemberSubTab = (propsActiveTab && ['overview', 'transactions', 'campaigns', 'members'].includes(propsActiveTab)
+    ? propsActiveTab
+    : internalSubTab) as MemberSubTab;
+
+  const handleSelectSubTab = (tab: MemberSubTab) => {
+    if (propsSetActiveTab) {
+      propsSetActiveTab(tab);
+    } else {
+      setInternalSubTab(tab);
+    }
+  };
 
   const totalBalance = funds.reduce((sum, f) => sum + f.balance, 0);
   const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
@@ -80,7 +95,6 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
     { id: 'transactions', label: t('nav.transactions', 'Sổ quỹ'), icon: ReceiptText },
     { id: 'campaigns', label: t('nav.campaigns', 'Đợt đóng quỹ'), icon: Layers, count: campaigns.length },
     { id: 'members', label: t('nav.members', 'Thành viên'), icon: Users, count: members.length },
-    { id: 'reports', label: t('nav.reports', 'Báo cáo & sao kê'), icon: BarChart3 },
   ];
 
   const isNoticeVisible = (groupNotice?.enabled ?? true) && (viewPermissions?.showNotice ?? true);
@@ -124,17 +138,6 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
                   <span>{t('portal.scan_qr_pay', 'Quét mã nộp quỹ')}</span>
                 </button>
               )}
-
-              {viewPermissions.allowPublicPrint && (
-                <button
-                  id="member-print-statement-btn"
-                  onClick={() => onOpenPrintModal()}
-                  className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>{t('reports.print_statement', 'In sao kê')}</span>
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -151,6 +154,19 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
               </span>
             )}
           </div>
+
+          {onLogout && (
+            <button
+              id="member-portal-logout-btn"
+              type="button"
+              onClick={onLogout}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 text-xs font-bold transition-all shadow-2xs hover:shadow-xs cursor-pointer self-start sm:self-auto"
+              title="Đăng xuất khỏi sổ quỹ"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Đăng xuất</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -162,8 +178,8 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
         />
       )}
 
-      {/* Member Sticky Navigation Tabs (Always pinned with smooth backdrop blur when scrolling) */}
-      <div className="sticky top-[56px] sm:top-[64px] z-30 -mx-3 sm:mx-0 px-3 sm:px-1.5 py-2 sm:py-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-y sm:border border-slate-200/90 dark:border-slate-800 sm:rounded-2xl shadow-sm sm:shadow-md transition-all">
+      {/* Member Sticky Navigation Tabs (Shown on desktop/tablet, hidden on mobile in favor of bottom dock) */}
+      <div className="hidden md:flex sticky top-[56px] sm:top-[64px] z-30 -mx-3 sm:mx-0 px-3 sm:px-1.5 py-2 sm:py-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-y sm:border border-slate-200/90 dark:border-slate-800 sm:rounded-2xl shadow-sm sm:shadow-md transition-all">
         <nav className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth touch-pan-x">
           {subTabs.map((tab) => {
             const Icon = tab.icon;
@@ -173,7 +189,7 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
               <button
                 key={tab.id}
                 id={`member-subtab-${tab.id}`}
-                onClick={() => setActiveSubTab(tab.id)}
+                onClick={() => handleSelectSubTab(tab.id)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                   isActive
                     ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/20'
@@ -211,7 +227,7 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
           isAdmin={false}
           onOpenQRModal={onOpenQRModal}
           onOpenPrintModal={() => onOpenPrintModal()}
-          setActiveTab={(tab) => setActiveSubTab(tab as MemberSubTab)}
+          setActiveTab={(tab) => handleSelectSubTab(tab as MemberSubTab)}
         />
       )}
 
@@ -247,15 +263,6 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
           onOpenQRModal={onOpenQRModal}
           onOpenMemberModal={() => {}}
           onDeleteMember={() => {}}
-        />
-      )}
-
-      {activeSubTab === 'reports' && (
-        <ReportsTab
-          transactions={transactions}
-          funds={funds}
-          categories={categories}
-          onOpenPrintModal={() => onOpenPrintModal()}
         />
       )}
     </div>

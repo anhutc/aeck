@@ -13,6 +13,7 @@ import {
 import { AppBranding, Category, Fund, Transaction, TransactionType } from '../../types';
 import { formatVND } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { AmountInput } from '../common/AmountInput';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -26,8 +27,6 @@ interface TransactionModalProps {
   branding?: AppBranding;
 }
 
-const QUICK_AMOUNTS = [50000, 100000, 200000, 500000, 1000000, 2000000, 5000000];
-
 export const TransactionModal: React.FC<TransactionModalProps> = ({
   isOpen,
   onClose,
@@ -40,7 +39,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [type, setType] = useState<TransactionType>('income');
-  const [amount, setAmount] = useState<string>('');
+  const [amount, setAmount] = useState<number | string>('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [description, setDescription] = useState<string>('');
@@ -62,7 +61,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       typeof editingTransaction.amount === 'number'
     ) {
       setType(editingTransaction.type || 'income');
-      setAmount(editingTransaction.amount.toString());
+      setAmount(editingTransaction.amount);
       setCategoryId(editingTransaction.categoryId || '');
       setDate(editingTransaction.date || new Date().toISOString().slice(0, 10));
       setDescription(editingTransaction.description || '');
@@ -94,7 +93,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsedAmount = parseFloat(amount);
+    const parsedAmount = typeof amount === 'number' ? amount : parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       setError(t('transactions.error_amount_positive', 'Vui lòng nhập số tiền lớn hơn 0'));
       return;
@@ -216,48 +215,22 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               </div>
             )}
 
-            {/* 1. SỐ TIỀN */}
-            <div>
-              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
-                <DollarSign className={`w-3.5 h-3.5 ${type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`} />
-                {t('transactions.amount_label', 'Số tiền (VNĐ)')} <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  id="tx-amount-input"
-                  type="number"
-                  required
-                  min="1000"
-                  step="1000"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="VD: 500000"
-                  className={`w-full px-4 py-3 rounded-2xl border text-slate-900 dark:text-white font-black text-lg focus:ring-2 focus:outline-hidden transition-all ${
-                    type === 'income'
-                      ? 'border-emerald-200 dark:border-emerald-900 focus:ring-emerald-500 focus:border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/10'
-                      : 'border-rose-200 dark:border-rose-900 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20 dark:bg-rose-950/10'
-                  }`}
-                  autoFocus
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
-                  VNĐ
-                </div>
-              </div>
-
-              {/* Quick Amount Suggestion Chips */}
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {QUICK_AMOUNTS.map((val) => (
-                  <button
-                    key={val}
-                    type="button"
-                    onClick={() => setAmount(val.toString())}
-                    className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-semibold transition-colors cursor-pointer"
-                  >
-                    {formatVND(val)}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* 1. SỐ TIỀN TỐI ƯU */}
+            <AmountInput
+              id="tx-amount-input"
+              value={amount}
+              onChange={(val) => {
+                setAmount(val);
+                if (error) setError('');
+              }}
+              type={type}
+              label={t('transactions.amount_label', 'Số tiền (VNĐ)')}
+              required
+              autoFocus
+              showAdders
+              showInWords
+              showPresets
+            />
 
             {/* 2. PHÂN LOẠI (DANH MỤC) */}
             <div>

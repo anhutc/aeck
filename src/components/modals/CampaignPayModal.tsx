@@ -3,6 +3,7 @@ import { X, CheckCircle2, Calendar, DollarSign, FileText, User } from 'lucide-re
 import { formatVND } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { useFeedback } from '../../context/FeedbackContext';
+import { AmountInput } from '../common/AmountInput';
 
 interface CampaignPayModalProps {
   isOpen: boolean;
@@ -33,7 +34,7 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { showConfirm, showToast } = useFeedback();
-  const [amount, setAmount] = useState<string>('');
+  const [amount, setAmount] = useState<number | string>('');
   const [paidDate, setPaidDate] = useState<string>('');
   const [note, setNote] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -46,8 +47,8 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
       const today = new Date().toISOString().slice(0, 10);
       setAmount(
         initialPaidAmount !== undefined && initialPaidAmount > 0
-          ? initialPaidAmount.toString()
-          : requiredAmount.toString()
+          ? initialPaidAmount
+          : requiredAmount
       );
       setPaidDate(initialPaidDate || targetLaunchDate || today);
       setNote(initialNote || t('campaigns.paid_in_full_default_note', 'Đã nộp đủ tiền quỹ'));
@@ -60,7 +61,7 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsedAmount = parseFloat(amount);
+    const parsedAmount = typeof amount === 'number' ? amount : parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       setError(t('campaigns.error_valid_amount', 'Vui lòng nhập số tiền hợp lệ'));
       return;
@@ -186,32 +187,21 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
             </div>
 
             {/* Payment Amount */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
-                {t('campaigns.pay_amount_label', 'Số tiền nộp (VNĐ)')} <span className="text-rose-500">*</span>
-              </label>
-              <input
-                id="campaign-pay-amount-input"
-                type="number"
-                required
-                min="1000"
-                step="1000"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="VD: 500000"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
-              />
-              <div className="flex items-center gap-1.5 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setAmount(requiredAmount.toString())}
-                  className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
-                >
-                  {t('campaigns.pay_in_full_btn', 'Nộp đủ')} ({formatVND(requiredAmount)})
-                </button>
-              </div>
-            </div>
+            <AmountInput
+              id="campaign-pay-amount-input"
+              value={amount}
+              onChange={(val) => {
+                setAmount(val);
+                if (error) setError('');
+              }}
+              type="income"
+              label={t('campaigns.pay_amount_label', 'Số tiền nộp (VNĐ)')}
+              required
+              presets={Array.from(new Set([requiredAmount, Math.round(requiredAmount / 2), 50000, 100000, 200000, 500000, 1000000])).filter(v => v > 0).sort((a,b) => a - b)}
+              showAdders
+              showInWords
+              showPresets
+            />
 
             {/* Note */}
             <div>

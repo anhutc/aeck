@@ -3,6 +3,7 @@ import { X, Check, AlertCircle, Calendar, Target, Plane, ShieldCheck, Search, Us
 import { ContributionCampaign, Fund, Member } from '../../types';
 import { formatVND, getMemberRoles } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { AmountInput } from '../common/AmountInput';
 
 interface CampaignModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [fundId, setFundId] = useState(funds[0]?.id || '');
-  const [amountPerMember, setAmountPerMember] = useState('');
+  const [amountPerMember, setAmountPerMember] = useState<number | string>('300000');
   const [launchDate, setLaunchDate] = useState('');
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [memberSearch, setMemberSearch] = useState('');
@@ -36,7 +37,7 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
       setTitle(initialData.title);
       setDescription(initialData.description);
       setFundId(initialData.fundId);
-      setAmountPerMember(initialData.amountPerMember.toString());
+      setAmountPerMember(initialData.amountPerMember);
       setLaunchDate(initialData.launchDate || initialData.createdAt || new Date().toISOString().slice(0, 10));
       setSelectedMemberIds(initialData.participants.map(p => p.memberId));
     } else {
@@ -58,7 +59,7 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
 
   if (!isOpen) return null;
 
-  const numAmount = parseFloat(amountPerMember) || 0;
+  const numAmount = typeof amountPerMember === 'number' ? amountPerMember : (parseFloat(amountPerMember) || 0);
   const calculatedTotal = numAmount * selectedMemberIds.length;
 
   const toggleSelectAll = () => {
@@ -188,6 +189,22 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
               />
             </div>
 
+            {/* Amount Per Member */}
+            <div>
+              <AmountInput
+                id="camp-amount-input"
+                value={amountPerMember}
+                onChange={(val) => setAmountPerMember(val)}
+                type="neutral"
+                label={t('campaigns.amount_per_member_label', 'Mức đóng / Thành viên (VNĐ)')}
+                required
+                presets={[50000, 100000, 200000, 300000, 500000, 1000000]}
+                showAdders
+                showInWords
+                showPresets
+              />
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
@@ -208,24 +225,6 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  {t('campaigns.amount_per_member_label', 'Mức đóng / Thành viên (VNĐ)')} <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  id="camp-amount-input"
-                  type="number"
-                  min="10000"
-                  step="10000"
-                  required
-                  value={amountPerMember}
-                  onChange={(e) => setAmountPerMember(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-hidden hover:border-slate-400 dark:hover:border-slate-600 transition-colors font-bold"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
                 <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-purple-600" />
                   <span>{t('campaigns.launch_date_label', 'Ngày phát động thu quỹ')}</span> <span className="text-rose-500">*</span>
@@ -239,20 +238,20 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-hidden hover:border-slate-400 dark:hover:border-slate-600 transition-colors cursor-pointer"
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  {t('campaigns.desc_notes_label', 'Mục đích & Ghi chú')}
-                </label>
-                <input
-                  id="camp-desc-input"
-                  type="text"
-                  placeholder={t('campaigns.desc_placeholder', 'Ghi chú cho các thành viên...')}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-hidden hover:border-slate-400 dark:hover:border-slate-600 transition-colors"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                {t('campaigns.desc_notes_label', 'Mục đích & Ghi chú')}
+              </label>
+              <input
+                id="camp-desc-input"
+                type="text"
+                placeholder={t('campaigns.desc_placeholder', 'Ghi chú cho các thành viên...')}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-purple-500 focus:outline-hidden hover:border-slate-400 dark:hover:border-slate-600 transition-colors"
+              />
             </div>
 
             {/* Member Checklist with Search & Quick Filters */}

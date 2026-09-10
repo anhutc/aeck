@@ -5,10 +5,6 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Plus,
-  FileDown,
-  FileSpreadsheet,
-  ChevronDown,
-  Printer,
   Trash2,
   Edit2,
   Calendar,
@@ -19,7 +15,7 @@ import {
   ArrowDown
 } from 'lucide-react';
 import { AppBranding, Category, Fund, Member, Transaction, TransactionType } from '../types';
-import { formatVND, formatDate, exportTransactionsToExcel, exportTransactionsToCSV } from '../utils/formatters';
+import { formatVND, formatDate } from '../utils/formatters';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback } from '../context/FeedbackContext';
 
@@ -27,12 +23,12 @@ interface TransactionsTabProps {
   transactions: Transaction[];
   funds: Fund[];
   categories: Category[];
-  members: Member[];
+  members?: Member[];
   branding?: AppBranding;
   isAdmin?: boolean;
   onOpenTransactionModal?: (type?: TransactionType, editingTx?: Transaction) => void;
   onDeleteTransaction?: (id: string) => void;
-  onOpenPrintModal: (fundId?: string) => void;
+  onOpenPrintModal?: (fundId?: string) => void;
 }
 
 export const TransactionsTab: React.FC<TransactionsTabProps> = ({
@@ -169,36 +165,6 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
     setEndDate('');
   };
 
-  const [isExporting, setIsExporting] = useState(false);
-  const [showExportMenu, setShowExportMenu] = useState(false);
-
-  const fundName = branding?.appTitle?.trim() || funds[0]?.name?.trim() || 'AE Cây Khế';
-
-  const handleExportExcel = async () => {
-    try {
-      setIsExporting(true);
-      setShowExportMenu(false);
-      await exportTransactionsToExcel(filteredTransactions, funds, categories, fundName);
-      showToast('Đã xuất file Excel sao kê (.xlsx) thành công!', 'success');
-    } catch (err) {
-      console.error('Lỗi khi xuất file Excel:', err);
-      showToast('Có lỗi xảy ra khi xuất file Excel', 'error');
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleExportCSV = () => {
-    try {
-      setShowExportMenu(false);
-      exportTransactionsToCSV(filteredTransactions, funds, categories, fundName);
-      showToast('Đã xuất file CSV thành công!', 'success');
-    } catch (err) {
-      console.error('Lỗi khi xuất file CSV:', err);
-      showToast('Có lỗi xảy ra khi xuất file CSV', 'error');
-    }
-  };
-
   return (
     <div id="transactions-tab-content" className="space-y-5 pb-12">
       {/* Top Header Controls */}
@@ -212,93 +178,22 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Export Dropdown Group */}
-          <div className="relative inline-flex rounded-xl shadow-xs">
-            <button
-              id="export-excel-btn"
-              onClick={handleExportExcel}
-              disabled={isExporting}
-              className="px-3 py-2 rounded-l-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
-              title="Xuất bảng kê chi tiết ra file Excel (.xlsx) chuyên nghiệp có kẻ ô, màu sắc và tính tổng"
-            >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>{isExporting ? 'Đang xuất...' : 'Xuất Excel'}</span>
-            </button>
+        <div className="flex items-center gap-2">
+          {isAdmin && onOpenTransactionModal && (
             <button
               type="button"
-              id="export-options-toggle-btn"
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className="px-2 py-2 rounded-r-xl border-t border-r border-b border-l-0 border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-xs transition-colors cursor-pointer"
-              title="Tùy chọn định dạng xuất file (Excel / CSV)"
+              id="header-add-tx-btn"
+              onClick={() => onOpenTransactionModal()}
+              className="w-8 h-8 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-xs shadow-blue-600/20 transition-all active:scale-95 cursor-pointer mr-1"
+              title="Ghi nhận thu / chi mới"
             >
-              <ChevronDown className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4 stroke-[2.5]" />
             </button>
-
-            {showExportMenu && (
-              <>
-                <div 
-                  className="fixed inset-0 z-20"
-                  onClick={() => setShowExportMenu(false)}
-                />
-                <div className="absolute right-0 top-full mt-1.5 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-1.5 z-30 text-xs">
-                  <button
-                    type="button"
-                    onClick={handleExportExcel}
-                    className="w-full px-3.5 py-2.5 text-left flex items-center gap-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-800 dark:text-slate-200 font-semibold cursor-pointer transition-colors"
-                  >
-                    <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <div>
-                      <div className="font-bold text-emerald-700 dark:text-emerald-300">File Excel (.xlsx)</div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Kẻ khung, màu sắc, tách cột thu chi</div>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleExportCSV}
-                    className="w-full px-3.5 py-2.5 text-left flex items-center gap-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-300 cursor-pointer transition-colors"
-                  >
-                    <FileDown className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                    <div>
-                      <div className="font-bold">File CSV (.csv)</div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Văn bản thuần UTF-8, mở nhanh</div>
-                    </div>
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-
-          <button
-            id="print-statement-btn"
-            onClick={() => onOpenPrintModal()}
-            className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <Printer className="w-4 h-4 text-blue-600" />
-            <span className="hidden sm:inline">{t('reports.print_statement', 'In sổ cái')}</span>
-          </button>
-
-          {isAdmin && (
-            <>
-              <button
-                id="new-income-btn"
-                onClick={() => onOpenTransactionModal('income')}
-                className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
-              >
-                <ArrowDownLeft className="w-4 h-4" />
-                <span>{t('transactions.btn_add_income', 'Thu tiền (+)')}</span>
-              </button>
-
-              <button
-                id="new-expense-btn"
-                onClick={() => onOpenTransactionModal('expense')}
-                className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm shadow-rose-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
-              >
-                <ArrowUpRight className="w-4 h-4" />
-                <span>{t('transactions.btn_add_expense', 'Chi tiền (-)')}</span>
-              </button>
-            </>
           )}
+
+          <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+            {filteredTransactions.length} {t('transactions.record_count', 'giao dịch')}
+          </span>
         </div>
       </div>
 
