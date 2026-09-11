@@ -820,7 +820,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                           )}
                           <div className="text-[10px] text-slate-400 mt-0.5">
                             {row.type === 'yearly'
-                              ? 'Chế độ: Niên liễm năm'
+                              ? 'Chế độ: Theo năm'
                               : row.type === 'exempt'
                               ? 'Chế độ: Miễn đóng'
                               : 'Chế độ: Theo đợt'}
