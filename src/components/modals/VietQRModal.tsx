@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, QrCode, Copy, Check, Download, Share2, Sparkles, Building2 } from 'lucide-react';
+import { X, QrCode, Copy, Check, Download, Share2, Building2 } from 'lucide-react';
 import { BankSettings, AppBranding } from '../../types';
 import { formatVND, getVietQRUrl } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';

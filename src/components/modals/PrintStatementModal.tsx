@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { 
   X, 
   FileText, 
   Image as ImageIcon, 
   FileDown, 
   Loader2,
-  CheckCircle2,
-  Info
+  CheckCircle2
 } from 'lucide-react';
 import html2canvas from 'html2canvas-pro';
 import { jsPDF } from 'jspdf';

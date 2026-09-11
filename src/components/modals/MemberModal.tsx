@@ -8,14 +8,10 @@ import {
   Calendar,
   Phone,
   Briefcase,
-  Plane,
-  ShieldCheck,
-  Tag,
-  Info,
-  DollarSign
+  Plane
 } from 'lucide-react';
 import { Member, MemberContributionType } from '../../types';
-import { getMemberRoles, formatVND } from '../../utils/formatters';
+import { getMemberRoles } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
 
 interface MemberModalProps {

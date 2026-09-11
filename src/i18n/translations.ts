@@ -93,6 +93,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "portal.tab_reports": "Báo Cáo Tài Chính",
   "portal.footer_note": "Hệ thống quản lý tài chính minh bạch cho hội đồng hương, lớp học, câu lạc bộ & hội nhóm.",
   "portal.notice_board_title": "Bảng Thông Báo & Nội Quy Quỹ",
+  "portal.scan_qr_pay": "Đóng quỹ",
 
   // === 3. Tổng Quan & Số Dư (overview.*) ===
   "overview.total_balance": "Tổng Số Dư Quỹ",
@@ -137,14 +138,14 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "overview.expense_structure": "Cơ cấu chi tiêu",
   "overview.by_category": "Theo danh mục phân loại",
   "overview.no_expense": "Chưa có giao dịch chi tiêu",
-  "overview.active_campaigns": "Đợt Đóng Quỹ Đang Thu",
+  "overview.active_campaigns": "Đợt Đóng Quỹ",
   "overview.campaign_unit": "đợt",
   "overview.view_all": "Xem tất cả",
   "overview.launch_date": "Phát động",
   "overview.collected": "Đã thu",
   "overview.paid_count": "Đã nộp",
   "overview.no_campaigns": "Không có đợt thu quỹ nào đang mở",
-  "overview.recent_transactions": "Giao Dịch Thu Chi Mới Nhất",
+  "overview.recent_transactions": "Giao Dịch Mới",
   "overview.open_ledger": "Xem tất cả",
   "overview.no_transactions": "Chưa có giao dịch nào",
 
@@ -219,7 +220,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "campaigns.subtitle": "Theo dõi tiến độ nộp tiền theo từng đợt, phát động thu quỹ và tạo mã QR đóng tiền cá nhân",
   "campaigns.btn_add_campaign": "Tạo Đợt Thu Mới",
   "campaigns.campaign_label": "Đợt thu:",
-  "campaigns.launch_date_prefix": "Phát động:",
+  "campaigns.launch_date_prefix": "Phát động",
   "campaigns.amount_per_member_label": "Mức đóng / người:",
   "campaigns.total_expected_label": "Tổng thu dự kiến:",
   "campaigns.collected_label": "Đã thu vào:",
@@ -344,7 +345,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "members.phone_placeholder": "0912 345 678",
   "members.role_label": "Chức vụ / Vai trò trong nhóm",
   "members.role_leader": "Trưởng Nhóm / Lớp Trưởng",
-  "members.role_treasurer": "Thủ Quỹ / Quản Trị Viên",
+  "members.role_treasurer": "Liên hệ",
   "members.role_member": "Thành Viên",
   "members.joined_date_label": "Ngày gia nhập",
   "members.exempt_label": "Miễn trừ nghĩa vụ đóng quỹ các đợt",
@@ -362,12 +363,9 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
 
   // === 9. Báo Cáo, Sao Kê & In Ấn (reports.* / print.*) ===
   "reports.title": "Báo Cáo & Sao Kê Thu Chi",
-  "reports.subtitle": "Bảng tổng hợp thu chi minh bạch, thống kê dòng tiền và hỗ trợ in ấn mẫu sao kê A4 chuẩn mực",
+  "reports.subtitle": "Tổng hợp thu chi minh bạch, thống kê dòng tiền.",
   "reports.btn_print_a4": "In Mẫu Sao Kê (Khổ A4)",
-  "reports.btn_export_excel": "Xuất Bảng Kê Excel (.xlsx)",
   "reports.print_statement": "In Báo Cáo",
-  "reports.export_excel": "Xuất Excel",
-  "reports.export_csv": "Xuất CSV",
   "reports.time_filter_title": "Kỳ Báo Cáo:",
   "reports.time_all": "Toàn bộ thời gian",
   "reports.time_this_month": "Tháng này",
@@ -387,6 +385,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "reports.signature_leader": "Đại Diện Ban Quản Trị / Trưởng Nhóm",
   "reports.signature_note": "(Ký, ghi rõ họ tên)",
   "reports.print_date": "Ngày in sao kê:",
+  "reports.months_recorded_unit":"",
 
   // === 10. Thanh Toán Chuẩn VietQR (vietqr.*) ===
   "vietqr.modal_title": "Mã Thanh Toán Chuẩn VietQR",

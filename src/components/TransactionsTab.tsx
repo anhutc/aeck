@@ -1,13 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import {
   Search,
-  Filter,
   ArrowDownLeft,
   ArrowUpRight,
   Plus,
   Trash2,
   Edit2,
-  Calendar,
   Tag,
   RotateCcw,
   ArrowUpDown,
@@ -21,7 +19,7 @@ import { useFeedback } from '../context/FeedbackContext';
 
 interface TransactionsTabProps {
   transactions: Transaction[];
-  funds: Fund[];
+  funds?: Fund[];
   categories: Category[];
   members?: Member[];
   branding?: AppBranding;
@@ -33,13 +31,10 @@ interface TransactionsTabProps {
 
 export const TransactionsTab: React.FC<TransactionsTabProps> = ({
   transactions,
-  funds,
   categories,
-  branding,
   isAdmin = true,
   onOpenTransactionModal,
   onDeleteTransaction,
-  onOpenPrintModal,
 }) => {
   const { t } = useTranslation();
   const { showConfirm, showToast } = useFeedback();

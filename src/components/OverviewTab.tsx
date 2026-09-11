@@ -49,7 +49,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   categories,
   campaigns,
   branding,
-  isAdmin = true,
   onOpenPrintModal,
   setActiveTab,
 }) => {
@@ -235,11 +234,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   };
 
   return (
-    <div id="overview-tab-content" className="space-y-6 pb-12">
+    <div id="overview-tab-content" className="space-y-4 sm:space-y-5 pb-6">
       {/* 1. Main Fund Balance Banner (Clean, High Contrast, with Print Report action) */}
-      <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-5 sm:p-6 shadow-xs border border-slate-200/80 dark:border-slate-800">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div className="space-y-2.5">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-4 sm:p-5 shadow-xs border border-slate-200/80 dark:border-slate-800">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-5">
+          <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800 flex items-center gap-1.5">
                 <Wallet className="w-3.5 h-3.5" />
@@ -263,11 +262,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
 
             {onOpenPrintModal && (
-              <div className="flex flex-wrap items-center gap-2 pt-1">
+              <div className="flex flex-wrap items-center gap-2 pt-0.5">
                 <button
                   id="overview-print-statement-btn"
                   onClick={onOpenPrintModal}
-                  className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-blue-600/20 hover:shadow-md hover:shadow-blue-600/30 flex items-center gap-2 transition-all cursor-pointer group"
+                  className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-blue-600/20 hover:shadow-md hover:shadow-blue-600/30 flex items-center gap-2 transition-all cursor-pointer group"
                   title="In báo cáo sao kê sổ quỹ chuẩn A4"
                 >
                   <Printer className="w-4 h-4 group-hover:scale-110 group-active:scale-95 transition-transform" />
@@ -278,9 +277,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
 
           {/* All-time Accumulated Income & Expense Responsive Cards */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-3.5 w-full md:w-auto">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 w-full md:w-auto">
             {/* Tổng đã thu */}
-            <div className="p-2.5 sm:px-4 sm:py-3 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 flex flex-col justify-between gap-1 min-w-0 flex-1 sm:flex-initial">
+            <div className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 flex flex-col justify-between gap-1 min-w-0 flex-1 sm:flex-initial">
               <div className="flex items-center gap-1.5 min-w-0">
                 <div className="w-5 h-5 rounded-md bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                   <ArrowDownLeft className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -300,7 +299,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
 
             {/* Tổng đã chi */}
-            <div className="p-2.5 sm:px-4 sm:py-3 rounded-2xl bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200/80 dark:border-rose-800/60 flex flex-col justify-between gap-1 min-w-0 flex-1 sm:flex-initial">
+            <div className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200/80 dark:border-rose-800/60 flex flex-col justify-between gap-1 min-w-0 flex-1 sm:flex-initial">
               <div className="flex items-center gap-1.5 min-w-0">
                 <div className="w-5 h-5 rounded-md bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 flex items-center justify-center shrink-0">
                   <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -323,8 +322,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       </div>
 
       {/* 2. Financial Period Filter & Flow Performance (Consolidated from Reports) */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="space-y-3 sm:space-y-3.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-blue-600" />
@@ -381,42 +380,42 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         </div>
 
         {/* 3 KPI Cards for Selected Period */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="p-4 sm:p-4.5 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-slate-500 font-semibold uppercase tracking-wider">
               <span>{t('reports.kpi_income', 'Tổng thu trong kỳ')}</span>
               <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                 <ArrowDownLeft className="w-4 h-4" />
               </div>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+            <div className="mt-2.5">
+              <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">
                 +{formatVND(periodIncome)}
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-400 mt-0.5">
                 {periodFilteredTx.filter(t => t.type === 'income').length} {t('transactions.record_count', 'giao dịch thu')}
               </p>
             </div>
           </div>
 
-          <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+          <div className="p-4 sm:p-4.5 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-slate-500 font-semibold uppercase tracking-wider">
               <span>{t('reports.kpi_expense', 'Tổng chi trong kỳ')}</span>
               <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
                 <ArrowUpRight className="w-4 h-4" />
               </div>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl font-black text-rose-600 dark:text-rose-400">
+            <div className="mt-2.5">
+              <div className="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400">
                 -{formatVND(periodExpense)}
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-400 mt-0.5">
                 {periodFilteredTx.filter(t => t.type === 'expense').length} {t('transactions.record_count', 'giao dịch chi')}
               </p>
             </div>
           </div>
 
-          <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+          <div className="p-4 sm:p-4.5 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-slate-500 font-semibold uppercase tracking-wider">
               <span>{t('reports.kpi_net', 'Dòng tiền ròng (Thu - Chi)')}</span>
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
@@ -427,13 +426,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 <TrendingUp className="w-4 h-4" />
               </div>
             </div>
-            <div className="mt-3">
-              <div className={`text-2xl font-black ${
+            <div className="mt-2.5">
+              <div className={`text-xl sm:text-2xl font-black ${
                 netBalance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-400'
               }`}>
                 {netBalance >= 0 ? '+' : ''}{formatVND(netBalance)}
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-400 mt-0.5">
                 {netBalance >= 0 ? t('overview.cashflow_surplus', 'Quỹ thặng dư tăng trưởng') : t('overview.cashflow_deficit', 'Quỹ thâm hụt trong kỳ')}
               </p>
             </div>
@@ -442,8 +441,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       </div>
 
       {/* 3. Main Interactive Financial Analytics Hub */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+      <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
           <div>
             <h3 className="font-bold text-base text-slate-900 dark:text-white">
               {t('reports.visual_title', 'Hệ thống trực quan hóa số liệu tài chính')}
@@ -506,7 +505,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
         {/* TAB 1: MONTHLY BAR CHART */}
         {activeChartTab === 'monthly' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between text-xs text-slate-500">
               <span>{t('reports.monthly_desc', 'So sánh tổng tiền thu vào và tổng tiền chi ra theo từng tháng')}</span>
               <span className="font-semibold text-slate-700 dark:text-slate-300">
@@ -514,7 +513,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               </span>
             </div>
 
-            <div className="h-72 sm:h-80 w-full">
+            <div className="h-60 sm:h-64 w-full">
               {monthlyData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -536,7 +535,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     />
                     <Legend
                       formatter={(val) => (val === 'income' ? t('reports.kpi_income', 'Thu vào') : t('reports.kpi_expense', 'Chi ra'))}
-                      wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                      wrapperStyle={{ fontSize: '12px', paddingTop: '6px' }}
                     />
                     <Bar dataKey="income" name="income" fill="#10B981" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="expense" name="expense" fill="#EF4444" radius={[4, 4, 0, 0]} />
@@ -553,7 +552,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
         {/* TAB 2: YEARLY BAR CHART */}
         {activeChartTab === 'yearly' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between text-xs text-slate-500">
               <span>{t('reports.yearly_desc', 'Tổng hợp quy mô thu chi qua các năm hoạt động của quỹ')}</span>
               <span className="font-semibold text-slate-700 dark:text-slate-300">
@@ -561,7 +560,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               </span>
             </div>
 
-            <div className="h-72 sm:h-80 w-full">
+            <div className="h-60 sm:h-64 w-full">
               {yearlyData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={yearlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -583,7 +582,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     />
                     <Legend
                       formatter={(val) => (val === 'income' ? t('reports.kpi_income', 'Thu vào') : t('reports.kpi_expense', 'Chi ra'))}
-                      wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                      wrapperStyle={{ fontSize: '12px', paddingTop: '6px' }}
                     />
                     <Bar dataKey="income" name="income" fill="#10B981" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="expense" name="expense" fill="#EF4444" radius={[4, 4, 0, 0]} />
@@ -600,7 +599,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
         {/* TAB 3: CUMULATIVE BALANCE TREND (AREA CHART) */}
         {activeChartTab === 'trend' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between text-xs text-slate-500">
               <span>{t('reports.trend_desc', 'Biểu đồ tích lũy số dư thực tế theo trình tự thời gian')}</span>
               <span className="font-semibold text-blue-600 dark:text-blue-400">
@@ -608,7 +607,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               </span>
             </div>
 
-            <div className="h-72 sm:h-80 w-full">
+            <div className="h-60 sm:h-64 w-full">
               {cumulativeTrendData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={cumulativeTrendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -778,10 +777,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       </div>
 
       {/* 4. Active Campaigns & Recent Transactions Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 sm:gap-4">
         {/* Active Campaigns */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
+        <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-start">
+          <div className="flex items-center justify-between mb-3 sm:mb-3.5">
             <div className="flex items-center gap-2">
               <h3 className="font-bold text-sm text-slate-900 dark:text-white">
                 {t('overview.active_campaigns', 'Đợt Đóng Quỹ Đang Thu')}
@@ -847,8 +846,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         </div>
 
         {/* Recent Transactions */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
+        <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-start">
+          <div className="flex items-center justify-between mb-3 sm:mb-3.5">
             <h3 className="font-bold text-sm text-slate-900 dark:text-white">
               {t('overview.recent_transactions', 'Giao Dịch Thu Chi Mới Nhất')}
             </h3>

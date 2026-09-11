@@ -38,12 +38,14 @@ import { CampaignModal } from './components/modals/CampaignModal';
 import { MemberModal } from './components/modals/MemberModal';
 import { VietQRModal } from './components/modals/VietQRModal';
 import { PrintStatementModal } from './components/modals/PrintStatementModal';
+import { PrintMemberDuesModal } from './components/modals/PrintMemberDuesModal';
 import { ShareModal } from './components/modals/ShareModal';
 import { NoticeEditModal } from './components/modals/NoticeEditModal';
 import { MemberPortalView } from './components/MemberPortalView';
 import { FloatingTransactionButton } from './components/common/FloatingTransactionButton';
 import { subscribeToCloudState, saveCloudState, fetchCloudStateOnce, testCloudConnection, CloudConnectionResult } from './lib/cloudStore';
 import { useFeedback } from './context/FeedbackContext';
+import { motion, AnimatePresence } from 'motion/react';
 
 const STORAGE_KEYS = {
   FUNDS: 'quanlyquy_funds_v2',
@@ -301,6 +303,9 @@ export default function App() {
 
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [printFundId, setPrintFundId] = useState<string | undefined>(undefined);
+
+  const [isPrintDuesModalOpen, setIsPrintDuesModalOpen] = useState(false);
+  const [printDuesCampaignId, setPrintDuesCampaignId] = useState<string>('all');
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
@@ -752,6 +757,12 @@ export default function App() {
     setIsPrintModalOpen(true);
   };
 
+  const handleOpenPrintDuesModal = (campaignId: string = 'all') => {
+    if (isMemberView) return;
+    setPrintDuesCampaignId(campaignId);
+    setIsPrintDuesModalOpen(true);
+  };
+
   const handleForceSyncToCloud = async () => {
     try {
       setCloudSyncStatus('syncing');
@@ -933,7 +944,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 md:pb-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-20 md:pb-6 space-y-4 sm:space-y-5">
         {isMemberView ? (
           <MemberPortalView
             funds={funds}
@@ -947,98 +958,107 @@ export default function App() {
             viewPermissions={viewPermissions}
             onOpenQRModal={handleOpenQRModal}
             onOpenPrintModal={handleOpenPrintModal}
-            onLogout={handleLogout}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
         ) : (
-          <>
-            {activeTab === 'overview' && (
-              <OverviewTab
-                funds={funds}
-                transactions={transactions}
-                categories={categories}
-                campaigns={campaigns}
-                branding={branding}
-                isAdmin={true}
-                onOpenPrintModal={() => handleOpenPrintModal()}
-                setActiveTab={setActiveTab}
-              />
-            )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.16, ease: 'easeOut' }}
+            >
+              {activeTab === 'overview' && (
+                <OverviewTab
+                  funds={funds}
+                  transactions={transactions}
+                  categories={categories}
+                  campaigns={campaigns}
+                  branding={branding}
+                  isAdmin={true}
+                  onOpenPrintModal={() => handleOpenPrintModal()}
+                  setActiveTab={setActiveTab}
+                />
+              )}
 
-            {activeTab === 'transactions' && (
-              <TransactionsTab
-                transactions={transactions}
-                funds={funds}
-                categories={categories}
-                branding={branding}
-                onOpenTransactionModal={(type, tx) => handleOpenTransactionModal(type, tx)}
-                onDeleteTransaction={handleDeleteTransaction}
-                onOpenPrintModal={handleOpenPrintModal}
-              />
-            )}
+              {activeTab === 'transactions' && (
+                <TransactionsTab
+                  transactions={transactions}
+                  funds={funds}
+                  categories={categories}
+                  branding={branding}
+                  onOpenTransactionModal={(type, tx) => handleOpenTransactionModal(type, tx)}
+                  onDeleteTransaction={handleDeleteTransaction}
+                  onOpenPrintModal={handleOpenPrintModal}
+                />
+              )}
 
-            {activeTab === 'campaigns' && (
-              <CampaignsTab
-                campaigns={campaigns}
-                funds={funds}
-                members={members}
-                branding={branding}
-                onOpenCampaignModal={(c) => {
-                  setEditingCampaign(c || null);
-                  setIsCampaignModalOpen(true);
-                }}
-                onDeleteCampaign={handleDeleteCampaign}
-                onUpdateParticipantPayment={handleUpdateParticipantPayment}
-                onOpenQRModal={handleOpenQRModal}
-              />
-            )}
+              {activeTab === 'campaigns' && (
+                <CampaignsTab
+                  campaigns={campaigns}
+                  funds={funds}
+                  members={members}
+                  branding={branding}
+                  onOpenCampaignModal={(c) => {
+                    setEditingCampaign(c || null);
+                    setIsCampaignModalOpen(true);
+                  }}
+                  onDeleteCampaign={handleDeleteCampaign}
+                  onUpdateParticipantPayment={handleUpdateParticipantPayment}
+                  onOpenQRModal={handleOpenQRModal}
+                  onOpenPrintDuesModal={handleOpenPrintDuesModal}
+                />
+              )}
 
-            {activeTab === 'members' && (
-              <MembersTab
-                members={members}
-                campaigns={campaigns}
-                funds={funds}
-                branding={branding}
-                onOpenQRModal={handleOpenQRModal}
-                onUpdateParticipantPayment={handleUpdateParticipantPayment}
-                onOpenMemberModal={(m) => {
-                  setEditingMember(m || null);
-                  setIsMemberModalOpen(true);
-                }}
-                onDeleteMember={handleDeleteMember}
-              />
-            )}
+              {activeTab === 'members' && (
+                <MembersTab
+                  members={members}
+                  campaigns={campaigns}
+                  funds={funds}
+                  branding={branding}
+                  onOpenQRModal={handleOpenQRModal}
+                  onUpdateParticipantPayment={handleUpdateParticipantPayment}
+                  onOpenMemberModal={(m) => {
+                    setEditingMember(m || null);
+                    setIsMemberModalOpen(true);
+                  }}
+                  onDeleteMember={handleDeleteMember}
+                  onOpenPrintDuesModal={handleOpenPrintDuesModal}
+                />
+              )}
 
-            {activeTab === 'settings' && (
-              <SettingsTab
-                bankSettings={bankSettings}
-                onUpdateBankSettings={setBankSettings}
-                categories={categories}
-                onAddCategory={handleAddCategory}
-                onUpdateCategory={handleUpdateCategory}
-                onDeleteCategory={handleDeleteCategory}
-                onExportAllData={handleExportAllData}
-                onImportAllData={handleImportAllData}
-                onForceSyncToCloud={handleForceSyncToCloud}
-                onForcePullFromCloud={handleForcePullFromCloud}
-                onTestCloudConnection={handleTestCloudConnection}
-                cloudSyncStatus={cloudSyncStatus}
-                lastCloudSyncTime={lastCloudSyncTime}
-                cloudLatency={cloudLatency}
-                adminPassword={adminPassword}
-                onUpdateAdminPassword={setAdminPassword}
-                memberPassword={memberPassword}
-                onUpdateMemberPassword={setMemberPassword}
-                groupNotice={groupNotice}
-                onUpdateGroupNotice={setGroupNotice}
-                branding={branding}
-                onUpdateBranding={handleUpdateBranding}
-                viewPermissions={viewPermissions}
-                onUpdateViewPermissions={setViewPermissions}
-              />
-            )}
-          </>
+              {activeTab === 'settings' && (
+                <SettingsTab
+                  bankSettings={bankSettings}
+                  onUpdateBankSettings={setBankSettings}
+                  categories={categories}
+                  onAddCategory={handleAddCategory}
+                  onUpdateCategory={handleUpdateCategory}
+                  onDeleteCategory={handleDeleteCategory}
+                  onExportAllData={handleExportAllData}
+                  onImportAllData={handleImportAllData}
+                  onForceSyncToCloud={handleForceSyncToCloud}
+                  onForcePullFromCloud={handleForcePullFromCloud}
+                  onTestCloudConnection={handleTestCloudConnection}
+                  cloudSyncStatus={cloudSyncStatus}
+                  lastCloudSyncTime={lastCloudSyncTime}
+                  cloudLatency={cloudLatency}
+                  adminPassword={adminPassword}
+                  onUpdateAdminPassword={setAdminPassword}
+                  memberPassword={memberPassword}
+                  onUpdateMemberPassword={setMemberPassword}
+                  groupNotice={groupNotice}
+                  onUpdateGroupNotice={setGroupNotice}
+                  branding={branding}
+                  onUpdateBranding={handleUpdateBranding}
+                  viewPermissions={viewPermissions}
+                  onUpdateViewPermissions={setViewPermissions}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
         )}
       </main>
 
@@ -1094,6 +1114,18 @@ export default function App() {
         categories={categories}
         activeFundId={printFundId}
         branding={branding}
+      />
+
+      <PrintMemberDuesModal
+        isOpen={isPrintDuesModalOpen && !isMemberView}
+        onClose={() => setIsPrintDuesModalOpen(false)}
+        members={members}
+        campaigns={campaigns}
+        funds={funds}
+        bankSettings={bankSettings}
+        branding={branding}
+        defaultCampaignId={printDuesCampaignId}
+        isAdmin={!isMemberView}
       />
 
       <ShareModal

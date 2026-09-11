@@ -1,12 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Lock, 
   KeyRound, 
   Eye, 
   EyeOff, 
   ArrowRight, 
-  ShieldCheck, 
-  Users, 
   AlertCircle,
   Wallet,
   Phone,
@@ -44,11 +41,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
   // Fund owner information
   const ownerName = branding?.treasurerName?.trim() || 'Trần Thị Mai';
-  const ownerTitle = branding?.treasurerTitle?.trim() || 'Thủ Quỹ Ban Quản Lý';
   const ownerPhone = branding?.treasurerPhone?.trim() || '0912345678';
   const bankName = bankSettings?.bankName?.trim() || 'Ngân hàng Quân Đội (MB Bank)';
   const accountNumber = bankSettings?.accountNumber?.trim() || '999988886666';
-  const accountHolder = bankSettings?.accountName?.trim() || (branding?.treasurerName?.trim() ? branding.treasurerName.toUpperCase() : 'TRAN THI MAI');
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -122,10 +117,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <label className="block text-xs font-bold text-slate-800">
                 Mật khẩu truy cập
               </label>
-              <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                <Lock className="w-3 h-3 text-slate-400" />
-                Khóa khi tải lại trang
-              </span>
             </div>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -165,31 +156,24 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </button>
         </form>
 
-        {/* Security Reassurance Note */}
-        <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-500 flex items-center gap-2 leading-tight">
-          <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
-          <span>Bảo mật dữ liệu: Hệ thống không lưu phiên trên máy. Mỗi lần tải lại trang hoặc mở lại tab đều bắt buộc nhập lại mật khẩu.</span>
-        </div>
-
         {/* Fund Owner Information Card (Thông tin chủ quỹ) */}
         <div className="p-3.5 sm:p-4 rounded-2xl bg-linear-to-b from-blue-50/70 to-slate-50/90 border border-blue-100/90 space-y-2.5">
           <div className="flex items-center justify-between pb-2 border-b border-blue-200/50">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
               <UserCheck className="w-4 h-4 text-blue-600" />
-              <span>Thông tin Chủ quỹ</span>
+              <span>Thông tin liên hệ</span>
             </div>
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100/80 text-blue-700 border border-blue-200/60">
-              Đại diện quản lý
+              Đại diện
             </span>
           </div>
 
           <div className="space-y-2 text-xs">
             {/* Owner Name & Role */}
             <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-[11px]">Chủ quỹ / Thủ quỹ:</span>
+              <span className="text-slate-500 text-[11px]">Tên:</span>
               <div className="text-right">
                 <span className="font-bold text-slate-900 block">{ownerName}</span>
-                <span className="text-[10px] text-blue-600 font-medium">{ownerTitle}</span>
               </div>
             </div>
 
@@ -198,7 +182,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <div className="flex items-center justify-between pt-1 border-t border-slate-200/40">
                 <span className="text-slate-500 text-[11px] flex items-center gap-1">
                   <Phone className="w-3 h-3 text-emerald-600" />
-                  <span>Điện thoại / Zalo:</span>
+                  <span>Điện thoại:</span>
                 </span>
                 <div className="flex items-center gap-1.5">
                   <a
@@ -229,7 +213,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <div className="flex items-center justify-between pt-1 border-t border-slate-200/40">
                 <span className="text-slate-500 text-[11px] flex items-center gap-1">
                   <Landmark className="w-3 h-3 text-indigo-600" />
-                  <span>Tài khoản quỹ:</span>
+                  <span>Tài khoản:</span>
                 </span>
                 <div className="flex items-center gap-1.5">
                   <div className="text-right">
@@ -251,36 +235,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 </div>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Dual Password Information Box */}
-        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-            <Lock className="w-3.5 h-3.5 text-blue-600" />
-            <span>Phân quyền truy cập</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 text-[11px]">
-            <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 space-y-1">
-              <div className="font-bold text-purple-700 flex items-center gap-1">
-                <Users className="w-3 h-3 text-purple-600" />
-                <span>Thành viên</span>
-              </div>
-              <p className="text-slate-600 text-[10px] leading-relaxed">
-                Xem báo cáo, số dư quỹ, danh sách đóng góp, tạo mã VietQR.
-              </p>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 space-y-1">
-              <div className="font-bold text-blue-700 flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-blue-600" />
-                <span>Quản trị</span>
-              </div>
-              <p className="text-slate-600 text-[10px] leading-relaxed">
-                Toàn quyền ghi thu chi, quản trị quỹ, cấu hình tài khoản & bảo mật.
-              </p>
-            </div>
           </div>
         </div>
 

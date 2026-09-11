@@ -5,13 +5,11 @@ import {
   ArrowUpRight,
   Calendar,
   Tag,
-  DollarSign,
   FileText,
   Check,
   AlertCircle
 } from 'lucide-react';
 import { AppBranding, Category, Fund, Transaction, TransactionType } from '../../types';
-import { formatVND } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { AmountInput } from '../common/AmountInput';
 

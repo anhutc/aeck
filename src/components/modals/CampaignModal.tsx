@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, AlertCircle, Calendar, Target, Plane, ShieldCheck, Search, Users, CheckSquare, Square } from 'lucide-react';
+import { X, Check, AlertCircle, Calendar, Target, Plane, ShieldCheck, Search, Users } from 'lucide-react';
 import { ContributionCampaign, Fund, Member } from '../../types';
 import { formatVND, getMemberRoles } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';

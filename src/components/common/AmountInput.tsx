@@ -31,7 +31,6 @@ export const AmountInput: React.FC<AmountInputProps> = ({
   required = true,
   autoFocus = false,
   placeholder = 'VD: 500.000',
-  min = 0,
   max,
   presets = DEFAULT_PRESETS,
   showAdders = true,

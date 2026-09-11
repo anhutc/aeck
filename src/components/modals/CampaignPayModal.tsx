@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, CheckCircle2, Calendar, DollarSign, FileText, User } from 'lucide-react';
+import { X, CheckCircle2, Calendar, FileText, User } from 'lucide-react';
 import { formatVND } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { useFeedback } from '../../context/FeedbackContext';

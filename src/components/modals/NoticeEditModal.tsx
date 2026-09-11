@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollText, X, Save, Sparkles, AlertCircle, Calendar, Info, FileText } from 'lucide-react';
+import { ScrollText, X, Save, Sparkles, AlertCircle, Calendar, Info } from 'lucide-react';
 import { GroupNotice } from '../../types';
 import { useTranslation } from '../../i18n/LanguageContext';
 

@@ -4,14 +4,10 @@ import {
   Share2,
   Copy,
   Check,
-  QrCode,
   Eye,
-  ExternalLink,
   ShieldCheck,
-  Users,
   Smartphone,
-  MessageSquare,
-  Sparkles
+  MessageSquare
 } from 'lucide-react';
 import { BankSettings, ContributionCampaign, Fund, AppBranding } from '../../types';
 import { formatVND } from '../../utils/formatters';
@@ -21,8 +17,8 @@ interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSwitchToMemberView: () => void;
-  bankSettings: BankSettings;
-  funds: Fund[];
+  bankSettings?: BankSettings;
+  funds?: Fund[];
   activeCampaigns: ContributionCampaign[];
   branding?: AppBranding;
 }
@@ -31,8 +27,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   isOpen,
   onClose,
   onSwitchToMemberView,
-  bankSettings,
-  funds,
   activeCampaigns,
   branding,
 }) => {
@@ -50,8 +44,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   }, [isOpen]);
 
   if (!isOpen) return null;
-
-  const totalBalance = funds.reduce((sum, f) => sum + f.balance, 0);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);

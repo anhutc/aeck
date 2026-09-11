@@ -15,7 +15,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { ContributionCampaign, Member, Fund, AppBranding } from '../../types';
-import { formatVND, formatDate, getMemberRoles, copyToClipboard } from '../../utils/formatters';
+import { formatVND, formatDate, getMemberRoles } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { useFeedback } from '../../context/FeedbackContext';
 
@@ -46,7 +46,6 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
   const { showConfirm, showToast } = useFeedback();
   const [filterStatus, setFilterStatus] = useState<'all' | 'unpaid' | 'paid'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [copiedCampId, setCopiedCampId] = useState<string | null>(null);
 
   const fundMap = useMemo(() => new Map(funds.map(f => [f.id, f])), [funds]);
 
@@ -124,15 +123,6 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
     const amount = item.remaining > 0 ? item.remaining : item.required;
     const syntax = `${prefix} ${item.campaign.title} ${member.name}`.trim().toUpperCase();
     onOpenQRModal(amount, syntax);
-  };
-
-  const handleCopySingleSyntax = async (campTitle: string, campId: string) => {
-    const syntax = `${prefix} ${campTitle} ${member.name}`.trim().toUpperCase();
-    const ok = await copyToClipboard(syntax);
-    if (ok) {
-      setCopiedCampId(campId);
-      setTimeout(() => setCopiedCampId(null), 2000);
-    }
   };
 
   return (

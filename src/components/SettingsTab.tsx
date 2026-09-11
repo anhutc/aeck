@@ -6,7 +6,6 @@ import {
   Trash2,
   Download,
   Upload,
-  RotateCcw,
   Check,
   Save,
   KeyRound,
@@ -14,7 +13,6 @@ import {
   EyeOff,
   ScrollText,
   Calendar,
-  ShieldCheck,
   Type,
   Cloud,
   RefreshCw,
@@ -23,9 +21,7 @@ import {
   Target,
   Pencil,
   X,
-  Globe,
   FileText,
-  Printer,
   Database,
   Activity,
   Zap,
@@ -38,9 +34,9 @@ import {
 import { BankSettings, Category, GroupNotice, AppBranding, MemberViewPermissions } from '../types';
 import { VIETNAMESE_BANKS, INITIAL_BRANDING, INITIAL_VIEW_PERMISSIONS } from '../data/initialData';
 import { CloudDataSourceModal } from './settings/CloudDataSourceModal';
-import { getSavedCustomFirebaseConfig, getActiveFirebaseConfig } from '../lib/firebase';
+import { getSavedCustomFirebaseConfig } from '../lib/firebase';
 import { useTranslation } from '../i18n/LanguageContext';
-import { useFeedback, ToastPosition } from '../context/FeedbackContext';
+import { useFeedback } from '../context/FeedbackContext';
 
 export type SettingSubTab = 'branding' | 'statement' | 'notice' | 'permissions' | 'security' | 'bank' | 'categories' | 'backup' | 'all';
 
@@ -124,7 +120,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [pingResult, setPingResult] = useState<{ success: boolean; latencyMs: number; error?: string } | null>(null);
   const [isCloudDataSourceModalOpen, setIsCloudDataSourceModalOpen] = useState(false);
   const savedCustomFirebase = getSavedCustomFirebaseConfig();
-  const activeFirebase = getActiveFirebaseConfig();
 
   const handleRunPingTest = async () => {
     if (!onTestCloudConnection) return;
@@ -231,20 +226,16 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   }, [groupNotice]);
 
   // Admin Password change state
-  const [currentPassInput, setCurrentPassInput] = useState('');
   const [newPassInput, setNewPassInput] = useState('');
   const [confirmPassInput, setConfirmPassInput] = useState('');
-  const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
   const [showAdminPassValue, setShowAdminPassValue] = useState(false);
   const [passError, setPassError] = useState('');
   const [passSuccess, setPassSuccess] = useState('');
 
   // Member Password change state
-  const [currentMemberPassInput, setCurrentMemberPassInput] = useState('');
   const [newMemberPassInput, setNewMemberPassInput] = useState('');
   const [confirmMemberPassInput, setConfirmMemberPassInput] = useState('');
-  const [showCurrentMemberPass, setShowCurrentMemberPass] = useState(false);
   const [showNewMemberPass, setShowNewMemberPass] = useState(false);
   const [showMemberPassValue, setShowMemberPassValue] = useState(false);
   const [memberPassError, setMemberPassError] = useState('');
@@ -331,10 +322,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setPerms(viewPermissions);
       showToast('Đã hủy thay đổi phân quyền!', 'info');
     }
-  };
-
-  const handleToggleNoticeDirectly = (enabled: boolean) => {
-    setNoticeEnabled(enabled);
   };
 
   const handleResetNotice = () => {
@@ -436,13 +423,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     }
   };
 
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
   const handleApplyBrandingPreset = (preset: 'class' | 'company' | 'club' | 'family' | 'travel') => {
     if (preset === 'class') {
       setAppTitle('Quỹ Lớp Học & Bạn Bè');
@@ -527,7 +507,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     onUpdateAdminPassword(newPass);
     showToast('Đã đổi mật khẩu Quản trị viên thành công và đồng bộ!', 'success');
     setPassSuccess('Đã đổi mật khẩu Quản trị viên thành công!');
-    setCurrentPassInput('');
     setNewPassInput('');
     setConfirmPassInput('');
     setTimeout(() => setPassSuccess(''), 3000);
@@ -544,7 +523,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         showToast('Đã khôi phục mật khẩu Quản trị viên về mặc định (admin)!', 'success');
         setPassError('');
         setPassSuccess('Đã khôi phục về "admin"');
-        setCurrentPassInput('');
         setNewPassInput('');
         setConfirmPassInput('');
         setTimeout(() => setPassSuccess(''), 3000);
@@ -575,7 +553,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     }
     showToast('Đã đổi mật khẩu Thành viên thành công và đồng bộ!', 'success');
     setMemberPassSuccess('Đã đổi mật khẩu Thành viên thành công!');
-    setCurrentMemberPassInput('');
     setNewMemberPassInput('');
     setConfirmMemberPassInput('');
     setTimeout(() => setMemberPassSuccess(''), 3000);
@@ -594,7 +571,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         showToast('Đã khôi phục mật khẩu Thành viên về mặc định (123)!', 'success');
         setMemberPassError('');
         setMemberPassSuccess('Đã khôi phục về "123"');
-        setCurrentMemberPassInput('');
         setNewMemberPassInput('');
         setConfirmMemberPassInput('');
         setTimeout(() => setMemberPassSuccess(''), 3000);

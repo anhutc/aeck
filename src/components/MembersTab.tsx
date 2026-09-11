@@ -3,31 +3,21 @@ import {
   Users,
   UserPlus,
   Search,
-  Filter,
   Phone,
   Calendar,
-  CheckCircle,
-  CheckCircle2,
-  Clock,
   Edit2,
   Trash2,
-  Tag,
   Briefcase,
   Plane,
   ShieldCheck,
-  CreditCard,
-  DollarSign,
-  AlertCircle,
   LayoutGrid,
   Table as TableIcon,
   ReceiptText,
   QrCode,
-  FileSpreadsheet,
   Copy,
-  Check,
-  ArrowUpRight
+  Check
 } from 'lucide-react';
-import { AppBranding, ContributionCampaign, Fund, Member, MemberContributionType } from '../types';
+import { AppBranding, ContributionCampaign, Fund, Member } from '../types';
 import { formatDate, formatVND, getMemberRoles } from '../utils/formatters';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback } from '../context/FeedbackContext';
@@ -44,6 +34,7 @@ interface MembersTabProps {
   onSelectMemberForPortal?: (memberId: string) => void;
   onOpenQRModal?: (amount?: number, content?: string) => void;
   onUpdateParticipantPayment?: (campaignId: string, memberId: string, amountPaid: number, paidDate?: string, note?: string) => void;
+  onOpenPrintDuesModal?: (campaignId?: string) => void;
 }
 
 export const MembersTab: React.FC<MembersTabProps> = ({
@@ -56,13 +47,13 @@ export const MembersTab: React.FC<MembersTabProps> = ({
   onDeleteMember,
   onOpenQRModal,
   onUpdateParticipantPayment,
+  onOpenPrintDuesModal,
 }) => {
   const { t } = useTranslation();
   const { showConfirm, showToast } = useFeedback();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [contributionTypeFilter, setContributionTypeFilter] = useState<string>('all');
   const [debtFilter, setDebtFilter] = useState<'all' | 'unpaid' | 'paid_full'>('all');
   const [memberSort, setMemberSort] = useState<'name_asc' | 'joined_desc' | 'joined_asc' | 'debt_desc' | 'paid_desc'>('name_asc');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
@@ -202,12 +193,6 @@ export const MembersTab: React.FC<MembersTabProps> = ({
         if (!memberRoles.includes(roleFilter)) return false;
       }
 
-      // Contribution type filter
-      if (contributionTypeFilter !== 'all') {
-        const type = m.contributionType || 'campaign';
-        if (type !== contributionTypeFilter) return false;
-      }
-
       // Debt filter
       if (debtFilter !== 'all') {
         const stats = computeMemberContributionStats(m);
@@ -238,11 +223,10 @@ export const MembersTab: React.FC<MembersTabProps> = ({
       }
       return 0;
     });
-  }, [members, campaigns, searchQuery, statusFilter, roleFilter, contributionTypeFilter, debtFilter, memberSort]);
+  }, [members, campaigns, searchQuery, statusFilter, roleFilter, debtFilter, memberSort]);
 
   const activeCount = members.filter((m) => m.status === 'active').length;
   const yearlyCount = members.filter((m) => m.contributionType === 'yearly').length;
-  const exemptCount = members.filter((m) => m.contributionType === 'exempt').length;
 
   const totalMembersDebt = useMemo(() => {
     let sum = 0;
@@ -294,6 +278,20 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             </button>
           </div>
 
+          {/* Xuất ảnh đóng quỹ & công nợ (chỉ dành cho Admin) */}
+          {isAdmin && onOpenPrintDuesModal && (
+            <button
+              id="export-member-dues-btn"
+              onClick={() => onOpenPrintDuesModal()}
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all shrink-0 cursor-pointer active:scale-95"
+              title="Xuất ảnh danh sách đóng quỹ & công nợ để chia sẻ vào Zalo"
+            >
+              <ReceiptText className="w-4 h-4" />
+              <span className="hidden sm:inline">Xuất ảnh đóng quỹ</span>
+              <span className="sm:hidden">Xuất ảnh</span>
+            </button>
+          )}
+
           {isAdmin && (
             <button
               id="add-member-btn"
@@ -319,8 +317,21 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             <span className="text-emerald-700 dark:text-emerald-300 block">{t('members.status_active', 'Đang hoạt động:')}</span>
             <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{activeCount} {t('common.members_unit', 'người')}</span>
           </div>
-          <div className="p-3 bg-rose-50/60 dark:bg-rose-950/20 rounded-xl border border-rose-200/60 dark:border-rose-900/60">
-            <span className="text-rose-700 dark:text-rose-300 block">{t('members.total_debt_kpi', 'Tổng quỹ còn thiếu:')}</span>
+          <div
+            onClick={() => {
+              if (isAdmin && onOpenPrintDuesModal) {
+                onOpenPrintDuesModal();
+              }
+            }}
+            className={`p-3 bg-rose-50/60 dark:bg-rose-950/20 rounded-xl border border-rose-200/60 dark:border-rose-900/60 ${isAdmin ? 'cursor-pointer hover:bg-rose-100/60 dark:hover:bg-rose-900/40 transition-colors group' : ''}`}
+            title={isAdmin ? "Bấm để xem và xuất ảnh danh sách nợ" : undefined}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-rose-700 dark:text-rose-300 block">{t('members.total_debt_kpi', 'Tổng quỹ còn thiếu:')}</span>
+              {isAdmin && (
+                <span className="text-[10px] text-rose-500 underline opacity-0 group-hover:opacity-100 transition-opacity">Xuất ảnh</span>
+              )}
+            </div>
             <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">{formatVND(totalMembersDebt)}</span>
           </div>
           <div className="p-3 bg-amber-50/60 dark:bg-amber-950/20 rounded-xl border border-amber-200/60 dark:border-amber-900/60">

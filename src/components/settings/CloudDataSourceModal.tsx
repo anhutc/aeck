@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Cloud, 
   Database, 
   Server, 
   Key, 
@@ -10,8 +9,6 @@ import {
   Code2, 
   RefreshCw, 
   AlertCircle, 
-  CheckCircle2, 
-  Zap, 
   BookOpen, 
   FileCode, 
   Bot, 
@@ -29,7 +26,6 @@ import {
   getActiveFirebaseConfig, 
   defaultFirebaseConfig 
 } from '../../lib/firebase';
-import { getCloudConfigInfo, testCloudConnection } from '../../lib/cloudStore';
 import { useFeedback } from '../../context/FeedbackContext';
 
 interface CloudDataSourceModalProps {
@@ -66,8 +62,6 @@ export const CloudDataSourceModal: React.FC<CloudDataSourceModalProps> = ({
     firestoreDatabaseId: savedCustom?.firestoreDatabaseId || '(default)',
   });
 
-  const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; latencyMs: number; error?: string } | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -133,28 +127,6 @@ export const CloudDataSourceModal: React.FC<CloudDataSourceModalProps> = ({
       showToast('Đã nhận diện thành công cấu hình Firebase!', 'success');
     } catch {
       setParseError('Không thể nhận diện cú pháp. Bạn có thể tự điền từng trường bên dưới.');
-    }
-  };
-
-  const handleTestConnection = async () => {
-    if (!formConfig.projectId || !formConfig.apiKey) {
-      showToast('Vui lòng điền tối thiểu API Key và Project ID để kiểm tra!', 'error');
-      return;
-    }
-    setIsTesting(true);
-    setTestResult(null);
-    try {
-      const res = await testCloudConnection();
-      setTestResult(res);
-      if (res.success) {
-        showToast(`Kết nối máy chủ thành công! (${res.latencyMs}ms)`, 'success');
-      } else {
-        showToast(`Kết nối thất bại: ${res.error || 'Không xác định'}`, 'error');
-      }
-    } catch (err: any) {
-      setTestResult({ success: false, latencyMs: 0, error: err?.message || 'Lỗi mạng' });
-    } finally {
-      setIsTesting(false);
     }
   };
 

@@ -4,7 +4,6 @@ import {
   Plus,
   QrCode,
   CheckCircle2,
-  AlertCircle,
   Copy,
   Check,
   Edit2,
@@ -13,11 +12,9 @@ import {
   ChevronUp,
   Calendar,
   Search,
-  Filter,
   CreditCard,
   BellRing,
-  Sparkles,
-  ExternalLink
+  ReceiptText,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ContributionCampaign, Fund, Member, AppBranding } from '../types';
@@ -28,25 +25,26 @@ import { useFeedback } from '../context/FeedbackContext';
 
 interface CampaignsTabProps {
   campaigns: ContributionCampaign[];
-  funds: Fund[];
+  funds?: Fund[];
   members: Member[];
   isAdmin?: boolean;
   onOpenCampaignModal: (editingCamp?: ContributionCampaign) => void;
   onDeleteCampaign: (id: string) => void;
   onUpdateParticipantPayment: (campaignId: string, memberId: string, amountPaid: number, paidDate?: string, note?: string) => void;
   onOpenQRModal: (amount?: number, content?: string) => void;
+  onOpenPrintDuesModal?: (campaignId?: string) => void;
   branding?: AppBranding;
 }
 
 export const CampaignsTab: React.FC<CampaignsTabProps> = ({
   campaigns,
-  funds,
   members,
   isAdmin = true,
   onOpenCampaignModal,
   onDeleteCampaign,
   onUpdateParticipantPayment,
   onOpenQRModal,
+  onOpenPrintDuesModal,
   branding,
 }) => {
   const { t } = useTranslation();
@@ -132,28 +130,6 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
       undefined,
       'Chưa nộp'
     );
-  };
-
-  // Quick 1-click pay on campaign creation date
-  const handleQuickPayOnCreationDate = (camp: ContributionCampaign, memberId: string, requiredAmount: number, memberName: string) => {
-    const creationDate = camp.launchDate || camp.createdAt?.slice(0, 10) || new Date().toISOString().slice(0, 10);
-    onUpdateParticipantPayment(
-      camp.id,
-      memberId,
-      requiredAmount,
-      creationDate,
-      t('campaigns.quick_paid_creation_date_note', 'Nộp đủ đúng ngày tạo đợt')
-    );
-    showCopyToast(`${camp.id}_${memberId}_paid`, `Đã ghi nhận nộp đủ cho ${memberName} ngày ${formatDate(creationDate)}!`);
-    try {
-      confetti({
-        particleCount: 35,
-        spread: 50,
-        origin: { y: 0.75 },
-      });
-    } catch {
-      // ignore
-    }
   };
 
   const showCopyToast = (key: string, message: string) => {
@@ -264,16 +240,32 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
           </p>
         </div>
 
-        {isAdmin && (
-          <button
-            id="create-campaign-btn"
-            onClick={() => onOpenCampaignModal()}
-            className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-purple-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer group"
-          >
-            <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
-            <span>{t('campaigns.btn_add_campaign', 'Tạo đợt thu mới')}</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Nút xuất ảnh thống kê nợ & đóng quỹ (chỉ dành cho Admin) */}
+          {isAdmin && onOpenPrintDuesModal && (
+            <button
+              id="export-campaigns-dues-btn"
+              onClick={() => onOpenPrintDuesModal()}
+              className="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              title="Xuất ảnh danh sách đóng quỹ & nợ quỹ chia sẻ Zalo"
+            >
+              <ReceiptText className="w-4 h-4" />
+              <span className="hidden sm:inline">Xuất ảnh đóng quỹ</span>
+              <span className="sm:hidden">Xuất ảnh</span>
+            </button>
+          )}
+
+          {isAdmin && (
+            <button
+              id="create-campaign-btn"
+              onClick={() => onOpenCampaignModal()}
+              className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-purple-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer group"
+            >
+              <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
+              <span>{t('campaigns.btn_add_campaign', 'Tạo đợt thu mới')}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Global feedback toast when copying */}
@@ -414,6 +406,22 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                             <div className="text-[10px] font-bold text-slate-400 px-2.5 py-1 uppercase tracking-wider">
                               {t('campaigns.copy_options', 'Tùy chọn sao chép')}
                             </div>
+
+                            {isAdmin && onOpenPrintDuesModal && (
+                              <button
+                                onClick={() => {
+                                  setActiveCopyMenuId(null);
+                                  onOpenPrintDuesModal(camp.id);
+                                }}
+                                className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-2 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 pb-1.5"
+                              >
+                                <ReceiptText className="w-3.5 h-3.5 text-emerald-600" />
+                                <div>
+                                  <div className="font-semibold text-emerald-700 dark:text-emerald-400">Xuất ảnh đóng quỹ đợt này</div>
+                                  <div className="text-[10px] text-slate-400">Tạo ảnh danh sách & mã QR VietQR</div>
+                                </div>
+                              </button>
+                            )}
 
                             <button
                               onClick={() => copyCampaignSummary(camp)}
