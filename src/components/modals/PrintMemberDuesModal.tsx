@@ -672,7 +672,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                   </div>
                   <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug">
                     {campaignScope === 'all'
-                      ? 'BẢNG THEO DÕI CÔNG NỢ & ĐÓNG QUỸ THÀNH VIÊN'
+                      ? 'ĐÓNG QUỸ THÀNH VIÊN'
                       : `BÁO CÁO TIẾN ĐỘ & CÔNG NỢ: ${campaigns.find((c) => c.id === campaignScope)?.title?.toUpperCase() || ''}`}
                   </h1>
                   <p className="text-xs text-slate-500 mt-0.5">{appSubtitle}</p>
@@ -686,7 +686,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                     Thủ quỹ: <span className="font-bold text-slate-700">{treasurerName}</span>
                   </div>
                   <div className="mt-0.5 text-[11px] text-slate-400">
-                    Chế độ xem: {filterDebt === 'unpaid_only' ? 'Danh sách người còn nợ' : filterDebt === 'paid_only' ? 'Người đã nộp đủ' : 'Tất cả thành viên'}
+                    {filterDebt === 'unpaid_only' ? 'Danh sách người còn nợ' : filterDebt === 'paid_only' ? 'Người đã nộp đủ' : 'Tất cả thành viên'}
                   </div>
                 </div>
               </div>
@@ -696,7 +696,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                  Tổng đối soát
+                  Thành viên
                 </div>
                 <div className="text-lg font-black text-slate-800 mt-0.5">
                   {summaryStats.totalMembers}{' '}
@@ -728,7 +728,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
 
               <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-orange-200 rounded-xl p-2.5 text-center col-span-2 sm:col-span-1">
                 <div className="text-[10px] font-extrabold text-orange-800 uppercase tracking-wider">
-                  Tổng công nợ cần thu
+                  Tổng cần thu
                 </div>
                 <div className="text-lg font-black text-orange-700 mt-0.5 tracking-tight">
                   {formatVND(summaryStats.grandRemainingSum)}
