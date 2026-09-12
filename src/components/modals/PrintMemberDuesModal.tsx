@@ -151,7 +151,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
 
             const yearlyItem: DebtBreakdownItem = {
               id: 'yearly',
-              title: 'Niên liễm trọn năm',
+              title: 'Theo năm',
               type: 'yearly',
               required: yReq,
               paid: yPaid,
@@ -783,8 +783,8 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                       <th className="py-2.5 px-3 w-44">Thành viên</th>
                       <th className="py-2.5 px-3 text-right w-24">Phải đóng</th>
                       <th className="py-2.5 px-3 text-right w-24">Đã nộp</th>
-                      <th className="py-2.5 px-3 text-right w-28">Còn thiếu (Nợ)</th>
-                      <th className="py-2.5 px-3">Chi tiết từng khoản thiếu (Thiếu thế nào)</th>
+                      <th className="py-2.5 px-3 text-right w-28">Còn thiếu</th>
+                      <th className="py-2.5 px-3">Chi tiết từng khoản thiếu</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 bg-white">

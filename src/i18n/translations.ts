@@ -223,7 +223,7 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "campaigns.launch_date_prefix": "Phát động",
   "campaigns.amount_per_member_label": "Mức đóng / người:",
   "campaigns.total_expected_label": "Tổng thu dự kiến:",
-  "campaigns.collected_label": "Đã thu vào:",
+  "campaigns.collected_label": "Đã thu vào",
   "campaigns.progress_label": "Tiến độ hoàn thành",
   "campaigns.member_list_title": "Danh Sách Thành Viên & Tình Trạng Đóng Quỹ",
   "campaigns.btn_quick_qr": "Mã QR Nộp",
