@@ -411,7 +411,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                        {type === 'expense' ? 'Đính kèm ảnh hóa đơn / bill chi' : 'Đính kèm ảnh biên lai / chứng từ'}
+                        Đính kèm ảnh
                       </div>
                       <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-xs">
                         Chụp ảnh hóa đơn hoặc chọn tệp (JPG, PNG, WebP). Hệ thống tự động nén nhẹ & giữ nét chữ.
