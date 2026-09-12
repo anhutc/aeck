@@ -42,8 +42,10 @@ export interface DebtBreakdownItem {
   required: number;
   paid: number;
   owed: number;
-  paidDate?: string;
+  launchDate?: string;
   dueDate?: string;
+  paidDate?: string;
+  createdAt?: string;
   note?: string;
   fundName?: string;
 }
@@ -156,6 +158,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               required: yReq,
               paid: yPaid,
               owed: yRem,
+              launchDate: member.yearlyPaidDate || (member.joinedDate ? member.joinedDate : `${new Date().getFullYear()}-01-01`),
               paidDate: member.yearlyPaidDate,
               note: member.specialNote,
             };
@@ -186,7 +189,9 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 required: req,
                 paid,
                 owed: rem,
+                launchDate: camp.launchDate || camp.createdAt?.slice(0, 10) || camp.dueDate,
                 dueDate: camp.dueDate,
+                createdAt: camp.createdAt,
                 paidDate: p.paidDate,
                 note: p.note,
                 fundName: fundsMap.get(camp.fundId),
@@ -220,7 +225,9 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 required: req,
                 paid,
                 owed: rem,
+                launchDate: camp.launchDate || camp.createdAt?.slice(0, 10) || camp.dueDate,
                 dueDate: camp.dueDate,
+                createdAt: camp.createdAt,
                 paidDate: p.paidDate,
                 note: p.note,
                 fundName: fundsMap.get(camp.fundId),
@@ -233,6 +240,26 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
             }
           }
         }
+
+        // Sắp xếp chi tiết từng khoản thiếu theo thời gian: MỚI Ở TRÊN, CŨ Ở DƯỚI
+        const getBreakdownDateScore = (item: DebtBreakdownItem): number => {
+          const d = item.launchDate || item.createdAt || item.dueDate || item.paidDate;
+          if (!d) return 0;
+          const t = new Date(d).getTime();
+          return isNaN(t) ? 0 : t;
+        };
+
+        const sortNewestFirst = (a: DebtBreakdownItem, b: DebtBreakdownItem): number => {
+          const timeA = getBreakdownDateScore(a);
+          const timeB = getBreakdownDateScore(b);
+          if (timeB !== timeA) {
+            return timeB - timeA; // Mới ở trên (time lớn hơn xếp trước), cũ ở dưới
+          }
+          return a.title.localeCompare(b.title, 'vi');
+        };
+
+        debtBreakdown.sort(sortNewestFirst);
+        allBreakdown.sort(sortNewestFirst);
 
         const totalRemaining = Math.max(0, totalRequired - totalPaid);
         const hasDebt = totalRemaining > 0;
@@ -378,7 +405,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
             const item = new ClipboardItem({ 'image/png': blob });
             await navigator.clipboard.write([item]);
             setIsCopied(true);
-            showToast('Đã sao chép ảnh vào bộ nhớ tạm! Nhấn Ctrl+V để dán vào Zalo/Messenger.', 'success');
+            showToast('Đã sao chép ảnh vào bộ nhớ tạm! Nhấn Ctrl+V để dán.', 'success');
             setTimeout(() => setIsCopied(false), 3000);
           } else {
             // Fallback download if clipboard image writing is not supported
@@ -388,7 +415,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
         } catch (copyErr) {
           console.warn('Lỗi clipboard:', copyErr);
           handleDownloadImage();
-          showToast('Đã tải ảnh về máy để bạn gửi Zalo!', 'info');
+          showToast('Đã tải ảnh về máy!', 'info');
         } finally {
           setIsExporting(false);
         }
@@ -441,7 +468,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               onClick={handleCopyImage}
               disabled={isExporting}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer"
-              title="Sao chép ảnh để dán Ctrl+V trực tiếp vào Zalo"
+              title="Sao chép ảnh"
             >
               {isExporting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -450,7 +477,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               ) : (
                 <Copy className="w-4 h-4" />
               )}
-              <span>{isCopied ? 'Đã sao chép!' : 'Sao chép ảnh (Zalo)'}</span>
+              <span>{isCopied ? 'Đã sao chép!' : 'Sao chép ảnh'}</span>
             </button>
 
             <button
@@ -511,19 +538,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
 
             {/* Quick Status Filter Tabs */}
             <div className="flex items-center bg-slate-200 dark:bg-slate-700/60 p-0.5 rounded-xl shrink-0">
-              <button
-                type="button"
-                onClick={() => setFilterDebt('unpaid_only')}
-                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  filterDebt === 'unpaid_only'
-                    ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-                }`}
-              >
-                <span className="w-2 h-2 rounded-full bg-rose-500" />
-                <span>Còn nợ ({summaryStats.unpaidCount})</span>
-              </button>
-
+            
               <button
                 type="button"
                 onClick={() => setFilterDebt('all')}
@@ -534,6 +549,19 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 }`}
               >
                 <span>Tất cả ({summaryStats.totalMembers})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFilterDebt('unpaid_only')}
+                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  filterDebt === 'unpaid_only'
+                    ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-rose-500" />
+                <span>Còn thiếu ({summaryStats.unpaidCount})</span>
               </button>
 
               <button
@@ -589,7 +617,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                       ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
-                  title="Dạng thẻ từng người nợ (dễ đọc trên Zalo điện thoại)"
+                  title="Dạng thẻ từng người nợ"
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
                   <span>Dạng thẻ</span>
@@ -806,11 +834,6 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                         <td className="py-2.5 px-3 align-top">
                           <div className="font-bold text-slate-900 flex items-center gap-1.5 flex-wrap">
                             <span>{row.member.name}</span>
-                            {row.roles[0] && (
-                              <span className="text-[9px] font-semibold px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded border border-slate-200">
-                                {row.roles[0]}
-                              </span>
-                            )}
                           </div>
                           {showPhone && row.member.phone && (
                             <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1 mt-0.5">
@@ -876,10 +899,13 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                                       <div className="flex items-center justify-between font-bold text-slate-900 gap-2">
                                         <span className="truncate">📌 {item.title}</span>
                                         <span className="text-rose-700 font-extrabold shrink-0">
-                                          Thiếu: {formatVND(item.owed)}
+                                          {formatVND(item.owed)}
                                         </span>
                                       </div>
                                       <div className="flex flex-wrap items-center gap-x-2 text-[10px] text-slate-500 mt-0.5">
+                                        {item.launchDate && (
+                                          <span className="text-slate-600 font-medium">📅 {formatDate(item.launchDate)}</span>
+                                        )}
                                         <span>Mức: {formatVND(item.required)}</span>
                                         {item.paid > 0 && (
                                           <span className="text-emerald-700 font-semibold">• Đã nộp: {formatVND(item.paid)}</span>
@@ -1029,6 +1055,9 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                                     )}
                                   </div>
                                   <div className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                    {item.launchDate && (
+                                      <span className="text-slate-600 font-medium">📅 {formatDate(item.launchDate)} •</span>
+                                    )}
                                     <span>
                                       Mức: <strong className="text-slate-700">{formatVND(item.required)}</strong>
                                     </span>
@@ -1128,15 +1157,9 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
           <div className="flex items-center gap-1.5">
             <ImageIcon className="w-4 h-4 text-emerald-500 shrink-0" />
             <span>
-              Mẹo: Nhấn nút <strong>"Sao chép ảnh (Zalo)"</strong> rồi mở Zalo/Messenger nhấn <strong>Ctrl + V</strong> để gửi ảnh ngay mà không cần tải file!
+              Mẹo: Nhấn nút <strong>"Sao chép ảnh"</strong> để gửi ảnh ngay mà không cần tải file!
             </span>
           </div>
-          <button
-            onClick={onClose}
-            className="px-4 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
-          >
-            Đóng
-          </button>
         </div>
       </div>
     </div>
