@@ -128,7 +128,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
       payModalData.member.id,
       0,
       undefined,
-      'Chưa nộp'
+      t('campaigns.unpaid_status_label', 'Chưa nộp')
     );
   };
 
@@ -147,36 +147,36 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
     const paidMembers = camp.participants.filter(p => p.amountPaid >= p.amountRequired);
     const unpaidMembers = camp.participants.filter(p => p.amountPaid < p.amountRequired);
 
-    let text = `📢 THÔNG BÁO THU QUỸ: ${camp.title.toUpperCase()}\n`;
-    text += `💰 Mức đóng: ${formatVND(camp.amountPerMember)}/người\n`;
-    text += `🎯 Tiến độ: ${formatVND(collected)} / ${formatVND(camp.totalTarget)} (${Math.round((collected / (camp.totalTarget || 1)) * 100)}%)\n`;
-    text += `📅 Ngày phát động: ${formatDate(camp.launchDate || camp.createdAt)}\n\n`;
+    let text = `📢 ${t('campaigns.copy_announce_prefix', 'THÔNG BÁO THU QUỸ')}: ${camp.title.toUpperCase()}\n`;
+    text += `💰 ${t('campaigns.zalo_amount_prefix', 'Mức đóng:')} ${formatVND(camp.amountPerMember)}/người\n`;
+    text += `🎯 ${t('campaigns.zalo_progress_prefix', 'Tiến độ:')} ${formatVND(collected)} / ${formatVND(camp.totalTarget)} (${Math.round((collected / (camp.totalTarget || 1)) * 100)}%)\n`;
+    text += `📅 ${t('campaigns.zalo_launch_prefix', 'Ngày phát động:')} ${formatDate(camp.launchDate || camp.createdAt)}\n\n`;
 
-    text += `✅ ĐÃ NỘP (${paidMembers.length}/${camp.participants.length}):\n`;
+    text += `✅ ${t('campaigns.zalo_paid_section', 'ĐÃ NỘP')} (${paidMembers.length}/${camp.participants.length}):\n`;
     if (paidMembers.length > 0) {
       paidMembers.forEach((p, idx) => {
         const m = memberMap.get(p.memberId);
-        const dateStr = p.paidDate ? ` (Ngày ${formatDate(p.paidDate)})` : '';
+        const dateStr = p.paidDate ? ` (${t('campaigns.member_col_date', 'Ngày')} ${formatDate(p.paidDate)})` : '';
         text += `${idx + 1}. ${m?.name || 'TV'}: ${formatVND(p.amountPaid)}${dateStr}\n`;
       });
     } else {
-      text += `(Chưa có thành viên hoàn thành)\n`;
+      text += `${t('campaigns.zalo_no_paid', '(Chưa có thành viên hoàn thành)')}\n`;
     }
 
     if (unpaidMembers.length > 0) {
-      text += `\n⏳ CHƯA HOÀN THÀNH (${unpaidMembers.length} người):\n`;
+      text += `\n⏳ ${t('campaigns.zalo_unpaid_section', 'CHƯA HOÀN THÀNH')} (${unpaidMembers.length} người):\n`;
       unpaidMembers.forEach((p, idx) => {
         const m = memberMap.get(p.memberId);
         const remain = p.amountRequired - p.amountPaid;
-        text += `${idx + 1}. ${m?.name || 'TV'}: Còn thiếu ${formatVND(remain)}\n`;
+        text += `${idx + 1}. ${m?.name || 'TV'}: ${t('campaigns.zalo_remaining_prefix', 'Còn thiếu')} ${formatVND(remain)}\n`;
       });
     }
 
-    text += `\n👉 Cú pháp chuyển khoản:\n${prefix} ${camp.title} [Họ và tên]`;
+    text += `\n👉 ${t('campaigns.zalo_syntax_guide', 'Cú pháp chuyển khoản:')}\n${prefix} ${camp.title} [Họ và tên]`;
 
     const success = await copyToClipboard(text);
     if (success) {
-      showCopyToast(camp.id + '_full', 'Đã sao chép báo cáo!');
+      showCopyToast(camp.id + '_full', t('campaigns.copied_report_toast', 'Đã sao chép báo cáo!'));
     }
     setActiveCopyMenuId(null);
   };
@@ -185,24 +185,24 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
   const copyUnpaidReminder = async (camp: ContributionCampaign) => {
     const unpaidMembers = camp.participants.filter(p => p.amountPaid < p.amountRequired);
     if (unpaidMembers.length === 0) {
-      showCopyToast(camp.id + '_unpaid', 'Tất cả thành viên đã hoàn thành!');
+      showCopyToast(camp.id + '_unpaid', t('campaigns.all_completed_toast', 'Tất cả thành viên đã hoàn thành!'));
       setActiveCopyMenuId(null);
       return;
     }
 
-    let text = `⏰ NHẮC NỘP QUỸ: ${camp.title.toUpperCase()}\n`;
-    text += `💰 Mức đóng: ${formatVND(camp.amountPerMember)}/người\n\n`;
-    text += `Danh sách các thành viên chưa hoàn thành (${unpaidMembers.length} người):\n`;
+    let text = `⏰ ${t('campaigns.copy_remind_prefix', 'NHẮC NỘP QUỸ')}: ${camp.title.toUpperCase()}\n`;
+    text += `💰 ${t('campaigns.zalo_amount_prefix', 'Mức đóng:')} ${formatVND(camp.amountPerMember)}/người\n\n`;
+    text += `${t('campaigns.zalo_remind_intro', 'Danh sách các thành viên chưa hoàn thành')} (${unpaidMembers.length} người):\n`;
     unpaidMembers.forEach((p, idx) => {
       const m = memberMap.get(p.memberId);
       const remain = p.amountRequired - p.amountPaid;
-      text += `${idx + 1}. ${m?.name || 'TV'}: Cần nộp ${formatVND(remain)}\n`;
+      text += `${idx + 1}. ${m?.name || 'TV'}: ${t('campaigns.zalo_needed_prefix', 'Cần nộp')} ${formatVND(remain)}\n`;
     });
-    text += `\n👉 Cú pháp CK: ${prefix} ${camp.title} [Tên bạn]`;
+    text += `\n👉 ${t('transactions.transfer_content', 'Cú pháp CK')}: ${prefix} ${camp.title} [Tên bạn]`;
 
     const success = await copyToClipboard(text);
     if (success) {
-      showCopyToast(camp.id + '_unpaid', `Đã sao chép danh sách ${unpaidMembers.length} người chưa nộp!`);
+      showCopyToast(camp.id + '_unpaid', `${t('campaigns.copied_unpaid_prefix', 'Đã sao chép danh sách')} ${unpaidMembers.length} ${t('campaigns.copied_unpaid_suffix', 'người chưa nộp!')}`);
     }
     setActiveCopyMenuId(null);
   };
@@ -212,7 +212,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
     const syntax = `${prefix} ${camp.title}`.trim().toUpperCase();
     const success = await copyToClipboard(syntax);
     if (success) {
-      showCopyToast(camp.id + '_syntax', `Đã sao chép cú pháp: "${syntax}"`);
+      showCopyToast(camp.id + '_syntax', `${t('campaigns.copied_syntax_prefix', 'Đã sao chép cú pháp:')} "${syntax}"`);
     }
     setActiveCopyMenuId(null);
   };
@@ -222,7 +222,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
     const syntax = `${prefix} ${camp.title} ${member.name}`.trim().toUpperCase();
     const success = await copyToClipboard(syntax);
     if (success) {
-      showCopyToast(`${camp.id}_${member.id}`, `Đã sao chép cú pháp cho ${member.name}`);
+      showCopyToast(`${camp.id}_${member.id}`, `${t('campaigns.copied_member_syntax_prefix', 'Đã sao chép cú pháp cho')} ${member.name}`);
     }
   };
 
@@ -247,11 +247,11 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
               id="export-campaigns-dues-btn"
               onClick={() => onOpenPrintDuesModal()}
               className="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-              title="Xuất ảnh danh sách đóng quỹ & nợ quỹ chia sẻ"
+              title={t('campaigns.export_dues_btn_title', 'Xuất ảnh danh sách đóng quỹ & nợ quỹ chia sẻ')}
             >
               <ReceiptText className="w-4 h-4" />
-              <span className="hidden sm:inline">Xuất ảnh đóng quỹ</span>
-              <span className="sm:hidden">Xuất ảnh</span>
+              <span className="hidden sm:inline">{t('campaigns.export_dues_btn', 'Xuất ảnh đóng quỹ')}</span>
+              <span className="sm:hidden">{t('campaigns.export_dues_btn_short', 'Xuất ảnh')}</span>
             </button>
           )}
 
@@ -418,8 +418,8 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                 >
                                   <ReceiptText className="w-3.5 h-3.5 text-emerald-600" />
                                   <div>
-                                    <div className="font-semibold text-emerald-700 dark:text-emerald-400">Xuất ảnh đóng quỹ đợt này</div>
-                                    <div className="text-[10px] text-slate-400">Tạo ảnh danh sách & mã QR VietQR</div>
+                                    <div className="font-semibold text-emerald-700 dark:text-emerald-400">{t('campaigns.export_single_campaign_img', 'Xuất ảnh đóng quỹ đợt này')}</div>
+                                    <div className="text-[10px] text-slate-400">{t('campaigns.export_single_campaign_img_desc', 'Tạo ảnh danh sách & mã QR VietQR')}</div>
                                   </div>
                                 </button>
                               )}
@@ -462,7 +462,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                       ) : (
                         <button
                           onClick={() => copyTransferSyntax(camp)}
-                          title="Sao chép cú pháp nội dung chuyển khoản"
+                          title={t('campaigns.copy_transfer_syntax_tooltip', 'Sao chép cú pháp nội dung chuyển khoản')}
                           className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                             copiedKey === camp.id + '_syntax'
                               ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300'
@@ -474,7 +474,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                           ) : (
                             <Copy className="w-3.5 h-3.5 text-slate-500" />
                           )}
-                          <span>{copiedKey === camp.id + '_syntax' ? 'Đã chép cú pháp!' : 'Chép cú pháp'}</span>
+                          <span>{copiedKey === camp.id + '_syntax' ? t('campaigns.copied_syntax_badge', 'Đã chép cú pháp!') : t('campaigns.copy_syntax_btn', 'Chép cú pháp')}</span>
                         </button>
                       )}
 
@@ -515,7 +515,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                       {/* Toggle Collapse Button */}
                       <button
                         onClick={() => toggleExpand(camp.id)}
-                        title={isExpanded ? 'Thu gọn danh sách' : 'Mở rộng xem chi tiết từng người'}
+                        title={isExpanded ? t('campaigns.collapse_list', 'Thu gọn danh sách') : t('campaigns.expand_list', 'Mở rộng xem chi tiết từng người')}
                         className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
                       >
                         {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -602,7 +602,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                             value={currentSort}
                             onChange={(e) => setSortOptions(prev => ({ ...prev, [camp.id]: e.target.value as any }))}
                             className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-hidden cursor-pointer"
-                            title="Sắp xếp danh sách đóng quỹ"
+                            title={t('campaigns.sort_title', 'Sắp xếp danh sách đóng quỹ')}
                           >
                             <option value="paidDate_desc">{t('campaigns.sort_latest_paid', '📅 Mới nộp gần nhất')}</option>
                             <option value="paidDate_asc">{t('campaigns.sort_oldest_paid', '📅 Ngày nộp cũ nhất')}</option>
@@ -656,7 +656,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                   {member && (
                                     <button
                                       onClick={() => copyMemberTransferSyntax(camp, member)}
-                                      title={`Sao chép cú pháp chuyển khoản cho ${member.name}`}
+                                      title={`${t('campaigns.copy_member_syntax_tooltip', 'Sao chép cú pháp chuyển khoản cho')} ${member.name}`}
                                       className="text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 p-0.5 rounded transition-colors cursor-pointer"
                                     >
                                       {isMemberCopied ? (
@@ -710,7 +710,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                         const memberName = member?.name || '';
                                         onOpenQRModal(dueAmount, `${prefix} ${camp.title} ${memberName}`.trim().toUpperCase());
                                       }}
-                                      title={`Tạo mã VietQR chuyển khoản cho ${member?.name || 'thành viên'}`}
+                                      title={`${t('campaigns.create_vietqr_for_member', 'Tạo mã VietQR chuyển khoản cho')} ${member?.name || t('members.role_member', 'thành viên')}`}
                                       className="p-1.5 rounded-lg border border-purple-200/80 dark:border-slate-700 bg-purple-50/80 dark:bg-slate-800 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-950/70 hover:border-purple-300 dark:hover:border-purple-600 dark:hover:text-purple-200 transition-colors active:scale-95 cursor-pointer shadow-2xs"
                                     >
                                       <QrCode className="w-3.5 h-3.5" />
@@ -728,7 +728,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                     ) : (
                                       <button
                                         onClick={() => handleOpenPayModal(camp, p.memberId)}
-                                        title="Ghi nhận nộp quỹ (chọn ngày & số tiền tùy chỉnh)"
+                                        title={t('campaigns.pay_modal_btn_title', 'Ghi nhận nộp quỹ (chọn ngày & số tiền tùy chỉnh)')}
                                         className="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 hover:shadow-xs text-white text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer whitespace-nowrap"
                                       >
                                         <Calendar className="w-3 h-3" />

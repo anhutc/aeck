@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DollarSign, X, ArrowDownLeft, ArrowUpRight, Sparkles } from 'lucide-react';
 import { formatThousands, parseAmountInput, numberToVietnameseWords } from '../../utils/formatters';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 export interface AmountInputProps {
   id?: string;
@@ -38,6 +39,7 @@ export const AmountInput: React.FC<AmountInputProps> = ({
   showPresets = true,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const numericVal = typeof value === 'number' ? value : parseAmountInput(value);
   const [displayStr, setDisplayStr] = useState<string>(() => {
     return numericVal > 0 ? formatThousands(numericVal) : '';
@@ -183,7 +185,7 @@ export const AmountInput: React.FC<AmountInputProps> = ({
 
           <span className="text-[10px] text-slate-400 font-medium hidden sm:inline-flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-amber-500" />
-            Gõ nhanh: 50k, 500k, 1.5tr
+            {t('amount_input.quick_types', 'Gõ nhanh: 50k, 500k, 1.5tr')}
           </span>
         </div>
       )}
@@ -211,13 +213,13 @@ export const AmountInput: React.FC<AmountInputProps> = ({
               type="button"
               onClick={handleClear}
               className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-              title="Xóa nhanh số tiền"
+              title={t('amount_input.clear_amount', 'Xóa nhanh số tiền')}
             >
               <X className="w-3.5 h-3.5" />
             </button>
           )}
           <span className="text-xs font-bold text-slate-400 dark:text-slate-500 select-none">
-            VNĐ
+            {t('amount_input.currency_unit', 'VNĐ')}
           </span>
         </div>
       </div>
@@ -227,12 +229,12 @@ export const AmountInput: React.FC<AmountInputProps> = ({
         <div className="min-h-[22px] flex items-center">
           {numericVal > 0 ? (
             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold border ${themeClasses.badgeBg} ${themeClasses.badgeText} animate-in fade-in duration-150`}>
-              <span className="opacity-75 font-normal">Bằng chữ:</span>
+              <span className="opacity-75 font-normal">{t('amount_input.in_words_label', 'Bằng chữ:')}</span>
               <span className="font-bold">{wordsText}</span>
             </div>
           ) : (
             <p className="text-[11px] text-slate-400 dark:text-slate-500 italic pl-1">
-              Số tiền tự động định dạng hàng nghìn và dịch thành chữ.
+              {t('amount_input.in_words_hint', 'Số tiền tự động định dạng hàng nghìn và dịch thành chữ.')}
             </p>
           )}
         </div>
@@ -242,17 +244,17 @@ export const AmountInput: React.FC<AmountInputProps> = ({
       {showAdders && (
         <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto pb-0.5 scrollbar-none">
           <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 mr-0.5">
-            Cộng:
+            {t('amount_input.add_prefix', 'Cộng:')}
           </span>
 
           {/* Special '+000' (nhân 1.000) */}
           <button
             type="button"
             onClick={handleMultiplyThousand}
-            title="Nhân 1.000 (thêm 3 số 0)"
+            title={t('amount_input.add_thousand_title', 'Nhân 1.000 (thêm 3 số 0)')}
             className="px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 text-[11px] font-bold transition-all active:scale-95 cursor-pointer shrink-0 shadow-2xs"
           >
-            +000 (nghìn)
+            {t('amount_input.add_thousand', '+000 (nghìn)')}
           </button>
 
           <button
@@ -301,7 +303,7 @@ export const AmountInput: React.FC<AmountInputProps> = ({
       {showPresets && presets && presets.length > 0 && (
         <div className="flex flex-wrap gap-1.5 pt-0.5">
           <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider self-center mr-0.5">
-            Mốc:
+            {t('amount_input.presets_prefix', 'Mốc:')}
           </span>
           {presets.map((val) => {
             const isSelected = numericVal === val;

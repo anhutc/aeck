@@ -206,7 +206,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                   id="member-name-input"
                   type="text"
                   required
-                  placeholder="VD: Nguyễn Văn An"
+                  placeholder={t('members.name_placeholder', 'Ví dụ: Nguyễn Văn An, Trần Thị Bình...')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
@@ -221,7 +221,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 <input
                   id="member-phone-input"
                   type="tel"
-                  placeholder="VD: 0912345678"
+                  placeholder={t('members.phone_placeholder', '0912 345 678')}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden"

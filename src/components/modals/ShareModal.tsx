@@ -6,13 +6,14 @@ import {
   Check,
   ShieldCheck,
   Smartphone,
-  MessageSquare,
-  ExternalLink
+  ExternalLink,
+  Download,
+  Send,
+  MessageCircle
 } from 'lucide-react';
 import { BankSettings, ContributionCampaign, Fund, AppBranding } from '../../types';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { useFeedback } from '../../context/FeedbackContext';
-import { generateZaloShareMessage } from '../../utils/shareMessage';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -20,30 +21,22 @@ interface ShareModalProps {
   isAdmin?: boolean;
   bankSettings?: BankSettings;
   funds?: Fund[];
-  activeCampaigns: ContributionCampaign[];
+  activeCampaigns?: ContributionCampaign[];
   branding?: AppBranding;
 }
 
 export const ShareModal: React.FC<ShareModalProps> = ({
   isOpen,
   onClose,
-  isAdmin = false,
-  bankSettings,
-  activeCampaigns,
   branding,
 }) => {
   const { t } = useTranslation();
   const { showToast } = useFeedback();
 
   const [copiedLink, setCopiedLink] = useState(false);
-  const [copiedMsg, setCopiedMsg] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
 
-  // Toggles for Zalo message components (Admin only)
-  const [includeBank, setIncludeBank] = useState<boolean>(branding?.shareMessageIncludeBank !== false);
-  const [includeCampaigns, setIncludeCampaigns] = useState<boolean>(branding?.shareMessageIncludeCampaigns !== false);
-
-  // Compute clean URL without ?view=member
+  // Compute clean URL without search parameters
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const origin = window.location.origin;
@@ -52,39 +45,54 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     }
   }, [isOpen]);
 
-  const appName = branding?.appTitle || t('portal.header_title', 'Sổ Quỹ Tập Thể');
-
-  // Generate message based purely on settings configured in SettingsTab
-  const zaloMessage = generateZaloShareMessage({
-    appName,
-    shareUrl,
-    branding,
-    bankSettings,
-    activeCampaigns,
-    includeBank,
-    includeCampaigns,
-  });
+  const appName = branding?.appTitle || t('branding.default_app_title', 'Sổ Quỹ Nhóm');
+  const appSubtitle = branding?.appSubtitle || t('branding.default_app_subtitle', 'Hệ thống theo dõi thu chi & đóng quỹ minh bạch');
 
   if (!isOpen) return null;
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
-    setCopiedLink(true);
-    showToast('Đã sao chép liên kết sạch!', 'success');
-    setTimeout(() => setCopiedLink(false), 2500);
+  const handleCopyLink = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopiedLink(true);
+      showToast(t('common.copied', 'Đã sao chép liên kết vào bộ nhớ tạm!'), 'success');
+      setTimeout(() => setCopiedLink(false), 2500);
+    } catch {
+      showToast(t('dialog.alert_error_title', 'Không thể sao chép liên kết'), 'error');
+    }
   };
 
-  const handleCopyMessage = () => {
-    navigator.clipboard.writeText(zaloMessage);
-    setCopiedMsg(true);
-    showToast('Đã sao chép tin nhắn vào bộ nhớ tạm!', 'success');
-    setTimeout(() => setCopiedMsg(false), 3000);
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: appName,
+          text: `${appName} - ${appSubtitle}`,
+          url: shareUrl,
+        });
+      } catch {
+        // User cancelled or share failed, fallback to copy
+      }
+    } else {
+      handleCopyLink();
+    }
   };
 
   // Generate QR code for clean sharing URL
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(
     shareUrl || 'https://localhost:3000'
   )}&margin=8`;
+
+  const handleDownloadQr = () => {
+    const link = document.createElement('a');
+    link.href = qrCodeUrl;
+    link.download = `QRCode_${appName.replace(/\s+/g, '_')}.png`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast(t('share.download_qr_success', 'Đang tải mã QR về thiết bị...'), 'success');
+  };
 
   return (
     <div
@@ -93,7 +101,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     >
       <div
         id="share-modal-card"
-        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl flex flex-col max-h-[calc(100vh-2rem)] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg flex flex-col max-h-[calc(100vh-2rem)] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
       >
         {/* Header */}
         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/40 shrink-0">
@@ -103,12 +111,10 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                {isAdmin ? t('share.modal_title', 'Chia Sẻ Đến Thành Viên') : 'Chia Sẻ Liên Kết'}
+                {t('share.modal_title', 'Chia Sẻ Đến Thành Viên')}
               </h2>
               <p className="text-xs text-slate-500">
-                {isAdmin
-                  ? 'Gửi liên kết trực tiếp hoặc sao chép nhanh mẫu tin nhắn kèm thông tin chuyển khoản'
-                  : 'Sao chép liên kết hoặc quét mã QR để truy cập'}
+                {t('share.modal_subtitle', 'Chia sẻ liên kết truy cập công khai minh bạch hoặc quét mã QR')}
               </p>
             </div>
           </div>
@@ -116,166 +122,142 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             id="close-share-modal-btn"
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            title={t('common.close', 'Đóng')}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1">
-          {/* Security & Access Notice */}
-          <div className="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 flex items-start gap-3">
-            <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-            <div className="text-xs text-blue-900 dark:text-blue-200 space-y-0.5">
-              <span className="font-bold block">
-                {t('share.security_title', 'Chế độ xem cho Thành viên')}
-              </span>
-              <p className="text-blue-700/90 dark:text-blue-300 leading-relaxed text-[11px]">
-                {t('share.security_desc', 'Thành viên truy cập liên kết xem công khai minh bạch số dư, các khoản chi tiêu và tiến độ đóng góp.')}
-              </p>
+        {/* Modal Body */}
+        <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
+
+          {/* Section 1: Direct Link */}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              {t('share.member_link_label', 'Liên kết xem sổ quỹ trực tiếp:')}
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="share-member-url-input"
+                type="text"
+                readOnly
+                value={shareUrl}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-xs font-mono select-all focus:outline-hidden"
+              />
+              <button
+                id="copy-member-url-btn"
+                onClick={handleCopyLink}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-blue-600/20 flex items-center gap-1.5 shrink-0 transition-all cursor-pointer"
+              >
+                {copiedLink ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
+                <span>{copiedLink ? t('common.copied', 'Đã chép!') : t('common.copy', 'Sao chép')}</span>
+              </button>
+            </div>
+
+            {/* Quick Actions Row */}
+            <div className="flex items-center justify-between pt-1 text-xs">
+              <a
+                href={shareUrl || '#'}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-semibold hover:underline"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>{t('share.open_new_tab', 'Mở trong tab mới')}</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={handleNativeShare}
+                className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-blue-600 font-semibold cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5 text-blue-600" />
+                <span>{t('share.quick_share', 'Chia sẻ nhanh...')}</span>
+              </button>
             </div>
           </div>
 
-          {/* Section 1: Clean Share Link & QR Code */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Clean Link Input & Quick Open */}
-            <div className="sm:col-span-2 space-y-2 flex flex-col justify-between">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  {t('share.member_link_label', 'Liên kết:')}
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="share-member-url-input"
-                    type="text"
-                    readOnly
-                    value={shareUrl}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-xs font-mono select-all focus:outline-hidden"
-                  />
-                  <button
-                    id="copy-member-url-btn"
-                    onClick={handleCopyLink}
-                    className="px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm shadow-blue-600/20 flex items-center gap-1.5 shrink-0 transition-all cursor-pointer"
-                  >
-                    {copiedLink ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
-                    <span>{copiedLink ? t('common.copied', 'Đã chép!') : t('common.copy', 'Sao chép')}</span>
-                  </button>
-                </div>
-              </div>
+          {/* Section 2: Quick Social Share */}
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+              {t('share.quick_share_desc', 'Gửi trực tiếp qua ứng dụng:')}
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              <a
+                href={`https://zalo.me/share?url=${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="p-2.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/30 hover:bg-blue-100/60 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Zalo</span>
+              </a>
 
-              <div className="pt-2 flex items-center gap-2 text-xs text-slate-500">
-                <a
-                  href={shareUrl || '#'}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-semibold hover:underline"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Mở liên kết trong tab mới</span>
-                </a>
-              </div>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="p-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/50 dark:bg-indigo-950/30 hover:bg-indigo-100/60 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              >
+                <Share2 className="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Facebook</span>
+              </a>
+
+              <a
+                href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(appName + ' - ' + appSubtitle)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="p-2.5 rounded-xl border border-sky-200 dark:border-sky-800/60 bg-sky-50/50 dark:bg-sky-950/30 hover:bg-sky-100/60 dark:hover:bg-sky-900/40 text-sky-700 dark:text-sky-300 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              >
+                <Send className="w-4 h-4 text-sky-500 shrink-0" />
+                <span>Telegram</span>
+              </a>
             </div>
+          </div>
 
-            {/* QR Code */}
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 flex flex-col items-center justify-center text-center">
-              <div className="w-24 h-24 bg-white p-1.5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-center">
+          {/* Section 3: QR Code Card */}
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-center gap-4">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-2xs shrink-0 flex items-center justify-center">
                 <img
                   src={qrCodeUrl}
-                  alt="QR Link Chia Sẻ"
+                  alt="QR Code Sổ Quỹ"
                   className="w-full h-full object-contain"
                 />
               </div>
-              <div className="mt-1.5 flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
-                <Smartphone className="w-3 h-3 text-blue-600" />
-                <span>Quét mở trên ĐT</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Section 2: Zalo Share Message (ONLY FOR ADMIN - Read-only from Settings, no in-popup editing) */}
-          {isAdmin && (
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-3">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-xs">
-                    <MessageSquare className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <span>Mẫu tin nhắn chia sẻ</span>
-                      <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold">
-                        Quản trị
-                      </span>
-                    </h3>
-                  </div>
+              <div className="space-y-2 flex-1 min-w-0">
+                <div className="space-y-0.5">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Smartphone className="w-4 h-4 text-blue-600 shrink-0" />
+                    <span>{t('share.qr_title', 'Quét Mã QR Truy Cập Nhanh')}</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    {t('share.qr_guide', 'Dùng Camera điện thoại hoặc ứng dụng Zalo quét mã để mở ngay')}
+                  </p>
                 </div>
-
-                {/* Inclusion Switches */}
-                <div className="flex flex-wrap items-center gap-3 text-xs">
-                  <label className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={includeBank}
-                      onChange={(e) => setIncludeBank(e.target.checked)}
-                      className="rounded text-blue-600 focus:ring-blue-500"
-                    />
-                    <span>Kèm STK</span>
-                  </label>
-
-                  <label className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={includeCampaigns}
-                      onChange={(e) => setIncludeCampaigns(e.target.checked)}
-                      className="rounded text-blue-600 focus:ring-blue-500"
-                    />
-                    <span>Kèm đợt thu ({activeCampaigns.length})</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Message Box (Read-only preview generated from Settings) */}
-              <div className="relative">
-                <div
-                  className="w-full max-h-44 overflow-y-auto p-3 text-xs font-mono leading-relaxed rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 whitespace-pre-wrap select-all"
-                >
-                  {zaloMessage}
-                </div>
-              </div>
-
-              {/* Action Bar for Zalo message */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
 
                 <button
-                  id="copy-zalo-message-btn"
                   type="button"
-                  onClick={handleCopyMessage}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold shadow-md shadow-emerald-600/20 flex items-center gap-2 transition-all cursor-pointer ml-auto"
+                  onClick={handleDownloadQr}
+                  className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
                 >
-                  {copiedMsg ? (
-                    <>
-                      <Check className="w-4 h-4 text-white" />
-                      <span>Đã sao chép tin nhắn!</span>
-                    </>
-                  ) : (
-                    <>
-                      <MessageSquare className="w-4 h-4" />
-                      <span>Sao chép tin nhắn</span>
-                    </>
-                  )}
+                  <Download className="w-3.5 h-3.5 text-blue-600" />
+                  <span>{t('share.download_qr', 'Tải ảnh QR')}</span>
                 </button>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Footer */}
         <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 flex items-center justify-between text-xs text-slate-500">
-          <span>Liên kết xem công khai minh bạch 100% dành cho thành viên</span>
+          <span>{t('share.footer_note', 'Liên kết xem công khai minh bạch 100% dành cho thành viên')}</span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
           >
-            Đóng
+            {t('common.close', 'Đóng')}
           </button>
         </div>
       </div>

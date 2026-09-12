@@ -7,6 +7,7 @@ import {
   Info,
   X,
 } from 'lucide-react';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -27,6 +28,7 @@ interface ToastCardProps {
 }
 
 const ToastCard: React.FC<ToastCardProps> = ({ toast, onRemove, position }) => {
+  const { t } = useTranslation();
   const duration = toast.duration || 3500;
   const [remainingTime, setRemainingTime] = useState(duration);
   const [isPaused, setIsPaused] = useState(false);
@@ -66,26 +68,26 @@ const ToastCard: React.FC<ToastCardProps> = ({ toast, onRemove, position }) => {
   let progressBarClass = 'bg-blue-500';
   let borderAccentClass = 'border-slate-200/90 dark:border-slate-800 shadow-slate-900/10 dark:shadow-black/50';
   let IconComponent = Info;
-  let typeLabel = 'Thông tin';
+  let typeLabel = t('toast.type_info', 'Thông tin');
 
   if (toast.type === 'success') {
     iconBadgeClass = 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800';
     progressBarClass = 'bg-emerald-500';
     borderAccentClass = 'border-emerald-200/90 dark:border-emerald-800/80 shadow-emerald-500/5';
     IconComponent = CheckCircle2;
-    typeLabel = 'Thành công';
+    typeLabel = t('toast.type_success', 'Thành công');
   } else if (toast.type === 'error') {
     iconBadgeClass = 'bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-800';
     progressBarClass = 'bg-rose-500';
     borderAccentClass = 'border-rose-200/90 dark:border-rose-800/80 shadow-rose-500/5';
     IconComponent = AlertCircle;
-    typeLabel = 'Lỗi';
+    typeLabel = t('toast.type_error', 'Lỗi');
   } else if (toast.type === 'warning') {
     iconBadgeClass = 'bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800';
     progressBarClass = 'bg-amber-500';
     borderAccentClass = 'border-amber-200/90 dark:border-amber-800/80 shadow-amber-500/5';
     IconComponent = AlertTriangle;
-    typeLabel = 'Cảnh báo';
+    typeLabel = t('toast.type_warning', 'Cảnh báo');
   }
 
   const isBottom = position.startsWith('bottom');
@@ -138,8 +140,8 @@ const ToastCard: React.FC<ToastCardProps> = ({ toast, onRemove, position }) => {
             onRemove(toast.id);
           }}
           className="w-7 h-7 -mr-1 -mt-1 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
-          title="Đóng thông báo"
-          aria-label="Đóng"
+          title={t('toast.close_btn', 'Đóng thông báo')}
+          aria-label={t('common.close', 'Đóng')}
         >
           <X className="w-4 h-4" />
         </button>

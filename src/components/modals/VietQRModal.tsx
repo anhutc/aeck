@@ -74,11 +74,11 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
   };
 
   const copyTransferInfo = () => {
-    const text = `Ngân hàng: ${bankSettings.bankName}\n` +
-      `Số tài khoản: ${bankSettings.accountNumber}\n` +
-      `Chủ tài khoản: ${bankSettings.accountName}\n` +
-      (numAmount > 0 ? `Số tiền: ${formatVND(numAmount)}\n` : '') +
-      `Nội dung CK: ${content}`;
+    const text = `${t('settings.bank_label', 'Ngân hàng')}: ${bankSettings.bankName}\n` +
+      `${t('settings.account_number_label', 'Số tài khoản')}: ${bankSettings.accountNumber}\n` +
+      `${t('settings.account_name_label', 'Chủ tài khoản')}: ${bankSettings.accountName}\n` +
+      (numAmount > 0 ? `${t('common.amount', 'Số tiền')}: ${formatVND(numAmount)}\n` : '') +
+      `${t('transactions.transfer_content', 'Nội dung CK')}: ${content}`;
     handleCopy(text, 'transfer_info');
   };
 
@@ -217,8 +217,14 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
               onClick={copyTransferInfo}
               className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              {copiedField === 'transfer_info' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copiedField === 'transfer_info' ? 'Đã sao chép thông tin CK!' : 'Sao chép thông tin chuyển khoản'}
+              {copiedField === 'transfer_info' ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+              {copiedField === 'transfer_info'
+                ? t('vietqr.copied_transfer_info', 'Đã sao chép thông tin CK!')
+                : t('vietqr.copy_transfer_info', 'Sao chép thông tin chuyển khoản')}
             </button>
           )}
           <a

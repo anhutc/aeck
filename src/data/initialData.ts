@@ -106,16 +106,6 @@ export const INITIAL_BRANDING: AppBranding = {
   statementShowSignatory3: true,
   statementShowFooterNote: true,
   statementShowSummary: true,
-
-  // 6. Tin nhắn Chia sẻ Zalo / Nhóm
-  shareMessageGreeting: 'Kính gửi các thành viên,\nĐể đảm bảo tính công khai & minh bạch tài chính, mọi người có thể theo dõi số dư, xem sao kê và đóng quỹ theo liên kết dưới đây:',
-  shareMessageIncludeBank: true,
-  shareMessageIncludeCampaigns: true,
-  shareMessageBenefit1: 'Xem số dư tồn quỹ & tiến độ các đợt đóng góp theo thời gian thực',
-  shareMessageBenefit2: 'Quét mã VietQR chuyển khoản nhanh đúng cú pháp và tự động',
-  shareMessageBenefit3: 'Xem chi tiết từng khoản thu và hóa đơn chứng từ chi tiêu minh bạch',
-  shareMessageClosing: 'Trân trọng cảm ơn sự gắn kết và đồng hành của mọi người!',
-  socialShareTemplate: '',
 };
 
 export const INITIAL_VIEW_PERMISSIONS: MemberViewPermissions = {

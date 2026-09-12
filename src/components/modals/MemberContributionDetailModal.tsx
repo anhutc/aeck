@@ -133,7 +133,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
           <button
             onClick={onClose}
             className="absolute right-4 top-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-            aria-label="Đóng"
+            aria-label={t('members.detail_modal_close', 'Đóng')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -147,12 +147,12 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                 <h2 className="text-lg sm:text-xl font-black text-slate-900">{member.name}</h2>
                 {member.status === 'inactive' ? (
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                    Đã nghỉ / Rời nhóm
+                    {t('members.status_inactive_badge', 'Đã nghỉ / Rời nhóm')}
                   </span>
                 ) : (
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Đang hoạt động
+                    {t('members.status_active_badge', 'Đang hoạt động')}
                   </span>
                 )}
               </div>
@@ -166,7 +166,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                 )}
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  Tham gia: {formatDate(member.joinedDate)}
+                  {t('members.joined_label', 'Tham gia:')} {formatDate(member.joinedDate)}
                 </span>
               </div>
 
@@ -193,13 +193,13 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
             <div className="p-4 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900 text-xs text-purple-800 dark:text-purple-300 flex items-start gap-3">
               <ShieldCheck className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
               <div>
-                <strong className="font-bold text-sm block">Thành viên được miễn đóng quỹ</strong>
+                <strong className="font-bold text-sm block">{t('members.detail_exempt_title', 'Thành viên được miễn đóng quỹ')}</strong>
                 <p className="mt-0.5 text-purple-700 dark:text-purple-400">
-                  Thành viên này được áp dụng chính sách miễn trừ tham gia các đợt đóng quỹ theo quy định nhóm.
+                  {t('members.detail_exempt_desc', 'Thành viên này được áp dụng chính sách miễn trừ tham gia các đợt đóng quỹ theo quy định nhóm.')}
                 </p>
                 {member.specialNote && (
                   <p className="mt-1 font-italic bg-purple-100/60 dark:bg-purple-900/60 p-2 rounded-lg">
-                    Ghi chú: "{member.specialNote}"
+                    {t('members.detail_special_note', 'Ghi chú:')} "{member.specialNote}"
                   </p>
                 )}
               </div>
@@ -211,28 +211,28 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
               <div className="flex items-center justify-between">
                 <span className="font-bold flex items-center gap-1.5 text-sm">
                   <Plane className="w-4 h-4 text-amber-600" />
-                  Chế độ đóng quỹ trọn gói theo năm (Đi công tác)
+                  {t('members.detail_yearly_title', 'Chế độ đóng quỹ trọn gói theo năm (Đi công tác)')}
                 </span>
                 <span className="font-mono font-black text-sm">
-                  {formatVND(member.yearlyContributionAmount || 0)}/năm
+                  {formatVND(member.yearlyContributionAmount || 0)}{t('members.detail_yearly_unit', '/năm')}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-3 pt-2 border-t border-amber-200/80 dark:border-amber-900/80">
                 <div>
-                  <span className="text-amber-700 dark:text-amber-400 block text-[11px]">Đã nộp trong năm:</span>
+                  <span className="text-amber-700 dark:text-amber-400 block text-[11px]">{t('members.detail_yearly_paid_in_year', 'Đã nộp trong năm:')}</span>
                   <span className="font-bold text-sm text-emerald-700 dark:text-emerald-400">
                     {formatVND(member.yearlyPaidAmount || 0)}
                   </span>
                   {member.yearlyPaidDate && (
                     <span className="text-[10px] text-slate-500 block mt-0.5">
-                      Ngày nộp: {formatDate(member.yearlyPaidDate)}
+                      {t('members.detail_yearly_paid_date', 'Ngày nộp:')} {formatDate(member.yearlyPaidDate)}
                     </span>
                   )}
                 </div>
                 <div>
-                  <span className="text-amber-700 dark:text-amber-400 block text-[11px]">Tình trạng:</span>
+                  <span className="text-amber-700 dark:text-amber-400 block text-[11px]">{t('members.detail_yearly_status_label', 'Tình trạng:')}</span>
                   <span className={`font-bold text-sm ${totalRemaining === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                    {totalRemaining === 0 ? '✅ Đã hoàn thành cả năm' : `⚠️ Còn thiếu: ${formatVND(totalRemaining)}`}
+                    {totalRemaining === 0 ? t('members.detail_yearly_completed', '✅ Đã hoàn thành cả năm') : `${t('members.detail_yearly_remaining', '⚠️ Còn thiếu:')} ${formatVND(totalRemaining)}`}
                   </span>
                 </div>
               </div>
@@ -242,28 +242,28 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
           {/* Overview KPI Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-800">
-              <span className="text-[11px] text-slate-500 block font-medium">Tổng đợt tham gia</span>
+              <span className="text-[11px] text-slate-500 block font-medium">{t('members.detail_kpi_campaigns', 'Tổng đợt tham gia')}</span>
               <span className="text-base font-black text-slate-900 dark:text-white mt-0.5 block">
-                {totalCampaigns} đợt
+                {totalCampaigns} {t('members.detail_campaign_unit', 'đợt')}
               </span>
             </div>
 
             <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200/70 dark:border-emerald-900/60">
-              <span className="text-[11px] text-emerald-700 dark:text-emerald-400 block font-medium">Tổng tiền đã nộp</span>
+              <span className="text-[11px] text-emerald-700 dark:text-emerald-400 block font-medium">{t('members.detail_kpi_paid', 'Tổng tiền đã nộp')}</span>
               <span className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-0.5 block">
                 {formatVND(totalPaid)}
               </span>
             </div>
 
             <div className="p-3.5 bg-rose-50/70 dark:bg-rose-950/30 rounded-2xl border border-rose-200/70 dark:border-rose-900/60">
-              <span className="text-[11px] text-rose-700 dark:text-rose-400 block font-medium">Số tiền còn thiếu</span>
+              <span className="text-[11px] text-rose-700 dark:text-rose-400 block font-medium">{t('members.detail_kpi_missing', 'Số tiền còn thiếu')}</span>
               <span className="text-base font-black text-rose-600 dark:text-rose-400 mt-0.5 block">
                 {formatVND(totalRemaining)}
               </span>
             </div>
 
             <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/30 rounded-2xl border border-blue-200/70 dark:border-blue-900/60">
-              <span className="text-[11px] text-blue-700 dark:text-blue-400 block font-medium">Tỷ lệ hoàn thành</span>
+              <span className="text-[11px] text-blue-700 dark:text-blue-400 block font-medium">{t('members.detail_kpi_progress', 'Tỷ lệ hoàn thành')}</span>
               <span className="text-base font-black text-blue-600 dark:text-blue-400 mt-0.5 block">
                 {overallProgress}% ({paidCampaignsCount}/{totalCampaigns})
               </span>
@@ -276,10 +276,10 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
               <div>
                 <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-purple-600" />
-                  Thanh toán toàn bộ các khoản còn thiếu
+                  {t('members.detail_pay_all_title', 'Thanh toán toàn bộ các khoản còn thiếu')}
                 </span>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Quét 1 mã QR duy nhất để nộp tổng số tiền nợ: <strong className="text-purple-600 font-bold">{formatVND(totalRemaining)}</strong>
+                  {t('members.detail_pay_all_desc', 'Quét 1 mã QR duy nhất để nộp tổng số tiền nợ:')} <strong className="text-purple-600 font-bold">{formatVND(totalRemaining)}</strong>
                 </p>
               </div>
 
@@ -288,7 +288,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                 className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-bold shadow-md shadow-purple-600/20 flex items-center justify-center gap-2 transition-all shrink-0 cursor-pointer"
               >
                 <QrCode className="w-4 h-4" />
-                <span>Quét QR nộp {formatVND(totalRemaining)}</span>
+                <span>{t('members.detail_pay_all_btn', 'Quét QR nộp')} {formatVND(totalRemaining)}</span>
               </button>
             </div>
           )}
@@ -298,7 +298,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-blue-600" />
-                Lịch sử & chi tiết từng đợt đóng quỹ ({memberCampaignsData.length})
+                {t('members.detail_history_title', 'Lịch sử & chi tiết từng đợt đóng quỹ')} ({memberCampaignsData.length})
               </h3>
 
               {/* Filter pills */}
@@ -311,7 +311,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                 >
-                  Tất cả ({totalCampaigns})
+                  {t('members.detail_filter_all', 'Tất cả')} ({totalCampaigns})
                 </button>
                 <button
                   onClick={() => setFilterStatus('unpaid')}
@@ -321,7 +321,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                 >
-                  Chưa nộp ({unpaidCampaignsCount})
+                  {t('members.detail_filter_unpaid', 'Chưa nộp')} ({unpaidCampaignsCount})
                 </button>
                 <button
                   onClick={() => setFilterStatus('paid')}
@@ -331,7 +331,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                 >
-                  Đã nộp ({paidCampaignsCount})
+                  {t('members.detail_filter_paid', 'Đã nộp')} ({paidCampaignsCount})
                 </button>
               </div>
             </div>
@@ -342,7 +342,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
                   type="text"
-                  placeholder="Tìm đợt thu theo tên, quỹ hoặc ghi chú..."
+                  placeholder={t('members.detail_search_placeholder', 'Tìm đợt thu theo tên, quỹ hoặc ghi chú...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
@@ -355,8 +355,8 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
               {filteredCampaigns.length === 0 ? (
                 <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/60 dark:border-slate-800 text-slate-400 text-xs">
                   {totalCampaigns === 0
-                    ? 'Thành viên này chưa được phân bổ tham gia đợt đóng quỹ nào.'
-                    : 'Không tìm thấy đợt đóng quỹ nào phù hợp với bộ lọc.'}
+                    ? t('members.detail_empty_no_campaigns', 'Thành viên này chưa được phân bổ tham gia đợt đóng quỹ nào.')
+                    : t('members.detail_empty_no_results', 'Không tìm thấy đợt đóng quỹ nào phù hợp với bộ lọc.')}
                 </div>
               ) : (
                 filteredCampaigns.map((item) => {
@@ -383,11 +383,11 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
 
                           <div className="flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
                             <span>
-                              Phát động: <strong className="text-slate-700 dark:text-slate-300">{formatDate(item.campaign.launchDate || item.campaign.createdAt)}</strong>
+                              {t('members.detail_campaign_launch', 'Phát động:')} <strong className="text-slate-700 dark:text-slate-300">{formatDate(item.campaign.launchDate || item.campaign.createdAt)}</strong>
                             </span>
                             {item.paidDate && (
                               <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                                • Ngày nộp: {formatDate(item.paidDate)}
+                                • {t('members.detail_campaign_paid_date', 'Ngày nộp:')} {formatDate(item.paidDate)}
                               </span>
                             )}
                             {item.note && (
@@ -408,17 +408,17 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                               {item.isPaidInFull ? (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
                                   <CheckCircle2 className="w-3.5 h-3.5" />
-                                  Đã nộp đủ
+                                  {t('members.detail_paid_full_badge', 'Đã nộp đủ')}
                                 </span>
                               ) : item.isPartial ? (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
                                   <Clock className="w-3.5 h-3.5" />
-                                  Còn thiếu {formatVND(item.remaining)}
+                                  {t('members.detail_remaining_badge', 'Còn thiếu')} {formatVND(item.remaining)}
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400">
                                   <AlertCircle className="w-3.5 h-3.5" />
-                                  Chưa nộp ({formatVND(item.required)})
+                                  {t('members.detail_unpaid_badge', 'Chưa nộp')} ({formatVND(item.required)})
                                 </span>
                               )}
                             </div>
@@ -429,11 +429,11 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                             {!item.isPaidInFull && (
                               <button
                                 onClick={() => handlePaySingleCampaign(item)}
-                                title="Quét mã QR nộp đợt này"
+                                title={t('members.detail_qr_title', 'Quét mã QR nộp đợt này')}
                                 className="p-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1"
                               >
                                 <QrCode className="w-4 h-4" />
-                                <span className="hidden sm:inline">Quét QR</span>
+                                <span className="hidden sm:inline">{t('members.detail_qr_btn', 'Quét QR')}</span>
                               </button>
                             )}
 
@@ -444,29 +444,29 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                                   if (item.isPaidInFull) {
                                     showConfirm({
                                       title: t('dialog.confirm_action_title', 'Xác Nhận Thao Tác'),
-                                      message: `Hủy ghi nhận nộp tiền đợt "${item.campaign.title}" của ${member.name}?`,
+                                      message: `${t('members.detail_cancel_pay_confirm_msg', 'Hủy ghi nhận nộp tiền đợt')} "${item.campaign.title}" của ${member.name}?`,
                                       type: 'warning',
-                                      confirmText: 'Hủy Ghi Nhận',
+                                      confirmText: t('members.detail_cancel_pay_confirm_btn', 'Hủy Ghi Nhận'),
                                       cancelText: t('common.cancel', 'Hủy bỏ'),
                                       onConfirm: () => {
-                                        onUpdatePayment(item.campaign.id, member.id, 0, undefined, 'Chưa nộp');
-                                        showToast('Đã hủy trạng thái nộp tiền', 'info');
+                                        onUpdatePayment(item.campaign.id, member.id, 0, undefined, t('campaigns.unpaid_status_label', 'Chưa nộp'));
+                                        showToast(t('members.detail_cancel_pay_toast', 'Đã hủy trạng thái nộp tiền'), 'info');
                                       },
                                     });
                                   } else {
                                     const today = new Date().toISOString().slice(0, 10);
-                                    onUpdatePayment(item.campaign.id, member.id, item.required, today, 'Đã nộp đủ');
-                                    showToast('Đã ghi nhận nộp đủ thành công!', 'success');
+                                    onUpdatePayment(item.campaign.id, member.id, item.required, today, t('campaigns.paid_full_status_label', 'Đã nộp đủ'));
+                                    showToast(t('members.detail_mark_paid_toast', 'Đã ghi nhận nộp đủ thành công!'), 'success');
                                   }
                                 }}
-                                title={item.isPaidInFull ? 'Hủy trạng thái đã nộp' : 'Đánh dấu đã nộp đủ'}
+                                title={item.isPaidInFull ? t('members.detail_btn_cancel_pay_title', 'Hủy trạng thái đã nộp') : t('members.detail_btn_mark_paid_title', 'Đánh dấu đã nộp đủ')}
                                 className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                                   item.isPaidInFull
                                     ? 'border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-rose-50 hover:text-rose-600'
                                     : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
                                 }`}
                               >
-                                {item.isPaidInFull ? 'Hủy nộp' : 'Nộp đủ'}
+                                {item.isPaidInFull ? t('members.detail_btn_cancel_pay', 'Hủy nộp') : t('members.detail_btn_mark_paid', 'Nộp đủ')}
                               </button>
                             )}
                           </div>
@@ -483,14 +483,14 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
         {/* Modal Footer */}
         <div className="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
           <span className="text-xs text-slate-500">
-            {isYearly ? 'Chế độ đóng theo năm' : `Tổng: ${totalCampaigns} đợt • Đã nộp ${paidCampaignsCount} đợt`}
+            {isYearly ? t('members.detail_footer_yearly', 'Chế độ đóng theo năm') : `${t('members.detail_total_prefix', 'Tổng:')} ${totalCampaigns} ${t('members.detail_campaign_unit', 'đợt')} • ${t('members.detail_paid_prefix', 'Đã nộp')} ${paidCampaignsCount} ${t('members.detail_campaign_unit', 'đợt')}`}
           </span>
 
           <button
             onClick={onClose}
             className="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white text-xs font-bold transition-colors cursor-pointer"
           >
-            Đóng
+            {t('common.close', 'Đóng')}
           </button>
         </div>
       </div>

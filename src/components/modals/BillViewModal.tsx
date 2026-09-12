@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Transaction, Category } from '../../types';
 import { formatVND, formatDate } from '../../utils/formatters';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 interface BillViewModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
   transaction,
   category,
 }) => {
+  const { t } = useTranslation();
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
 
@@ -106,7 +108,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
             </div>
             <div className="min-w-0">
               <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 truncate">
-                <span>Hình ảnh đính kèm</span>
+                <span>{t('transactions.bill_modal_title', 'Hình ảnh đính kèm')}</span>
                 <span
                   className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
                     isIncome
@@ -126,14 +128,14 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={handleDownload}
-              title="Tải ảnh hóa đơn về máy"
+              title={t('transactions.bill_download_btn', 'Tải ảnh')}
               className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
             >
               <Download className="w-4 h-4" />
             </button>
             <button
               onClick={onClose}
-              title="Đóng"
+              title={t('common.close', 'Đóng')}
               className="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -162,7 +164,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
             )}
             <span className="flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-200">
               {isIncome ? <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-600" /> : <ArrowUpRight className="w-3.5 h-3.5 text-rose-600" />}
-              <span>{isIncome ? 'Khoản thu' : 'Khoản chi'}</span>
+              <span>{isIncome ? t('transactions.record_income_title', 'Khoản thu') : t('transactions.record_expense_title', 'Khoản chi')}</span>
             </span>
           </div>
 
@@ -171,7 +173,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
             <button
               onClick={handleZoomOut}
               disabled={zoom <= 0.5}
-              title="Thu nhỏ"
+              title={t('transactions.bill_zoom_out', 'Thu nhỏ')}
               className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-30 cursor-pointer"
             >
               <ZoomOut className="w-3.5 h-3.5" />
@@ -182,7 +184,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
             <button
               onClick={handleZoomIn}
               disabled={zoom >= 3}
-              title="Phóng to"
+              title={t('transactions.bill_zoom_in', 'Phóng to')}
               className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-30 cursor-pointer"
             >
               <ZoomIn className="w-3.5 h-3.5" />
@@ -190,14 +192,14 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
             <div className="w-px h-3 bg-slate-200 dark:bg-slate-700 mx-1" />
             <button
               onClick={handleRotate}
-              title="Xoay ảnh 90°"
+              title={t('transactions.bill_rotate_btn', 'Xoay ảnh')}
               className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
             >
               <RotateCw className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleReset}
-              title="Kích thước ban đầu"
+              title={t('text_editor.reset_all_btn', 'Kích thước ban đầu')}
               className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
             >
               <Maximize2 className="w-3.5 h-3.5" />
@@ -226,7 +228,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
         {/* Footer info bar */}
         <div className="px-4 sm:px-6 py-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs flex items-center justify-between gap-3">
           <span className="truncate">
-            Hóa đơn minh bạch cho khoản {isIncome ? 'thu' : 'chi'}: <strong className="text-slate-800 dark:text-slate-200">{transaction.description}</strong>
+            {t('transactions.bill_transparent_badge', 'Hóa đơn minh bạch cho khoản')} {isIncome ? t('transactions.income_short', 'thu') : t('transactions.expense_short', 'chi')}: <strong className="text-slate-800 dark:text-slate-200">{transaction.description}</strong>
           </span>
           <div className="flex items-center gap-2 shrink-0">
             <button
@@ -234,13 +236,13 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
               className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Tải ảnh</span>
+              <span>{t('transactions.bill_download_btn', 'Tải ảnh')}</span>
             </button>
             <button
               onClick={onClose}
               className="px-4 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition-colors cursor-pointer"
             >
-              Đóng
+              {t('common.close', 'Đóng')}
             </button>
           </div>
         </div>

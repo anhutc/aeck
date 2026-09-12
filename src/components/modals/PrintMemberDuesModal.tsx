@@ -22,6 +22,7 @@ import html2canvas from 'html2canvas-pro';
 import { Member, ContributionCampaign, Fund, BankSettings, AppBranding } from '../../types';
 import { formatVND, formatDate, getVietQRUrl, getMemberRoles } from '../../utils/formatters';
 import { useFeedback } from '../../context/FeedbackContext';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 interface PrintMemberDuesModalProps {
   isOpen: boolean;
@@ -76,6 +77,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
   isAdmin = false,
 }) => {
   const { showToast } = useFeedback();
+  const { t } = useTranslation();
 
   // Campaign scope
   const [campaignScope, setCampaignScope] = useState<string>(defaultCampaignId);
@@ -99,9 +101,9 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
   const printCardRef = useRef<HTMLDivElement>(null);
 
   // App branding info
-  const appTitle = branding?.appTitle?.trim() || 'SỔ QUỸ AE CÂY KHẾ';
-  const appSubtitle = branding?.appSubtitle?.trim() || 'Minh Bạch - Rõ Ràng - Kịp Thời';
-  const treasurerName = branding?.treasurerName?.trim() || 'Ban Quản Trị Quỹ';
+  const appTitle = branding?.appTitle?.trim() || t('branding.default_app_title', 'SỔ QUỸ AE CÂY KHẾ');
+  const appSubtitle = branding?.appSubtitle?.trim() || t('branding.default_app_subtitle', 'Minh Bạch - Rõ Ràng - Kịp Thời');
+  const treasurerName = branding?.treasurerName?.trim() || t('branding.default_treasurer_name', 'Ban Quản Trị Quỹ');
   const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
 
   // Funds map for fast lookup
@@ -371,10 +373,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
       link.click();
       document.body.removeChild(link);
 
-      showToast('Đã tạo và tải ảnh thống kê đóng quỹ thành công!', 'success');
+      showToast(t('dues.toast_image_success', 'Đã tạo và tải ảnh thống kê đóng quỹ thành công!'), 'success');
     } catch (err) {
       console.error('Lỗi khi xuất ảnh:', err);
-      showToast('Không thể xuất ảnh, vui lòng thử lại.', 'error');
+      showToast(t('dues.toast_image_error', 'Không thể xuất ảnh, vui lòng thử lại.'), 'error');
     } finally {
       setIsExporting(false);
     }
@@ -405,24 +407,24 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
             const item = new ClipboardItem({ 'image/png': blob });
             await navigator.clipboard.write([item]);
             setIsCopied(true);
-            showToast('Đã sao chép ảnh vào bộ nhớ tạm! Nhấn Ctrl+V để dán.', 'success');
+            showToast(t('dues.toast_copy_success', 'Đã sao chép ảnh vào bộ nhớ tạm! Nhấn Ctrl+V để dán.'), 'success');
             setTimeout(() => setIsCopied(false), 3000);
           } else {
             // Fallback download if clipboard image writing is not supported
             handleDownloadImage();
-            showToast('Trình duyệt chưa hỗ trợ sao chép ảnh trực tiếp, đã tự động tải ảnh về máy!', 'info');
+            showToast(t('dues.toast_copy_unsupported', 'Trình duyệt chưa hỗ trợ sao chép ảnh trực tiếp, đã tự động tải ảnh về máy!'), 'info');
           }
         } catch (copyErr) {
           console.warn('Lỗi clipboard:', copyErr);
           handleDownloadImage();
-          showToast('Đã tải ảnh về máy!', 'info');
+          showToast(t('dues.toast_download_success', 'Đã tải ảnh về máy!'), 'info');
         } finally {
           setIsExporting(false);
         }
       }, 'image/png');
     } catch (err) {
       console.error('Lỗi sao chép ảnh:', err);
-      showToast('Không thể sao chép ảnh, vui lòng thử lại.', 'error');
+      showToast(t('dues.toast_copy_error', 'Không thể sao chép ảnh, vui lòng thử lại.'), 'error');
       setIsExporting(false);
     }
   };
@@ -450,14 +452,14 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
-                  Xuất Ảnh Thống Kê Công Nợ & Đóng Quỹ
+                  {t('dues.modal_title', 'Xuất Ảnh Thống Kê Công Nợ & Đóng Quỹ')}
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                  Dành riêng Admin
+                  {t('dues.admin_only_badge', 'Dành riêng Admin')}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Hiển thị chi tiết toàn bộ ai còn nợ, nợ đợt nào, mức quy định và số tiền còn thiếu
+                {t('dues.modal_subtitle', 'Hiển thị chi tiết toàn bộ ai còn nợ, nợ đợt nào, mức quy định và số tiền còn thiếu')}
               </p>
             </div>
           </div>
@@ -468,7 +470,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               onClick={handleCopyImage}
               disabled={isExporting}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer"
-              title="Sao chép ảnh"
+              title={t('dues.btn_copy_image', 'Sao chép ảnh')}
             >
               {isExporting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -477,7 +479,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               ) : (
                 <Copy className="w-4 h-4" />
               )}
-              <span>{isCopied ? 'Đã sao chép!' : 'Sao chép ảnh'}</span>
+              <span>{isCopied ? t('campaigns.copied', 'Đã sao chép!') : t('dues.btn_copy_image', 'Sao chép ảnh')}</span>
             </button>
 
             <button
@@ -485,17 +487,17 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               onClick={handleDownloadImage}
               disabled={isExporting}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer"
-              title="Tải ảnh PNG sắc nét về máy"
+              title={t('dues.btn_download_image', 'Tải ảnh PNG')}
             >
               <Download className="w-4 h-4" />
-              <span className="hidden xs:inline">Tải ảnh PNG</span>
+              <span className="hidden xs:inline">{t('dues.btn_download_image', 'Tải ảnh PNG')}</span>
             </button>
 
             <button
               id="print-dues-page-btn"
               onClick={handlePrint}
               className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-              title="In ra giấy"
+              title={t('dues.btn_print', 'In ra giấy')}
             >
               <Printer className="w-4 h-4" />
             </button>
@@ -504,7 +506,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               id="close-print-dues-modal-btn"
               onClick={onClose}
               className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              title="Đóng"
+              title={t('common.close_window', 'Đóng')}
             >
               <X className="w-5 h-5" />
             </button>
@@ -519,7 +521,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
             <div className="flex-1 flex items-center gap-1.5 min-w-[240px]">
               <label className="font-semibold text-slate-700 dark:text-slate-300 shrink-0 flex items-center gap-1">
                 <Filter className="w-3.5 h-3.5 text-blue-500" />
-                <span>Khoản thu:</span>
+                <span>{t('dues.scope_label', 'Khoản thu:')}</span>
               </label>
               <select
                 id="dues-scope-select"
@@ -527,10 +529,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 onChange={(e) => setCampaignScope(e.target.value)}
                 className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium truncate"
               >
-                <option value="all">Toàn bộ các khoản (Tất cả đợt thu & Niên liễm)</option>
+                <option value="all">{t('dues.scope_all', 'Toàn bộ các khoản (Tất cả đợt thu & Niên liễm)')}</option>
                 {campaigns.map((c) => (
                   <option key={c.id} value={c.id}>
-                    Chỉ đợt: {c.title}
+                    {t('dues.scope_campaign_prefix', 'Chỉ đợt:')} {c.title}
                   </option>
                 ))}
               </select>
@@ -548,7 +550,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                 }`}
               >
-                <span>Tất cả ({summaryStats.totalMembers})</span>
+                <span>{t('dues.filter_all', 'Tất cả')} ({summaryStats.totalMembers})</span>
               </button>
 
               <button
@@ -561,7 +563,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 }`}
               >
                 <span className="w-2 h-2 rounded-full bg-rose-500" />
-                <span>Còn thiếu ({summaryStats.unpaidCount})</span>
+                <span>{t('dues.filter_unpaid', 'Còn thiếu')} ({summaryStats.unpaidCount})</span>
               </button>
 
               <button
@@ -574,7 +576,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 }`}
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span>Đã xong ({summaryStats.paidFullCount})</span>
+                <span>{t('dues.filter_paid', 'Đã xong')} ({summaryStats.paidFullCount})</span>
               </button>
             </div>
 
@@ -585,7 +587,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm tên, SĐT..."
+                placeholder={t('dues.search_placeholder', 'Tìm theo tên hoặc số điện thoại...')}
                 className="w-full pl-8 pr-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
@@ -604,10 +606,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                       ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
-                  title="Dạng bảng đối soát chi tiết"
+                  title={t('dues.view_table', 'Bảng')}
                 >
                   <TableIcon className="w-3.5 h-3.5" />
-                  <span>Dạng bảng</span>
+                  <span>{t('dues.view_table', 'Bảng')}</span>
                 </button>
                 <button
                   type="button"
@@ -617,10 +619,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                       ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
-                  title="Dạng thẻ từng người nợ"
+                  title={t('dues.view_cards', 'Thẻ')}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
-                  <span>Dạng thẻ</span>
+                  <span>{t('dues.view_cards', 'Thẻ')}</span>
                 </button>
               </div>
 
@@ -631,8 +633,8 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 onChange={(e) => setStatusFilter(e.target.value as any)}
                 className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
-                <option value="all">Bao gồm tất cả thành viên (cả nghỉ/chuyển)</option>
-                <option value="active">Chỉ thành viên đang hoạt động</option>
+                <option value="all">{t('dues.status_all', 'Tất cả')}</option>
+                <option value="active">{t('dues.status_active_only', 'Chỉ đang sinh hoạt')}</option>
               </select>
             </div>
 
@@ -646,7 +648,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                   className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
                 />
                 <span className="text-slate-700 dark:text-slate-300 font-medium">
-                  Chi tiết từng khoản thiếu
+                  {t('dues.toggle_details', 'Hiện chi tiết nợ')}
                 </span>
               </label>
 
@@ -657,7 +659,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                   onChange={(e) => setShowPhone(e.target.checked)}
                   className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
                 />
-                <span className="text-slate-700 dark:text-slate-300">Hiện SĐT</span>
+                <span className="text-slate-700 dark:text-slate-300">{t('dues.toggle_phone', 'Hiện SĐT')}</span>
               </label>
 
               <label className="inline-flex items-center gap-1.5 cursor-pointer select-none">
@@ -667,7 +669,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                   onChange={(e) => setShowQR(e.target.checked)}
                   className="rounded text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5"
                 />
-                <span className="text-slate-700 dark:text-slate-300">Mã VietQR</span>
+                <span className="text-slate-700 dark:text-slate-300">{t('dues.toggle_qr', 'Hiện VietQR')}</span>
               </label>
             </div>
           </div>
@@ -700,21 +702,21 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                   </div>
                   <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug">
                     {campaignScope === 'all'
-                      ? 'ĐÓNG QUỸ THÀNH VIÊN'
-                      : `BÁO CÁO TIẾN ĐỘ & CÔNG NỢ: ${campaigns.find((c) => c.id === campaignScope)?.title?.toUpperCase() || ''}`}
+                      ? t('dues.report_title', 'THỐNG KÊ ĐÓNG QUỸ & CÔNG NỢ THÀNH VIÊN')
+                      : `${t('reports.title', 'BÁO CÁO TIẾN ĐỘ & CÔNG NỢ')}: ${campaigns.find((c) => c.id === campaignScope)?.title?.toUpperCase() || ''}`}
                   </h1>
                   <p className="text-xs text-slate-500 mt-0.5">{appSubtitle}</p>
                 </div>
 
                 <div className="text-right text-xs text-slate-500 shrink-0">
                   <div className="font-semibold text-slate-800">
-                    Ngày lập: {formatDate(new Date().toISOString().slice(0, 10))}
+                    {t('print.created_date_label', 'Ngày lập:')} {formatDate(new Date().toISOString().slice(0, 10))}
                   </div>
                   <div className="mt-0.5">
-                    Thủ quỹ: <span className="font-bold text-slate-700">{treasurerName}</span>
+                    {t('print.default_sign2_title', 'Thủ quỹ')}: <span className="font-bold text-slate-700">{treasurerName}</span>
                   </div>
                   <div className="mt-0.5 text-[11px] text-slate-400">
-                    {filterDebt === 'unpaid_only' ? 'Danh sách người còn nợ' : filterDebt === 'paid_only' ? 'Người đã nộp đủ' : 'Tất cả thành viên'}
+                    {filterDebt === 'unpaid_only' ? t('dues.filter_unpaid', 'Còn thiếu') : filterDebt === 'paid_only' ? t('dues.filter_paid', 'Đã xong') : t('dues.filter_all', 'Tất cả thành viên')}
                   </div>
                 </div>
               </div>
@@ -724,39 +726,39 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                  Thành viên
+                  {t('dues.stat_total_members', 'Tổng số thành viên')}
                 </div>
                 <div className="text-lg font-black text-slate-800 mt-0.5">
                   {summaryStats.totalMembers}{' '}
-                  <span className="text-xs font-normal text-slate-500">người</span>
+                  <span className="text-xs font-normal text-slate-500">{t('common.person', 'người')}</span>
                 </div>
               </div>
 
               <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-2.5 text-center">
                 <div className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider flex items-center justify-center gap-1">
                   <CheckCircle2 className="w-3 h-3" />
-                  <span>Đã nộp đủ 100%</span>
+                  <span>{t('dues.stat_paid', 'Đã hoàn thành')}</span>
                 </div>
                 <div className="text-lg font-black text-emerald-700 mt-0.5">
                   {summaryStats.paidFullCount}{' '}
-                  <span className="text-xs font-normal text-emerald-600">người</span>
+                  <span className="text-xs font-normal text-emerald-600">{t('common.person', 'người')}</span>
                 </div>
               </div>
 
               <div className="bg-rose-50/80 border border-rose-200 rounded-xl p-2.5 text-center">
                 <div className="text-[10px] font-bold text-rose-700 uppercase tracking-wider flex items-center justify-center gap-1">
                   <AlertCircle className="w-3 h-3" />
-                  <span>Còn nợ / thiếu</span>
+                  <span>{t('dues.stat_unpaid', 'Chưa hoàn thành')}</span>
                 </div>
                 <div className="text-lg font-black text-rose-700 mt-0.5">
                   {summaryStats.unpaidCount}{' '}
-                  <span className="text-xs font-normal text-rose-600">người</span>
+                  <span className="text-xs font-normal text-rose-600">{t('common.person', 'người')}</span>
                 </div>
               </div>
 
               <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-orange-200 rounded-xl p-2.5 text-center col-span-2 sm:col-span-1">
                 <div className="text-[10px] font-extrabold text-orange-800 uppercase tracking-wider">
-                  Tổng cần thu
+                  {t('dues.stat_total_debt', 'Tổng tiền còn nợ')}
                 </div>
                 <div className="text-lg font-black text-orange-700 mt-0.5 tracking-tight">
                   {formatVND(summaryStats.grandRemainingSum)}
@@ -808,11 +810,11 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                   <thead>
                     <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 text-[11px]">
                       <th className="py-2.5 px-3 text-center w-9">#</th>
-                      <th className="py-2.5 px-3 w-44">Thành viên</th>
-                      <th className="py-2.5 px-3 text-right w-24">Phải đóng</th>
-                      <th className="py-2.5 px-3 text-right w-24">Đã nộp</th>
-                      <th className="py-2.5 px-3 text-right w-28">Còn thiếu</th>
-                      <th className="py-2.5 px-3">Chi tiết từng khoản thiếu</th>
+                      <th className="py-2.5 px-3 w-44">{t('dues.th_member', 'Thành viên')}</th>
+                      <th className="py-2.5 px-3 text-right w-24">{t('dues.th_target', 'Mục tiêu')}</th>
+                      <th className="py-2.5 px-3 text-right w-24">{t('dues.th_paid', 'Đã nộp')}</th>
+                      <th className="py-2.5 px-3 text-right w-28">{t('dues.th_owed', 'Còn thiếu')}</th>
+                      <th className="py-2.5 px-3">{t('dues.toggle_details', 'Hiện chi tiết nợ')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 bg-white">
@@ -843,10 +845,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                           )}
                           <div className="text-[10px] text-slate-400 mt-0.5">
                             {row.type === 'yearly'
-                              ? 'Chế độ: Theo năm'
+                              ? t('members.mode_yearly', 'Theo năm (Niên liễm)')
                               : row.type === 'exempt'
-                              ? 'Chế độ: Miễn đóng'
-                              : 'Chế độ: Theo đợt'}
+                              ? t('members.mode_exempt', 'Miễn đóng')
+                              : t('members.mode_campaign', 'Theo đợt')}
                           </div>
                         </td>
 
@@ -880,12 +882,12 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                         <td className="py-2.5 px-3 align-top">
                           {row.isExempt ? (
                             <span className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-100 text-purple-700 border border-purple-200">
-                              Miễn đóng quỹ
+                              {t('dues.status_exempt', 'Miễn đóng quỹ')}
                             </span>
                           ) : row.isPaidInFull ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                              <span>Đã nộp đủ 100%</span>
+                              <span>{t('dues.status_paid_full', 'Đã hoàn thành')}</span>
                             </span>
                           ) : row.hasDebt ? (
                             <div className="space-y-1.5">
@@ -906,9 +908,9 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                                         {item.launchDate && (
                                           <span className="text-slate-600 font-medium">📅 {formatDate(item.launchDate)}</span>
                                         )}
-                                        <span>Mức: {formatVND(item.required)}</span>
+                                        <span>{t('campaigns.target_amount', 'Mục tiêu')}: {formatVND(item.required)}</span>
                                         {item.paid > 0 && (
-                                          <span className="text-emerald-700 font-semibold">• Đã nộp: {formatVND(item.paid)}</span>
+                                          <span className="text-emerald-700 font-semibold">• {t('dues.th_paid', 'Đã nộp')}: {formatVND(item.paid)}</span>
                                         )}
                                         {item.note && <span className="italic text-slate-400">• {item.note}</span>}
                                       </div>
@@ -917,12 +919,12 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                                 </div>
                               ) : (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
-                                  <span>Thiếu tổng: {formatVND(row.totalRemaining)}</span>
+                                  <span>{t('dues.th_owed', 'Còn thiếu')}: {formatVND(row.totalRemaining)}</span>
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-[11px] text-slate-400 italic">Chưa phát sinh thu</span>
+                            <span className="text-[11px] text-slate-400 italic">{t('common.no_data', 'Không có dữ liệu')}</span>
                           )}
                         </td>
                       </tr>
@@ -931,7 +933,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                   <tfoot>
                     <tr className="bg-slate-100 font-extrabold text-slate-900 border-t-2 border-slate-300">
                       <td colSpan={2} className="py-2.5 px-3 uppercase tracking-wider text-[11px]">
-                        TỔNG CỘNG ({displayedRows.length} thành viên)
+                        {t('common.total', 'Tổng cộng')} ({displayedRows.length} {t('common.person', 'người')})
                       </td>
                       <td className="py-2.5 px-3 text-right">
                         {formatVND(displayedTotals.totalRequiredSum)}
@@ -943,7 +945,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                         {formatVND(displayedTotals.totalRemainingSum)}
                       </td>
                       <td className="py-2.5 px-3 text-[11px] text-slate-500 font-normal">
-                        Đối soát trực tiếp từ sổ quỹ điện tử
+                        {t('print.footer_note', 'Báo cáo điện tử tự động trích xuất từ hệ thống quản lý sổ quỹ')}
                       </td>
                     </tr>
                   </tfoot>
@@ -988,16 +990,16 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                         <div className="shrink-0 text-right">
                           {row.isExempt ? (
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 border border-purple-200">
-                              Miễn đóng
+                              {t('dues.status_exempt', 'Miễn đóng quỹ')}
                             </span>
                           ) : row.isPaidInFull ? (
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" />
-                              <span>Đã nộp đủ</span>
+                              <span>{t('dues.status_paid_full', 'Đã hoàn thành')}</span>
                             </span>
                           ) : (
                             <div className="bg-rose-100 border border-rose-300 text-rose-800 px-2 py-1 rounded-lg">
-                              <div className="text-[9px] font-bold uppercase text-rose-600">CÒN THIẾU</div>
+                              <div className="text-[9px] font-bold uppercase text-rose-600">{t('dues.th_owed', 'Còn thiếu')}</div>
                               <div className="text-sm font-black text-rose-700 leading-tight font-mono">
                                 {formatVND(row.totalRemaining)}
                               </div>
@@ -1011,10 +1013,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                         <div className="mt-2.5 pt-2 border-t border-slate-200/80">
                           <div className="flex items-center justify-between text-[11px] text-slate-600 font-medium mb-1">
                             <span>
-                              Đã nộp: <strong className="text-emerald-700 font-bold">{formatVND(row.totalPaid)}</strong>
+                              {t('dues.th_paid', 'Đã nộp')}: <strong className="text-emerald-700 font-bold">{formatVND(row.totalPaid)}</strong>
                             </span>
                             <span>
-                              Tổng phải đóng: <strong className="text-slate-800 font-bold">{formatVND(row.totalRequired)}</strong>
+                              {t('dues.th_target', 'Mục tiêu')}: <strong className="text-slate-800 font-bold">{formatVND(row.totalRequired)}</strong>
                             </span>
                           </div>
                           <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
@@ -1037,7 +1039,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                       {showDetails && row.debtBreakdown.length > 0 && (
                         <div className="mt-3 space-y-1.5">
                           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
-                            <span>Chi tiết các đợt nợ ({row.debtBreakdown.length}):</span>
+                            <span>{t('dues.toggle_details', 'Hiện chi tiết nợ')} ({row.debtBreakdown.length}):</span>
                           </div>
                           <div className="space-y-1">
                             {row.debtBreakdown.map((item, dIdx) => (
@@ -1050,7 +1052,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                                     <span className="font-bold text-slate-900 truncate">📌 {item.title}</span>
                                     {item.paid > 0 && (
                                       <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded font-medium border border-emerald-100 shrink-0">
-                                        Đã nộp {formatVND(item.paid)}
+                                        {t('dues.th_paid', 'Đã nộp')} {formatVND(item.paid)}
                                       </span>
                                     )}
                                   </div>
@@ -1059,7 +1061,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                                       <span className="text-slate-600 font-medium">📅 {formatDate(item.launchDate)} •</span>
                                     )}
                                     <span>
-                                      Mức: <strong className="text-slate-700">{formatVND(item.required)}</strong>
+                                      {t('campaigns.target_amount', 'Mục tiêu')}: <strong className="text-slate-700">{formatVND(item.required)}</strong>
                                     </span>
                                     {item.note && (
                                       <span className="italic text-slate-400 truncate max-w-[150px]">
@@ -1069,7 +1071,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                                   </div>
                                 </div>
                                 <div className="text-right shrink-0">
-                                  <div className="text-[9px] font-bold text-rose-500 uppercase">Thiếu</div>
+                                  <div className="text-[9px] font-bold text-rose-500 uppercase">{t('dues.th_owed', 'Còn thiếu')}</div>
                                   <div className="text-xs font-black text-rose-700 font-mono">
                                     {formatVND(item.owed)}
                                   </div>
@@ -1091,26 +1093,26 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-800">
                     <Building2 className="w-4 h-4 text-emerald-600" />
-                    <span>THÔNG TIN CHUYỂN KHOẢN ĐÓNG QUỸ</span>
+                    <span>{t('settings.bank_title', 'Tài Khoản Ngân Hàng & VietQR')}</span>
                   </div>
 
                   <div className="text-xs text-slate-700 space-y-1">
                     <div>
-                      Ngân hàng: <span className="font-bold text-slate-900">{bankSettings.bankName}</span>{' '}
+                      {t('settings.bank_name', 'Tên ngân hàng')}: <span className="font-bold text-slate-900">{bankSettings.bankName}</span>{' '}
                       ({bankSettings.bankId})
                     </div>
                     <div>
-                      Số tài khoản:{' '}
+                      {t('settings.account_number', 'Số tài khoản')}:{' '}
                       <span className="font-mono font-bold text-base text-blue-700 tracking-wider">
                         {bankSettings.accountNumber}
                       </span>
                     </div>
                     <div>
-                      Chủ tài khoản:{' '}
+                      {t('settings.account_name', 'Tên chủ tài khoản')}:{' '}
                       <span className="font-bold uppercase text-slate-900">{bankSettings.accountName}</span>
                     </div>
                     <div className="pt-0.5">
-                      Cú pháp:{' '}
+                      {t('share.qr_instruction', 'Quét mã VietQR để nạp quỹ')}:{' '}
                       <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                         [HỌ TÊN] {prefix}
                       </span>
@@ -1118,7 +1120,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                   </div>
 
                   <p className="text-[11px] text-slate-500 italic pt-1">
-                    * Thành viên vui lòng quét mã VietQR hoặc ghi đúng cú pháp để thủ quỹ cập nhật nhanh chóng.
+                    * {t('share.vietqr_notice', 'Mã VietQR tự động điền sẵn số tài khoản và thông tin chuyển khoản.')}
                   </p>
                 </div>
 
@@ -1133,7 +1135,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                       />
                     </div>
                     <span className="text-[10px] font-bold text-slate-600 mt-1 tracking-wider uppercase">
-                      Quét QR chuyển khoản
+                      {t('share.scan_vietqr', 'Quét mã VietQR')}
                     </span>
                   </div>
                 )}
@@ -1143,7 +1145,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
             {/* Bottom Signature & Notice */}
             <div className="mt-auto pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
               <div>
-                <span>Báo cáo điện tử tự động trích xuất từ hệ thống quản lý sổ quỹ</span>
+                <span>{t('print.footer_note', 'Báo cáo điện tử tự động trích xuất từ hệ thống quản lý sổ quỹ')}</span>
               </div>
               <div className="text-right">
                 <span className="font-bold text-slate-700">{treasurerName}</span>
@@ -1157,7 +1159,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
           <div className="flex items-center gap-1.5">
             <ImageIcon className="w-4 h-4 text-emerald-500 shrink-0" />
             <span>
-              Mẹo: Nhấn nút <strong>"Sao chép ảnh"</strong> để gửi ảnh ngay mà không cần tải file!
+              {t('dues.tip_copy_paste', 'Mẹo: Nhấn nút "Sao chép ảnh" để dán trực tiếp vào Zalo hoặc Messenger mà không cần tải về máy!')}
             </span>
           </div>
         </div>

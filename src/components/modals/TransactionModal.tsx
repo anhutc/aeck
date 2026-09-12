@@ -368,12 +368,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <ImageIcon className={`w-3.5 h-3.5 ${type === 'expense' ? 'text-rose-600' : 'text-emerald-600'}`} />
-                  <span>{type === 'expense' ? 'Ảnh hóa đơn' : 'Biên lai thu'}</span>
+                  <span>{type === 'expense' ? t('transactions.bill_image_title', 'Ảnh hóa đơn') : t('transactions.receipt_image_title', 'Biên lai thu')}</span>
                 </label>
                 {type === 'expense' && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-200/60 dark:border-rose-900/60">
                     <ShieldCheck className="w-3 h-3 text-rose-500" />
-                    Minh bạch
+                    {t('transactions.transparent_badge', 'Minh bạch')}
                   </span>
                 )}
               </div>
@@ -403,7 +403,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   {isCompressing ? (
                     <div className="py-2 flex flex-col items-center justify-center gap-2 text-slate-500">
                       <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                      <span className="text-xs font-semibold">Đang xử lý & tối ưu độ nét ảnh hóa đơn...</span>
+                      <span className="text-xs font-semibold">{t('transactions.bill_compressing', 'Đang xử lý & tối ưu độ nét ảnh hóa đơn...')}</span>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center gap-1.5">
@@ -411,10 +411,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                        Đính kèm ảnh
+                        {t('transactions.bill_upload_label', 'Đính kèm ảnh')}
                       </div>
                       <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-xs">
-                        Chụp ảnh hóa đơn hoặc chọn tệp (JPG, PNG, WebP). Hệ thống tự động nén nhẹ & giữ nét chữ.
+                        {t('transactions.bill_upload_hint', 'Chụp ảnh hóa đơn hoặc chọn tệp (JPG, PNG, WebP). Hệ thống tự động nén nhẹ & giữ nét chữ.')}
                       </p>
                     </div>
                   )}
@@ -425,7 +425,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     <div
                       onClick={() => setIsPreviewBillOpen(true)}
                       className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 shrink-0 cursor-pointer group"
-                      title="Nhấp để phóng to ảnh"
+                      title={t('transactions.bill_zoom_in', 'Nhấp để phóng to ảnh')}
                     >
                       <img
                         src={billImage}
@@ -439,11 +439,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
                     <div className="min-w-0 text-xs">
                       <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <span className="truncate">Đã đính kèm ảnh hóa đơn</span>
+                        <span className="truncate">{t('transactions.bill_attached_success', 'Đã đính kèm ảnh hóa đơn')}</span>
                         <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                        {imageSizeKb ? `Dung lượng: ~${imageSizeKb} KB • Rõ nét` : 'Ảnh hóa đơn hợp lệ'}
+                        {imageSizeKb ? `~${imageSizeKb} KB` : t('transactions.bill_size_valid', 'Ảnh hóa đơn hợp lệ')}
                       </p>
                     </div>
                   </div>
@@ -452,7 +452,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setIsPreviewBillOpen(true)}
-                      title="Xem ảnh lớn"
+                      title={t('transactions.view_large_bill', 'Xem ảnh lớn')}
                       className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                     >
                       <Eye className="w-4 h-4" />
@@ -460,7 +460,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      title="Đổi ảnh khác"
+                      title={t('transactions.change_bill_photo', 'Đổi ảnh khác')}
                       className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                     >
                       <RefreshCw className="w-4 h-4" />
@@ -468,7 +468,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     <button
                       type="button"
                       onClick={handleRemoveImage}
-                      title="Xóa ảnh này"
+                      title={t('transactions.delete_bill_photo', 'Xóa ảnh này')}
                       className="p-2 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-900/60 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />

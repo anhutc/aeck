@@ -91,19 +91,19 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
   const netBalance = totalIncome - totalExpense;
 
   // Statement branding & signature values strictly from centralized Settings (branding)
-  const headerTitle = branding?.statementHeaderTitle?.trim() || 'BÁO CÁO THU CHI & SAO KÊ SỔ QUỸ';
-  const subtitle = branding?.statementSubtitle?.trim() || 'Trích xuất tự động từ hệ thống quản lý thu chi minh bạch';
+  const headerTitle = branding?.statementHeaderTitle?.trim() || t('print.default_header_title', 'BÁO CÁO THU CHI & SAO KÊ SỔ QUỸ');
+  const subtitle = branding?.statementSubtitle?.trim() || t('print.default_subtitle', 'Trích xuất tự động từ hệ thống quản lý thu chi minh bạch');
   
-  const sign1Title = branding?.statementSignatory1Title?.trim() || 'Người lập biểu';
-  const sign1Name = branding?.statementSignatory1Name?.trim() || 'Kế toán quỹ';
+  const sign1Title = branding?.statementSignatory1Title?.trim() || t('print.default_sign1_title', 'Người lập biểu');
+  const sign1Name = branding?.statementSignatory1Name?.trim() || t('print.default_sign1_name', 'Kế toán quỹ');
   
-  const sign2Title = branding?.statementSignatory2Title?.trim() || 'Thủ quỹ';
+  const sign2Title = branding?.statementSignatory2Title?.trim() || t('print.default_sign2_title', 'Thủ quỹ');
   const sign2Name = branding?.statementSignatory2Name?.trim() || branding?.treasurerName?.trim() || 'Trần Thị Mai';
   
-  const sign3Title = branding?.statementSignatory3Title?.trim() || 'Trưởng ban duyệt';
-  const sign3Name = branding?.statementSignatory3Name?.trim() || 'Đại diện ban quản lý';
+  const sign3Title = branding?.statementSignatory3Title?.trim() || t('print.default_sign3_title', 'Trưởng ban duyệt');
+  const sign3Name = branding?.statementSignatory3Name?.trim() || t('print.default_sign3_name', 'Đại diện ban quản lý');
   
-  const footerNote = branding?.statementFooterNote?.trim() || 'Báo cáo này được trích xuất tự động từ hệ thống quản lý thu chi minh bạch và có giá trị lưu hành nội bộ.';
+  const footerNote = branding?.statementFooterNote?.trim() || t('print.default_footer_note', 'Báo cáo này được trích xuất tự động từ hệ thống quản lý thu chi minh bạch và có giá trị lưu hành nội bộ.');
 
   const showSummary = branding?.statementShowSummary !== false;
   const showSign1 = branding?.statementShowSignatory1 !== false;
@@ -278,7 +278,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
       }
 
       if (canvases.length === 0) {
-        throw new Error('Không tìm thấy nội dung để xuất ảnh.');
+        throw new Error(t('print.error_no_content', 'Không tìm thấy nội dung để xuất ảnh.'));
       }
 
       const safeFundName = appFundName.replace(/[^a-zA-Z0-9_\u00C0-\u1EF9]/g, '_');
@@ -299,7 +299,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
         masterCanvas.height = totalHeight;
 
         const ctx = masterCanvas.getContext('2d');
-        if (!ctx) throw new Error('Không thể khởi tạo đồ họa.');
+        if (!ctx) throw new Error(t('print.error_init_canvas', 'Không thể khởi tạo đồ họa.'));
 
         ctx.fillStyle = '#f1f5f9';
         ctx.fillRect(0, 0, width, totalHeight);
@@ -320,10 +320,10 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
       link.click();
       document.body.removeChild(link);
 
-      showToast(`Đã tạo và tải ảnh báo cáo (${pages.length} trang) thành công!`, 'success');
+      showToast(`${t('print.toast_image_success_prefix', 'Đã tạo và tải ảnh báo cáo')} (${pages.length} ${t('print.toast_pages_unit', 'trang')}) ${t('print.toast_image_success_suffix', 'thành công!')}`, 'success');
     } catch (err) {
       console.error('Lỗi khi tạo ảnh báo cáo:', err);
-      showToast('Không thể tạo ảnh báo cáo, vui lòng thử lại.', 'error');
+      showToast(t('print.toast_image_error', 'Không thể tạo ảnh báo cáo, vui lòng thử lại.'), 'error');
     } finally {
       setIsExportingImage(false);
     }
@@ -366,10 +366,10 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
       const fileName = `BaoCao_${safeFundName}_${new Date().toISOString().slice(0, 10)}.pdf`;
       pdf.save(fileName);
 
-      showToast(`Đã lưu file PDF báo cáo (${pages.length} trang có tiêu đề đầy đủ)!`, 'success');
+      showToast(`${t('print.toast_pdf_success_prefix', 'Đã lưu file PDF báo cáo')} (${pages.length} ${t('print.toast_pdf_success_suffix', 'trang có tiêu đề đầy đủ)!')}`, 'success');
     } catch (err) {
       console.error('Lỗi khi xuất PDF:', err);
-      showToast('Không thể xuất PDF, vui lòng thử lại.', 'error');
+      showToast(t('print.toast_pdf_error', 'Không thể xuất PDF, vui lòng thử lại.'), 'error');
     } finally {
       setIsExportingPDF(false);
     }
@@ -398,7 +398,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                   {t('print.preview_title', 'Bản xem trước sao kê & báo cáo quỹ')}
                 </h2>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  {totalPages} {totalPages === 1 ? 'trang' : 'trang'}
+                  {totalPages} {t('print.page_unit', 'trang')}
                 </span>
               </div>
             </div>
@@ -407,7 +407,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
           <div className="flex items-center gap-2">
             {/* Density Selector */}
             <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs">
-              <span className="text-[11px] font-medium text-slate-500 pl-2 pr-1 hidden lg:inline">Dòng:</span>
+              <span className="text-[11px] font-medium text-slate-500 pl-2 pr-1 hidden lg:inline">{t('print.density_rows_label', 'Dòng:')}</span>
               <button
                 type="button"
                 onClick={() => setDensity('normal')}
@@ -416,9 +416,9 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                     ? 'bg-white text-blue-700 shadow-xs border border-slate-200 font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
-                title="Chuẩn A4 (~24 dòng/trang, tối ưu lấp đầy trang in)"
+                title={t('print.density_normal_title', 'Chuẩn A4 (~24 dòng/trang, tối ưu lấp đầy trang in)')}
               >
-                Chuẩn A4
+                {t('print.density_normal', 'Chuẩn A4')}
               </button>
               <button
                 type="button"
@@ -428,9 +428,9 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                     ? 'bg-white text-blue-700 shadow-xs border border-slate-200 font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
-                title="Tiết kiệm (~30 dòng/trang, giảm tối đa số trang)"
+                title={t('print.density_compact_title', 'Tiết kiệm (~30 dòng/trang, giảm tối đa số trang)')}
               >
-                Tiết kiệm
+                {t('print.density_compact', 'Tiết kiệm')}
               </button>
               <button
                 type="button"
@@ -440,9 +440,9 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                     ? 'bg-white text-blue-700 shadow-xs border border-slate-200 font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
-                title="Thoáng (~16 dòng/trang, phù hợp khi diễn giải thu chi dài)"
+                title={t('print.density_spacious_title', 'Thoáng (~16 dòng/trang, phù hợp khi diễn giải thu chi dài)')}
               >
-                Thoáng
+                {t('print.density_spacious', 'Thoáng')}
               </button>
             </div>
 
@@ -453,14 +453,14 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               onClick={handleExportImage}
               disabled={isExportingImage || isExportingPDF}
               className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
-              title="Tải ảnh PNG"
+              title={t('print.btn_export_image_title', 'Tải ảnh PNG')}
             >
               {isExportingImage ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <ImageIcon className="w-3.5 h-3.5" />
               )}
-              <span>{isExportingImage ? 'Đang tạo ảnh...' : 'Tạo ảnh'}</span>
+              <span>{isExportingImage ? t('print.exporting_image', 'Đang tạo ảnh...') : t('print.btn_export_image', 'Tạo ảnh')}</span>
             </button>
 
             {/* Export as PDF Button with multi-page headers */}
@@ -470,14 +470,14 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               onClick={handleExportPDF}
               disabled={isExportingImage || isExportingPDF}
               className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
-              title="Lưu tệp PDF tải thẳng về máy tính (mỗi trang có tiêu đề riêng)"
+              title={t('print.btn_export_pdf_title', 'Lưu tệp PDF tải thẳng về máy tính (mỗi trang có tiêu đề riêng)')}
             >
               {isExportingPDF ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <FileDown className="w-3.5 h-3.5" />
               )}
-              <span>{isExportingPDF ? 'Đang xuất PDF...' : 'Lưu PDF'}</span>
+              <span>{isExportingPDF ? t('print.exporting_pdf', 'Đang xuất PDF...') : t('print.btn_export_pdf', 'Lưu PDF')}</span>
             </button>
 
             {/* Close Modal Button */}
@@ -486,7 +486,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               id="close-print-modal-btn"
               onClick={onClose}
               className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer ml-1"
-              title="Đóng cửa sổ"
+              title={t('common.close_window', 'Đóng cửa sổ')}
             >
               <X className="w-5 h-5" />
             </button>
@@ -504,11 +504,11 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               <div className="flex items-center justify-between max-w-[794px] mx-auto mb-1.5 px-2 text-[11px] text-slate-500 font-medium">
                 <span className="flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>Trang {page.pageNumber} / {totalPages}</span>
-                  {page.isFirstPage && <span className="text-slate-400">• Trang mở đầu & Tổng hợp</span>}
-                  {page.isLastPage && <span className="text-slate-400">• Trang kết thúc & Chữ ký</span>}
+                  <span>{t('print.page_label', 'Trang')} {page.pageNumber} / {totalPages}</span>
+                  {page.isFirstPage && <span className="text-slate-400">• {t('print.first_page_badge', 'Trang mở đầu & Tổng hợp')}</span>}
+                  {page.isLastPage && <span className="text-slate-400">• {t('print.last_page_badge', 'Trang kết thúc & Chữ ký')}</span>}
                 </span>
-                <span className="font-mono text-[10px] text-slate-400">Khổ A4 (210 × 297 mm)</span>
+                <span className="font-mono text-[10px] text-slate-400">{t('print.a4_size_label', 'Khổ A4 (210 × 297 mm)')}</span>
               </div>
 
               {/* A4 Sheet Canvas */}
@@ -536,13 +536,13 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                         <p className="text-xs text-slate-700 font-medium mt-1">
                           <span className="font-bold text-slate-900">{appFundName}</span>
                           <span className="mx-1.5 text-slate-400">•</span>
-                          <span>Số dư hiện tại: <strong className="font-bold text-blue-700 font-mono">{formatVND(fund.balance)}</strong></span>
+                          <span>{t('print.current_balance_label', 'Số dư hiện tại:')} <strong className="font-bold text-blue-700 font-mono">{formatVND(fund.balance)}</strong></span>
                         </p>
                       </div>
                       <div className="text-left sm:text-right text-xs text-slate-500 font-mono shrink-0">
-                        <p>Ngày lập: <span className="font-semibold text-slate-700">{currentDateFormatted}</span></p>
-                        <p>Mã tài liệu: <span className="font-semibold text-slate-700">{documentCode}</span></p>
-                        <p className="font-bold text-indigo-700 text-xs mt-1">Trang 1 / {totalPages}</p>
+                        <p>{t('print.created_date_label', 'Ngày lập:')} <span className="font-semibold text-slate-700">{currentDateFormatted}</span></p>
+                        <p>{t('print.doc_code_label', 'Mã tài liệu:')} <span className="font-semibold text-slate-700">{documentCode}</span></p>
+                        <p className="font-bold text-indigo-700 text-xs mt-1">{t('print.page_label', 'Trang')} 1 / {totalPages}</p>
                       </div>
                     </div>
                   ) : (
@@ -554,18 +554,18 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                             {headerTitle}
                           </h2>
                           <span className="text-[10px] uppercase font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded border border-slate-200">
-                            Tiếp theo
+                            {t('print.continued_badge', 'Tiếp theo')}
                           </span>
                         </div>
                         <p className="text-xs text-slate-600 font-medium mt-0.5">
                           <span className="font-bold text-slate-900">{appFundName}</span>
                           <span className="mx-1.5 text-slate-400">•</span>
-                          <span>Số dư: <strong className="font-bold text-blue-700 font-mono">{formatVND(fund.balance)}</strong></span>
+                          <span>{t('print.balance_short_label', 'Số dư:')} <strong className="font-bold text-blue-700 font-mono">{formatVND(fund.balance)}</strong></span>
                         </p>
                       </div>
                       <div className="text-left sm:text-right text-xs text-slate-500 font-mono shrink-0">
-                        <p>Ngày lập: {currentDateFormatted}</p>
-                        <p className="font-bold text-indigo-700 text-xs mt-0.5">Trang {page.pageNumber} / {totalPages}</p>
+                        <p>{t('print.created_date_label', 'Ngày lập:')} {currentDateFormatted}</p>
+                        <p className="font-bold text-indigo-700 text-xs mt-0.5">{t('print.page_label', 'Trang')} {page.pageNumber} / {totalPages}</p>
                       </div>
                     </div>
                   )}
@@ -606,7 +606,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                         {page.transactions.length === 0 ? (
                           <tr>
                             <td colSpan={5} className="py-8 text-center text-slate-400 italic">
-                              Chưa có giao dịch hoàn tất nào trong quỹ này.
+                              {t('print.empty_transactions', 'Chưa có giao dịch hoàn tất nào trong quỹ này.')}
                             </td>
                           </tr>
                         ) : (
@@ -688,8 +688,8 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
 
                   {/* Document Footer Bar on Every Page */}
                   <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-[10px] text-slate-400 font-mono">
-                    <span>{appFundName} • Báo cáo thu chi minh bạch • Lưu hành nội bộ</span>
-                    <span className="font-bold text-slate-600">Trang {page.pageNumber} / {totalPages}</span>
+                    <span>{appFundName} • {t('print.footer_disclaimer', 'Báo cáo thu chi minh bạch • Lưu hành nội bộ')}</span>
+                    <span className="font-bold text-slate-600">{t('print.page_label', 'Trang')} {page.pageNumber} / {totalPages}</span>
                   </div>
                 </div>
               </div>

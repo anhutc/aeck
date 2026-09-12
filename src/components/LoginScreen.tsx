@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { AppBranding, AuthRole, BankSettings } from '../types';
 import { copyToClipboard } from '../utils/formatters';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface LoginScreenProps {
   branding?: AppBranding;
@@ -30,17 +31,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   memberPassword = '123',
   onLoginSuccess,
 }) => {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const displayTitle = branding?.appTitle || 'Sổ Quỹ Nhóm';
-  const displaySubtitle = branding?.appSubtitle || 'Hệ thống theo dõi thu chi & đóng quỹ minh bạch';
+  const displayTitle = branding?.appTitle || t('branding.default_app_title', 'Sổ Quỹ Nhóm');
+  const displaySubtitle = branding?.appSubtitle || t('branding.default_app_subtitle', 'Hệ thống theo dõi thu chi & đóng quỹ minh bạch');
 
   // Fund owner information
-  const ownerName = branding?.treasurerName?.trim() || 'Trần Thị Mai';
+  const ownerName = branding?.treasurerName?.trim() || t('branding.default_treasurer_name', 'Trần Thị Mai');
   const ownerPhone = branding?.treasurerPhone?.trim() || '0912345678';
   const bankName = bankSettings?.bankName?.trim() || 'Ngân hàng Quân Đội (MB Bank)';
   const accountNumber = bankSettings?.accountNumber?.trim() || '999988886666';
@@ -63,7 +65,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     const trimmed = password.trim();
 
     if (!trimmed) {
-      setError('Vui lòng nhập mật khẩu truy cập.');
+      setError(t('login.error_empty', 'Vui lòng nhập mật khẩu truy cập.'));
       return;
     }
 
@@ -74,7 +76,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       setError('');
       onLoginSuccess('member');
     } else {
-      setError('Mật khẩu không chính xác. Vui lòng nhập đúng mật khẩu Thành viên hoặc Quản trị viên.');
+      setError(t('login.error_incorrect', 'Mật khẩu không chính xác. Vui lòng nhập đúng mật khẩu Thành viên hoặc Quản trị viên.'));
       inputRef.current?.select();
     }
   };
@@ -115,7 +117,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-bold text-slate-800">
-                Mật khẩu truy cập
+                {t('login.password_label', 'Mật khẩu truy cập')}
               </label>
             </div>
             <div className="relative">
@@ -131,7 +133,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   setPassword(e.target.value);
                   setError('');
                 }}
-                placeholder="Nhập mật khẩu Thành viên hoặc Admin..."
+                placeholder={t('login.password_placeholder', 'Nhập mật khẩu Thành viên hoặc Admin...')}
                 className="w-full pl-10 pr-11 py-3 rounded-2xl border border-slate-300 bg-white text-slate-900 text-sm font-medium focus:ring-2 focus:ring-blue-600 focus:border-blue-600 focus:outline-hidden transition-all shadow-2xs placeholder:text-slate-400"
                 autoComplete="new-password"
               />
@@ -139,7 +141,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
-                title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                title={showPassword ? t('login.hide_password', 'Ẩn mật khẩu') : t('login.show_password', 'Hiện mật khẩu')}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -151,7 +153,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             type="submit"
             className="w-full py-3 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold text-sm shadow-md shadow-blue-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
-            <span>Đăng Nhập</span>
+            <span>{t('login.submit_btn', 'Đăng Nhập')}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
@@ -161,17 +163,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           <div className="flex items-center justify-between pb-2 border-b border-blue-200/50">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
               <UserCheck className="w-4 h-4 text-blue-600" />
-              <span>Thông tin liên hệ</span>
+              <span>{t('login.contact_info_title', 'Thông tin liên hệ')}</span>
             </div>
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100/80 text-blue-700 border border-blue-200/60">
-              Đại diện
+              {t('login.representative_badge', 'Đại diện')}
             </span>
           </div>
 
           <div className="space-y-2 text-xs">
             {/* Owner Name & Role */}
             <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-[11px]">Tên:</span>
+              <span className="text-slate-500 text-[11px]">{t('login.name_label', 'Tên:')}</span>
               <div className="text-right">
                 <span className="font-bold text-slate-900 block">{ownerName}</span>
               </div>
@@ -182,13 +184,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <div className="flex items-center justify-between pt-1 border-t border-slate-200/40">
                 <span className="text-slate-500 text-[11px] flex items-center gap-1">
                   <Phone className="w-3 h-3 text-emerald-600" />
-                  <span>Điện thoại:</span>
+                  <span>{t('login.phone_label', 'Điện thoại:')}</span>
                 </span>
                 <div className="flex items-center gap-1.5">
                   <a
                     href={`tel:${ownerPhone}`}
                     className="font-bold text-slate-900 hover:text-blue-600 font-mono text-xs transition-colors"
-                    title="Gọi điện cho chủ quỹ"
+                    title={t('login.call_owner', 'Gọi điện cho chủ quỹ')}
                   >
                     {ownerPhone}
                   </a>
@@ -196,7 +198,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     type="button"
                     onClick={() => handleCopy('phone', ownerPhone)}
                     className="p-1 rounded-md hover:bg-slate-200/80 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                    title="Sao chép số điện thoại"
+                    title={t('login.copy_phone', 'Sao chép số điện thoại')}
                   >
                     {copiedKey === 'phone' ? (
                       <Check className="w-3 h-3 text-emerald-600" />
@@ -213,7 +215,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <div className="flex items-center justify-between pt-1 border-t border-slate-200/40">
                 <span className="text-slate-500 text-[11px] flex items-center gap-1">
                   <Landmark className="w-3 h-3 text-indigo-600" />
-                  <span>Tài khoản:</span>
+                  <span>{t('login.account_label', 'Tài khoản:')}</span>
                 </span>
                 <div className="flex items-center gap-1.5">
                   <div className="text-right">
@@ -224,7 +226,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     type="button"
                     onClick={() => handleCopy('bank', accountNumber)}
                     className="p-1 rounded-md hover:bg-slate-200/80 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                    title="Sao chép số tài khoản"
+                    title={t('login.copy_account', 'Sao chép số tài khoản')}
                   >
                     {copiedKey === 'bank' ? (
                       <Check className="w-3 h-3 text-emerald-600" />
@@ -241,7 +243,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       </div>
 
       <div className="text-center mt-5 text-xs text-slate-400">
-        Hệ thống Quản lý Thu Chi • AE Cây Khế
+        {t('login.footer_copyright', 'Hệ thống Quản lý Thu Chi • AE Cây Khế')}
       </div>
     </div>
   );

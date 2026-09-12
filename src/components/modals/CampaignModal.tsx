@@ -269,7 +269,7 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
                     onClick={selectStandardOnly}
                     className="text-purple-600 dark:text-purple-400 hover:underline font-medium cursor-pointer"
                   >
-                    Đóng theo đợt
+                    {t('members.contrib_campaign', 'Đóng theo đợt')}
                   </button>
                   <span className="text-slate-300 dark:text-slate-700">•</span>
                   <button
@@ -277,7 +277,7 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
                     onClick={toggleSelectAll}
                     className="text-purple-600 dark:text-purple-400 hover:underline font-medium cursor-pointer"
                   >
-                    {selectedMemberIds.length === members.length ? 'Bỏ chọn' : 'Tất cả'}
+                    {selectedMemberIds.length === members.length ? t('campaigns.unselect_all', 'Bỏ chọn') : t('campaigns.select_all_short', 'Tất cả')}
                   </button>
                 </div>
               </div>
@@ -287,7 +287,7 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Lọc tên thành viên..."
+                  placeholder={t('campaigns.filter_member_search', 'Lọc tên thành viên...')}
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
                   className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500 focus:outline-hidden"
@@ -322,13 +322,13 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
                         {isYearly && (
                           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 text-[10px] font-bold">
                             <Plane className="w-2.5 h-2.5" />
-                            <span>Theo năm</span>
+                            <span>{t('members.mode_yearly_short', 'Theo năm')}</span>
                           </span>
                         )}
                         {isExempt && (
                           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
                             <ShieldCheck className="w-2.5 h-2.5" />
-                            <span>Miễn</span>
+                            <span>{t('members.mode_exempt_short', 'Miễn')}</span>
                           </span>
                         )}
                       </div>
@@ -343,7 +343,7 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
               {/* Total Calculation summary box */}
               <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/50 flex items-center justify-between text-xs">
                 <span className="text-purple-700 dark:text-purple-300 font-medium">
-                  {t('campaigns.total_expected_label', 'Tổng thu dự kiến:')} ({selectedMemberIds.length} người)
+                  {t('campaigns.total_expected_label', 'Tổng thu dự kiến:')} ({selectedMemberIds.length} {t('common.members_count', 'người')})
                 </span>
                 <span className="font-extrabold text-purple-900 dark:text-purple-100 text-sm">
                   {formatVND(calculatedTotal)}

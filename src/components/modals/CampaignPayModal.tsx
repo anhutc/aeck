@@ -165,7 +165,7 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
                         : 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-100'
                     }`}
                   >
-                    ⚡ Ngày tạo đợt ({campaignLaunchDate})
+                    {t('campaigns.pay_launch_date_btn', '⚡ Ngày tạo đợt')} ({campaignLaunchDate})
                   </button>
                 )}
                 <button
@@ -177,7 +177,7 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
                       : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
                   }`}
                 >
-                  📅 Hôm nay ({todayStr})
+                  {t('campaigns.pay_today_btn', '📅 Hôm nay')} ({todayStr})
                 </button>
               </div>
 

@@ -30,7 +30,6 @@ import {
   Copy,
   Lock,
   Bell,
-  MessageSquare,
   RotateCcw
 } from 'lucide-react';
 import { BankSettings, Category, GroupNotice, AppBranding, MemberViewPermissions, ContributionCampaign } from '../types';
@@ -39,9 +38,8 @@ import { CloudDataSourceModal } from './settings/CloudDataSourceModal';
 import { getSavedCustomFirebaseConfig } from '../lib/firebase';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback } from '../context/FeedbackContext';
-import { generateZaloShareMessage } from '../utils/shareMessage';
 
-export type SettingSubTab = 'branding' | 'share' | 'statement' | 'notice' | 'permissions' | 'security' | 'bank' | 'categories' | 'backup' | 'all';
+export type SettingSubTab = 'branding' | 'statement' | 'notice' | 'permissions' | 'security' | 'bank' | 'categories' | 'backup' | 'all';
 
 interface SettingsTabProps {
   bankSettings: BankSettings;
@@ -80,7 +78,6 @@ const SETTING_NAV_ITEMS: Array<{
   activeColor: string;
 }> = [
   { id: 'branding', label: 'Nhận Diện & Thông Báo', sublabel: 'Tên nhóm, vị trí thông báo Toast', icon: Type, iconColor: 'text-blue-500', activeColor: 'border-blue-600 text-blue-700 bg-blue-50' },
-  { id: 'share', label: 'Tin Nhắn & Chia Sẻ', sublabel: 'Mẫu thông báo, ngân hàng, link', icon: MessageSquare, iconColor: 'text-emerald-500', activeColor: 'border-emerald-600 text-emerald-700 bg-emerald-50' },
   { id: 'statement', label: 'Mẫu In Sao Kê & Chữ Ký', sublabel: 'Tiêu đề, người ký duyệt', icon: FileText, iconColor: 'text-indigo-500', activeColor: 'border-indigo-600 text-indigo-700 bg-indigo-50' },
   { id: 'notice', label: 'Nội Quy Hoạt Động', sublabel: 'Quy chế & điều khoản quỹ', icon: ScrollText, iconColor: 'text-emerald-500', activeColor: 'border-emerald-600 text-emerald-700 bg-emerald-50' },
   { id: 'permissions', label: 'Phân Quyền Thành Viên', sublabel: 'Bảo mật & quyền hiển thị', icon: Sliders, iconColor: 'text-purple-500', activeColor: 'border-purple-600 text-purple-700 bg-purple-50' },
@@ -169,19 +166,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [statementShowFooterNote, setStatementShowFooterNote] = useState(branding.statementShowFooterNote !== false);
   const [statementSaved, setStatementSaved] = useState(false);
 
-  // Zalo Share Message Template state
-  const [shareMessageGreeting, setShareMessageGreeting] = useState(branding.shareMessageGreeting || INITIAL_BRANDING.shareMessageGreeting || '');
-  const [shareMessageIncludeBank, setShareMessageIncludeBank] = useState(branding.shareMessageIncludeBank !== false);
-  const [shareMessageIncludeCampaigns, setShareMessageIncludeCampaigns] = useState(branding.shareMessageIncludeCampaigns !== false);
-  const [shareMessageBenefit1, setShareMessageBenefit1] = useState(branding.shareMessageBenefit1 || INITIAL_BRANDING.shareMessageBenefit1 || '');
-  const [shareMessageBenefit2, setShareMessageBenefit2] = useState(branding.shareMessageBenefit2 || INITIAL_BRANDING.shareMessageBenefit2 || '');
-  const [shareMessageBenefit3, setShareMessageBenefit3] = useState(branding.shareMessageBenefit3 || INITIAL_BRANDING.shareMessageBenefit3 || '');
-  const [shareMessageClosing, setShareMessageClosing] = useState(branding.shareMessageClosing || INITIAL_BRANDING.shareMessageClosing || '');
-  const [socialShareTemplate, setSocialShareTemplate] = useState(branding.socialShareTemplate || '');
-  const [useCustomFullTemplate, setUseCustomFullTemplate] = useState(Boolean(branding.socialShareTemplate && branding.socialShareTemplate.trim()));
-  const [shareMsgSaved, setShareMsgSaved] = useState(false);
-  const [copiedShareTest, setCopiedShareTest] = useState(false);
-
   // Sync branding when props change from Cloud Firestore
   useEffect(() => {
     if (branding) {
@@ -205,15 +189,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setStatementShowSignatory2(branding.statementShowSignatory2 !== false);
       setStatementShowSignatory3(branding.statementShowSignatory3 !== false);
       setStatementShowFooterNote(branding.statementShowFooterNote !== false);
-      setShareMessageGreeting(branding.shareMessageGreeting || INITIAL_BRANDING.shareMessageGreeting || '');
-      setShareMessageIncludeBank(branding.shareMessageIncludeBank !== false);
-      setShareMessageIncludeCampaigns(branding.shareMessageIncludeCampaigns !== false);
-      setShareMessageBenefit1(branding.shareMessageBenefit1 || INITIAL_BRANDING.shareMessageBenefit1 || '');
-      setShareMessageBenefit2(branding.shareMessageBenefit2 || INITIAL_BRANDING.shareMessageBenefit2 || '');
-      setShareMessageBenefit3(branding.shareMessageBenefit3 || INITIAL_BRANDING.shareMessageBenefit3 || '');
-      setShareMessageClosing(branding.shareMessageClosing || INITIAL_BRANDING.shareMessageClosing || '');
-      setSocialShareTemplate(branding.socialShareTemplate || '');
-      setUseCustomFullTemplate(Boolean(branding.socialShareTemplate && branding.socialShareTemplate.trim()));
     }
   }, [branding]);
 
@@ -407,37 +382,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     });
     setStatementSaved(true);
     setTimeout(() => setStatementSaved(false), 2500);
-  };
-
-  const handleSaveShareMessage = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    onUpdateBranding({
-      ...branding,
-      shareMessageGreeting: shareMessageGreeting.trim(),
-      shareMessageIncludeBank,
-      shareMessageIncludeCampaigns,
-      shareMessageBenefit1: shareMessageBenefit1.trim(),
-      shareMessageBenefit2: shareMessageBenefit2.trim(),
-      shareMessageBenefit3: shareMessageBenefit3.trim(),
-      shareMessageClosing: shareMessageClosing.trim(),
-      socialShareTemplate: useCustomFullTemplate ? socialShareTemplate.trim() : '',
-    });
-    setShareMsgSaved(true);
-    showToast('Đã lưu cấu hình mẫu tin nhắn thành công!', 'success');
-    setTimeout(() => setShareMsgSaved(false), 2500);
-  };
-
-  const handleResetShareMessage = () => {
-    setShareMessageGreeting(INITIAL_BRANDING.shareMessageGreeting || '');
-    setShareMessageIncludeBank(true);
-    setShareMessageIncludeCampaigns(true);
-    setShareMessageBenefit1(INITIAL_BRANDING.shareMessageBenefit1 || '');
-    setShareMessageBenefit2(INITIAL_BRANDING.shareMessageBenefit2 || '');
-    setShareMessageBenefit3(INITIAL_BRANDING.shareMessageBenefit3 || '');
-    setShareMessageClosing(INITIAL_BRANDING.shareMessageClosing || '');
-    setSocialShareTemplate('');
-    setUseCustomFullTemplate(false);
-    showToast('Đã khôi phục các câu chữ mẫu tin nhắn về mặc định chuẩn!', 'info');
   };
 
   const handleResetBranding = () => {
@@ -1106,268 +1050,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       💡 <strong>Tính năng mới:</strong> Thanh đếm ngược hiển thị thời gian còn lại. Khi rê chuột qua hoặc nhấn giữ thông báo, thời gian sẽ tự động tạm dừng để bạn đọc trọn vẹn thông tin!
                     </p>
                   </div>
-                </div>
-              )}
-
-              {/* 1.2 ZALO SHARE MESSAGE TEMPLATE CARD */}
-              {(activeSubTab === 'share' || activeSubTab === 'all') && (
-                <div id="settings-share" className="scroll-mt-28 sm:scroll-mt-24 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-5">
-                  <div className="flex items-center justify-between flex-wrap gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm shadow-emerald-500/20">
-                        <MessageSquare className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                          <span>Mẫu Tin Nhắn Chia Sẻ</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold">
-                            Hành động nhanh
-                          </span>
-                        </h3>
-                        <p className="text-xs text-slate-500">
-                          Tùy chỉnh nội dung thông báo kèm liên kết sạch và thông tin chuyển khoản VietQR gửi đến thành viên
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handleResetShareMessage}
-                        className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                        title="Khôi phục mẫu chuẩn ban đầu"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>Khôi phục chuẩn</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Mode switch */}
-                  <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <button
-                      type="button"
-                      onClick={() => setUseCustomFullTemplate(false)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                        !useCustomFullTemplate
-                          ? 'bg-emerald-600 text-white shadow-xs'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-                      }`}
-                    >
-                      Cấu trúc từng phần (Khuyến nghị)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setUseCustomFullTemplate(true)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                        useCustomFullTemplate
-                          ? 'bg-emerald-600 text-white shadow-xs'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-                      }`}
-                    >
-                      Toàn văn tự do (Thẻ biến {'{...}'})
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleSaveShareMessage} className="space-y-4">
-                    {!useCustomFullTemplate ? (
-                      <div className="space-y-4">
-                        {/* Greeting */}
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                            1. Lời mở đầu thông báo (Greeting):
-                          </label>
-                          <textarea
-                            rows={3}
-                            value={shareMessageGreeting}
-                            onChange={(e) => setShareMessageGreeting(e.target.value)}
-                            placeholder="Nhập lời mở đầu hoặc kính gửi các thành viên..."
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
-                          />
-                        </div>
-
-                        {/* Automatic inclusion toggles */}
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2">
-                          <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                            2. Tùy chọn đính kèm tự động:
-                          </span>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer font-medium">
-                              <input
-                                type="checkbox"
-                                checked={shareMessageIncludeBank}
-                                onChange={(e) => setShareMessageIncludeBank(e.target.checked)}
-                                className="rounded text-emerald-600 focus:ring-emerald-500"
-                              />
-                              <span>Đính kèm Thông tin STK Ngân hàng ({bankSettings.bankName || 'Chưa cấu hình'})</span>
-                            </label>
-                            <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer font-medium">
-                              <input
-                                type="checkbox"
-                                checked={shareMessageIncludeCampaigns}
-                                onChange={(e) => setShareMessageIncludeCampaigns(e.target.checked)}
-                                className="rounded text-emerald-600 focus:ring-emerald-500"
-                              />
-                              <span>Đính kèm danh sách đợt thu quỹ đang mở ({campaigns.filter(c => c.status === 'active').length})</span>
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* System benefits */}
-                        <div className="space-y-2">
-                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                            3. Danh sách tiện ích trên cổng thành viên:
-                          </label>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <div>
-                              <span className="text-[11px] text-slate-500 block mb-1">Gạch đầu dòng 1:</span>
-                              <input
-                                type="text"
-                                value={shareMessageBenefit1}
-                                onChange={(e) => setShareMessageBenefit1(e.target.value)}
-                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs"
-                              />
-                            </div>
-                            <div>
-                              <span className="text-[11px] text-slate-500 block mb-1">Gạch đầu dòng 2:</span>
-                              <input
-                                type="text"
-                                value={shareMessageBenefit2}
-                                onChange={(e) => setShareMessageBenefit2(e.target.value)}
-                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs"
-                              />
-                            </div>
-                            <div>
-                              <span className="text-[11px] text-slate-500 block mb-1">Gạch đầu dòng 3:</span>
-                              <input
-                                type="text"
-                                value={shareMessageBenefit3}
-                                onChange={(e) => setShareMessageBenefit3(e.target.value)}
-                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Closing Note */}
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                            4. Lời kết / Lời cảm ơn (Closing):
-                          </label>
-                          <input
-                            type="text"
-                            value={shareMessageClosing}
-                            onChange={(e) => setShareMessageClosing(e.target.value)}
-                            placeholder="Nhập lời kết..."
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                          Nội dung toàn văn tùy biến (Sử dụng các biến dynamic):
-                        </label>
-                        <textarea
-                          rows={10}
-                          value={socialShareTemplate}
-                          onChange={(e) => setSocialShareTemplate(e.target.value)}
-                          placeholder="Nhập mẫu tin nhắn đầy đủ..."
-                          className="w-full p-3 font-mono text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
-                        />
-                        <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
-                          <span className="font-bold block text-slate-700 dark:text-slate-300">Các thẻ biến được hỗ trợ:</span>
-                          <div className="flex flex-wrap gap-1.5 font-mono text-emerald-700 dark:text-emerald-300">
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{appName}`}</span>
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{shareUrl}`}</span>
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{bankInfo}`}</span>
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{bankName}`}</span>
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{accountNumber}`}</span>
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{accountName}`}</span>
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{syntaxPrefix}`}</span>
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{campaigns}`}</span>
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{greeting}`}</span>
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{closing}`}</span>
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{treasurerName}`}</span>
-                            <span className="bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{`{treasurerPhone}`}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Live Preview of the Zalo message */}
-                    <div className="pt-2">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                          <span>Xem trước thực tế tin nhắn gửi đi:</span>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const origin = typeof window !== 'undefined' ? window.location.origin : '';
-                            const pathname = typeof window !== 'undefined' && window.location.pathname !== '/' ? window.location.pathname : '';
-                            const cleanShareUrl = `${origin}${pathname}`;
-                            const previewText = generateZaloShareMessage({
-                              appName: appTitle,
-                              shareUrl: cleanShareUrl,
-                              branding: {
-                                ...branding,
-                                shareMessageGreeting,
-                                shareMessageBenefit1,
-                                shareMessageBenefit2,
-                                shareMessageBenefit3,
-                                shareMessageClosing,
-                                socialShareTemplate: useCustomFullTemplate ? socialShareTemplate : '',
-                              } as AppBranding,
-                              bankSettings,
-                              activeCampaigns: campaigns.filter(c => c.status === 'active'),
-                              includeBank: shareMessageIncludeBank,
-                              includeCampaigns: shareMessageIncludeCampaigns,
-                            });
-                            navigator.clipboard.writeText(previewText);
-                            setCopiedShareTest(true);
-                            showToast('Đã sao chép nội dung xem trước vào clipboard!', 'success');
-                            setTimeout(() => setCopiedShareTest(false), 2500);
-                          }}
-                          className="text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline flex items-center gap-1 cursor-pointer"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>{copiedShareTest ? 'Đã sao chép!' : 'Sao chép thử'}</span>
-                        </button>
-                      </div>
-
-                      <div className="p-3.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-mono whitespace-pre-wrap text-slate-800 dark:text-slate-200 max-h-56 overflow-y-auto leading-relaxed select-all">
-                        {generateZaloShareMessage({
-                          appName: appTitle,
-                          shareUrl: typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname !== '/' ? window.location.pathname : ''}` : 'https://soquy.app',
-                          branding: {
-                            ...branding,
-                            shareMessageGreeting,
-                            shareMessageBenefit1,
-                            shareMessageBenefit2,
-                            shareMessageBenefit3,
-                            shareMessageClosing,
-                            socialShareTemplate: useCustomFullTemplate ? socialShareTemplate : '',
-                          } as AppBranding,
-                          bankSettings,
-                          activeCampaigns: campaigns.filter(c => c.status === 'active'),
-                          includeBank: shareMessageIncludeBank,
-                          includeCampaigns: shareMessageIncludeCampaigns,
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Submit button */}
-                    <div className="flex items-center justify-end gap-3 pt-2">
-                      <button
-                        type="submit"
-                        className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm shadow-emerald-600/20 flex items-center gap-2 transition-all cursor-pointer"
-                      >
-                        {shareMsgSaved ? <Check className="w-4 h-4 text-white" /> : <Save className="w-4 h-4" />}
-                        <span>{shareMsgSaved ? 'Đã lưu cấu hình tin nhắn!' : 'Lưu Cài Đặt Tin Nhắn'}</span>
-                      </button>
-                    </div>
-                  </form>
                 </div>
               )}
 
