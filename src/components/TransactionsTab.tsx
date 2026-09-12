@@ -17,6 +17,7 @@ import { AppBranding, Category, Fund, Member, Transaction, TransactionType } fro
 import { formatVND, formatDate } from '../utils/formatters';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback } from '../context/FeedbackContext';
+import { useTheme } from '../context/ThemeContext';
 import { BillViewModal } from './modals/BillViewModal';
 
 interface TransactionsTabProps {
@@ -40,9 +41,15 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
 }) => {
   const { t } = useTranslation();
   const { showConfirm, showToast } = useFeedback();
+  const { activePreset, privacyMode, maskAmount, themeDensity } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
+
+  const displayVND = (amount: number, prefix: string = '') => {
+    if (privacyMode) return maskAmount(`${prefix}${formatVND(amount)}`);
+    return `${prefix}${formatVND(amount)}`;
+  };
   const [selectedBillFilter, setSelectedBillFilter] = useState<'all' | 'has_bill' | 'no_bill'>('all');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -190,7 +197,8 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
               type="button"
               id="header-add-tx-btn"
               onClick={() => onOpenTransactionModal()}
-              className="w-8 h-8 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-xs shadow-blue-600/20 transition-all active:scale-95 cursor-pointer mr-1"
+              style={{ background: activePreset.gradient }}
+              className="w-8 h-8 rounded-xl text-white flex items-center justify-center shadow-xs transition-all hover:opacity-95 active:scale-95 cursor-pointer mr-1"
               title="Ghi nhận thu / chi mới"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
@@ -215,7 +223,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
               placeholder={t('transactions.search_placeholder', 'Tìm theo lý do thu chi...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-slate-400 focus:outline-hidden"
             />
           </div>
 
@@ -225,7 +233,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
               id="filter-type-select"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-slate-400 focus:outline-hidden"
             >
               <option value="all">-- {t('transactions.all_types', 'Tất cả loại (Thu & Chi)')} --</option>
               <option value="income">{t('transactions.type_income', 'Chỉ khoản thu (+)')}</option>
@@ -239,7 +247,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
               id="filter-category-select"
               value={selectedCategoryId}
               onChange={(e) => setSelectedCategoryId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-slate-400 focus:outline-hidden"
             >
               <option value="all">-- {t('transactions.all_categories', 'Tất cả phân loại')} --</option>
               {categories.map((cat) => (
@@ -257,7 +265,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-1/2 px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-[11px] focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="w-1/2 px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-[11px] focus:ring-2 focus:ring-slate-400 focus:outline-hidden"
               title={t('common.from_date', 'Từ ngày')}
             />
             <span className="text-slate-400 text-xs">-</span>
@@ -266,7 +274,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-1/2 px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-[11px] focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="w-1/2 px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-[11px] focus:ring-2 focus:ring-slate-400 focus:outline-hidden"
               title={t('common.to_date', 'Đến ngày')}
             />
           </div>
@@ -282,7 +290,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                 id="transactions-sort-select"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-semibold text-slate-900 dark:text-white text-xs focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-semibold text-slate-900 dark:text-white text-xs focus:ring-1 focus:ring-slate-400 focus:outline-hidden"
               >
                 <option value="date_desc">📅 {t('common.date_newest', 'Ngày: Mới nhất trước')}</option>
                 <option value="date_asc">📅 {t('common.date_oldest', 'Ngày: Cũ nhất trước')}</option>
@@ -293,13 +301,13 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
 
             {/* Bill / Proof Filter */}
             <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
-              <Receipt className="w-3.5 h-3.5 text-blue-500" />
+              <Receipt className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
               <span>{t('transactions.bill_filter_label', 'Hình ảnh:')}</span>
               <select
                 id="filter-bill-select"
                 value={selectedBillFilter}
                 onChange={(e) => setSelectedBillFilter(e.target.value as any)}
-                className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-semibold text-slate-900 dark:text-white text-xs focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-semibold text-slate-900 dark:text-white text-xs focus:ring-1 focus:ring-slate-400 focus:outline-hidden"
               >
                 <option value="all">{t('transactions.bill_filter_all', 'Tất cả')} ({transactions.length})</option>
                 <option value="has_bill">{t('transactions.bill_filter_has', 'Có ảnh')} ({countWithBill})</option>
@@ -310,7 +318,8 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
             {(searchQuery || selectedType !== 'all' || selectedCategoryId !== 'all' || selectedBillFilter !== 'all' || startDate || endDate) && (
               <button
                 onClick={resetFilters}
-                className="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 cursor-pointer"
+                style={{ color: activePreset.primary }}
+                className="font-semibold flex items-center gap-1 cursor-pointer hover:underline"
               >
                 <RotateCcw className="w-3 h-3" />
                 {t('common.clear_filter', 'Xóa bộ lọc')}
@@ -329,19 +338,22 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
         <div>
           <span className="text-slate-500 block">{t('transactions.filter_income', 'Tổng Thu (theo bộ lọc):')}</span>
           <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-            +{formatVND(summary.income)}
+            {displayVND(summary.income, '+')}
           </span>
         </div>
         <div>
           <span className="text-slate-500 block">{t('transactions.filter_expense', 'Tổng Chi (theo bộ lọc):')}</span>
           <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">
-            -{formatVND(summary.expense)}
+            {displayVND(summary.expense, '-')}
           </span>
         </div>
         <div>
           <span className="text-slate-500 block">{t('transactions.filter_net', 'Chênh Lệch Dòng Tiền:')}</span>
-          <span className={`font-bold text-sm ${summary.net >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400'}`}>
-            {formatVND(summary.net)}
+          <span
+            className="font-bold text-sm"
+            style={{ color: summary.net >= 0 ? activePreset.primary : '#e11d48' }}
+          >
+            {displayVND(summary.net)}
           </span>
         </div>
         <div className="text-right flex items-center justify-end">
@@ -368,10 +380,11 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
             return (
               <div
                 key={tx.id}
+                style={isSelected ? { borderColor: activePreset.primary } : undefined}
                 className={`p-3.5 rounded-xl border transition-all ${
                   isSelected
-                    ? 'bg-blue-50/60 border-blue-300 shadow-xs'
-                    : 'bg-white border-slate-200 shadow-xs hover:border-slate-300'
+                    ? 'bg-slate-50/90 dark:bg-slate-800/80 shadow-xs'
+                    : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
@@ -381,10 +394,11 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleSelectTx(tx.id)}
-                        className="rounded text-blue-600 w-4 h-4"
+                        style={{ accentColor: activePreset.primary }}
+                        className="rounded w-4 h-4 cursor-pointer"
                       />
                     )}
-                    <span className="font-mono text-xs text-slate-500 font-medium">
+                    <span className="font-mono text-xs text-slate-500 dark:text-slate-400 font-medium">
                       {formatDate(tx.date)}
                     </span>
                   </div>
@@ -393,8 +407,8 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                     <span
                       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium"
                       style={{
-                        backgroundColor: `${cat?.color || '#3B82F6'}15`,
-                        color: cat?.color || '#3B82F6',
+                        backgroundColor: `${cat?.color || activePreset.primary}15`,
+                        color: cat?.color || activePreset.primary,
                       }}
                     >
                       <Tag className="w-3 h-3" />
@@ -403,8 +417,8 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-[11px] ${
                         isIncome
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-rose-50 text-rose-700 border border-rose-200'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60'
+                          : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200/80 dark:border-rose-800/60'
                       }`}
                     >
                       {isIncome ? '+' : '-'}{isIncome ? t('transactions.type_income', 'Thu') : t('transactions.type_expense', 'Chi')}
@@ -412,7 +426,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                   </div>
                 </div>
 
-                <div className="text-sm font-semibold text-slate-900 mb-2.5 break-words">
+                <div className="text-sm font-semibold text-slate-900 dark:text-white mb-2.5 break-words">
                   {tx.description}
                 </div>
 
@@ -421,23 +435,24 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                     <button
                       type="button"
                       onClick={() => setViewingBillTx(tx)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/80 hover:bg-blue-100 transition-colors cursor-pointer active:scale-95"
+                      style={{ color: activePreset.primary }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:opacity-80 transition-opacity cursor-pointer active:scale-95"
                     >
-                      <Receipt className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      <Receipt className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                       <span>{t('transactions.bill_view_btn', 'Xem ảnh')}</span>
                     </button>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
                   <div>
                     <span className="text-[10px] text-slate-400 block uppercase font-bold">Số tiền</span>
                     <span
                       className={`font-mono font-bold text-base ${
-                        isIncome ? 'text-emerald-600' : 'text-rose-600'
+                        isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                       }`}
                     >
-                      {isIncome ? '+' : '-'}{formatVND(tx.amount)}
+                      {displayVND(tx.amount, isIncome ? '+' : '-')}
                     </span>
                   </div>
 
@@ -446,7 +461,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                       <button
                         onClick={() => onOpenTransactionModal(tx.type, tx)}
                         title={t('common.edit', 'Sửa')}
-                        className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                        className="p-2 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -465,7 +480,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                           });
                         }}
                         title={t('common.delete', 'Xóa')}
-                        className="p-2 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                        className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -476,7 +491,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
             );
           })
         ) : (
-          <div className="py-10 text-center bg-white rounded-xl border border-slate-200 text-slate-400 p-4">
+          <div className="py-10 text-center bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-400 p-4">
             <p className="text-sm font-medium">{t('transactions.empty', 'Không tìm thấy giao dịch nào phù hợp')}</p>
             <p className="text-xs mt-1 text-slate-500">{t('transactions.empty_hint', 'Thử thay đổi bộ lọc hoặc tạo giao dịch mới')}</p>
           </div>
@@ -484,30 +499,31 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
       </div>
 
       {/* Desktop Ledger Table (hidden on mobile, block on md+) */}
-      <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="hidden md:block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase font-semibold">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/70 text-slate-600 dark:text-slate-300 uppercase font-semibold">
                 {isAdmin && (
                   <th className="py-3 px-4 w-10">
                     <input
                       type="checkbox"
                       checked={selectedTxIds.length === filteredTransactions.length && filteredTransactions.length > 0}
                       onChange={toggleSelectAll}
-                      className="rounded text-blue-600"
+                      style={{ accentColor: activePreset.primary }}
+                      className="rounded cursor-pointer"
                     />
                   </th>
                 )}
                 <th 
-                  className="py-3 px-3 cursor-pointer hover:text-blue-600 select-none transition-colors"
+                  className="py-3 px-3 cursor-pointer hover:opacity-80 select-none transition-opacity"
                   onClick={() => setSortBy(prev => prev === 'date_desc' ? 'date_asc' : 'date_desc')}
                   title="Click để đổi chiều sắp xếp ngày"
                 >
                   <div className="flex items-center gap-1">
                     <span>{t('transactions.table_date', 'Ngày')}</span>
-                    {sortBy === 'date_desc' && <ArrowDown className="w-3 h-3 text-blue-600" />}
-                    {sortBy === 'date_asc' && <ArrowUp className="w-3 h-3 text-blue-600" />}
+                    {sortBy === 'date_desc' && <ArrowDown className="w-3 h-3" style={{ color: activePreset.primary }} />}
+                    {sortBy === 'date_asc' && <ArrowUp className="w-3 h-3" style={{ color: activePreset.primary }} />}
                     {!sortBy.startsWith('date') && <ArrowUpDown className="w-3 h-3 text-slate-400" />}
                   </div>
                 </th>
@@ -515,14 +531,14 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                 <th className="py-3 px-3">{t('transactions.table_category', 'Phân loại')}</th>
                 <th className="py-3 px-3">{t('transactions.table_description', 'Lý do / Nội dung')}</th>
                 <th 
-                  className="py-3 px-4 text-right cursor-pointer hover:text-blue-600 select-none transition-colors"
+                  className="py-3 px-4 text-right cursor-pointer hover:opacity-80 select-none transition-opacity"
                   onClick={() => setSortBy(prev => prev === 'amount_desc' ? 'amount_asc' : 'amount_desc')}
                   title="Click để đổi chiều sắp xếp số tiền"
                 >
                   <div className="flex items-center justify-end gap-1">
                     <span>{t('transactions.table_amount', 'Số tiền')}</span>
-                    {sortBy === 'amount_desc' && <ArrowDown className="w-3 h-3 text-blue-600" />}
-                    {sortBy === 'amount_asc' && <ArrowUp className="w-3 h-3 text-blue-600" />}
+                    {sortBy === 'amount_desc' && <ArrowDown className="w-3 h-3" style={{ color: activePreset.primary }} />}
+                    {sortBy === 'amount_asc' && <ArrowUp className="w-3 h-3" style={{ color: activePreset.primary }} />}
                     {!sortBy.startsWith('amount') && <ArrowUpDown className="w-3 h-3 text-slate-400" />}
                   </div>
                 </th>
@@ -530,7 +546,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
               {filteredTransactions.length > 0 ? (
                 filteredTransactions.map((tx) => {
                   const cat = catMap.get(tx.categoryId);
@@ -540,8 +556,8 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                   return (
                     <tr
                       key={tx.id}
-                      className={`hover:bg-slate-50 transition-colors ${
-                        isSelected ? 'bg-blue-50/50' : ''
+                      className={`hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors ${
+                        isSelected ? 'bg-slate-50 dark:bg-slate-800/80' : ''
                       }`}
                     >
                       {isAdmin && (
@@ -550,12 +566,13 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelectTx(tx.id)}
-                            className="rounded text-blue-600"
+                            style={{ accentColor: activePreset.primary }}
+                            className="rounded cursor-pointer"
                           />
                         </td>
                       )}
 
-                      <td className="py-3.5 px-3 whitespace-nowrap font-mono text-slate-700 font-medium">
+                      <td className="py-3.5 px-3 whitespace-nowrap font-mono text-slate-700 dark:text-slate-300 font-medium">
                         {formatDate(tx.date)}
                       </td>
 
@@ -563,8 +580,8 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                         <span
                           className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md font-bold text-[11px] ${
                             isIncome
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-rose-50 text-rose-700 border border-rose-200'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60'
+                              : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200/80 dark:border-rose-800/60'
                           }`}
                         >
                           {isIncome ? <ArrowDownLeft className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
@@ -576,8 +593,8 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                         <span
                           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
                           style={{
-                            backgroundColor: `${cat?.color || '#3B82F6'}15`,
-                            color: cat?.color || '#3B82F6',
+                            backgroundColor: `${cat?.color || activePreset.primary}15`,
+                            color: cat?.color || activePreset.primary,
                           }}
                         >
                           <Tag className="w-3 h-3" />
@@ -586,7 +603,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                       </td>
 
                       <td className="py-3.5 px-3 max-w-md">
-                        <div className="font-semibold text-slate-900 line-clamp-2">
+                        <div className="font-semibold text-slate-900 dark:text-white line-clamp-2">
                           {tx.description}
                         </div>
                         {tx.billImage && (
@@ -595,9 +612,10 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                               type="button"
                               onClick={() => setViewingBillTx(tx)}
                               title="Nhấp để xem ảnh hóa đơn / bill"
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800/80 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
+                              style={{ color: activePreset.primary }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:opacity-80 transition-opacity cursor-pointer"
                             >
-                              <Receipt className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                              <Receipt className="w-3 h-3" style={{ color: activePreset.primary }} />
                               <span>{t('transactions.bill_view_btn', 'Xem ảnh')}</span>
                             </button>
                           </div>
@@ -608,11 +626,11 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                         <span
                           className={`font-mono font-bold text-sm ${
                             isIncome
-                              ? 'text-emerald-600'
-                              : 'text-rose-600'
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : 'text-rose-600 dark:text-rose-400'
                           }`}
                         >
-                          {isIncome ? '+' : '-'}{formatVND(tx.amount)}
+                          {displayVND(tx.amount, isIncome ? '+' : '-')}
                         </span>
                       </td>
 
@@ -622,7 +640,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                             <button
                               onClick={() => onOpenTransactionModal(tx.type, tx)}
                               title={t('common.edit', 'Sửa')}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
@@ -641,7 +659,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                                 });
                               }}
                               title={t('common.delete', 'Xóa')}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>

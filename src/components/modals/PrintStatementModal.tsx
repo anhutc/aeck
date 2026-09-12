@@ -384,20 +384,20 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
     >
       <div 
         id="print-modal-card" 
-        className="bg-slate-100 text-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
       >
         {/* Modal Controls Header */}
-        <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 shrink-0 bg-white">
+        <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0 bg-white dark:bg-slate-900">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <FileText className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-tight">
                   {t('print.preview_title', 'Bản xem trước sao kê & báo cáo quỹ')}
                 </h2>
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                   {totalPages} {t('print.page_unit', 'trang')}
                 </span>
               </div>
@@ -406,15 +406,15 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
 
           <div className="flex items-center gap-2">
             {/* Density Selector */}
-            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs">
-              <span className="text-[11px] font-medium text-slate-500 pl-2 pr-1 hidden lg:inline">{t('print.density_rows_label', 'Dòng:')}</span>
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 pl-2 pr-1 hidden lg:inline">{t('print.density_rows_label', 'Dòng:')}</span>
               <button
                 type="button"
                 onClick={() => setDensity('normal')}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   density === 'normal'
-                    ? 'bg-white text-blue-700 shadow-xs border border-slate-200 font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-xs border border-slate-200 dark:border-slate-600 font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title={t('print.density_normal_title', 'Chuẩn A4 (~24 dòng/trang, tối ưu lấp đầy trang in)')}
               >
@@ -425,8 +425,8 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                 onClick={() => setDensity('compact')}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   density === 'compact'
-                    ? 'bg-white text-blue-700 shadow-xs border border-slate-200 font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-xs border border-slate-200 dark:border-slate-600 font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title={t('print.density_compact_title', 'Tiết kiệm (~30 dòng/trang, giảm tối đa số trang)')}
               >
@@ -437,8 +437,8 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                 onClick={() => setDensity('spacious')}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   density === 'spacious'
-                    ? 'bg-white text-blue-700 shadow-xs border border-slate-200 font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-xs border border-slate-200 dark:border-slate-600 font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title={t('print.density_spacious_title', 'Thoáng (~16 dòng/trang, phù hợp khi diễn giải thu chi dài)')}
               >
@@ -485,7 +485,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               type="button"
               id="close-print-modal-btn"
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer ml-1"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer ml-1"
               title={t('common.close_window', 'Đóng cửa sổ')}
             >
               <X className="w-5 h-5" />
@@ -496,7 +496,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
         {/* Scrollable Document Pages Area */}
         <div 
           id="statement-pages-scroll-area"
-          className="p-4 sm:p-6 md:p-8 space-y-6 overflow-y-auto flex-1 bg-slate-200/60"
+          className="p-4 sm:p-6 md:p-8 space-y-6 overflow-y-auto flex-1 bg-slate-200/60 dark:bg-slate-950"
         >
           {pages.map((page, pageIdx) => (
             <div key={page.pageNumber} className="relative group">

@@ -18,6 +18,7 @@ import { ContributionCampaign, Member, Fund, AppBranding } from '../../types';
 import { formatVND, formatDate, getMemberRoles } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { useFeedback } from '../../context/FeedbackContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface MemberContributionDetailModalProps {
   isOpen: boolean;
@@ -44,8 +45,14 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
 }) => {
   const { t } = useTranslation();
   const { showConfirm, showToast } = useFeedback();
+  const { activePreset, privacyMode } = useTheme();
   const [filterStatus, setFilterStatus] = useState<'all' | 'unpaid' | 'paid'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const displayVND = (val: number) => {
+    if (privacyMode) return '•••••••• ₫';
+    return formatVND(val);
+  };
 
   const fundMap = useMemo(() => new Map(funds.map(f => [f.id, f])), [funds]);
 
@@ -129,28 +136,31 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header */}
-        <div className="p-5 sm:p-6 bg-white border-b border-slate-200 text-slate-900 relative">
+        <div className="p-5 sm:p-6 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white relative">
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+            className="absolute right-4 top-4 p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
             aria-label={t('members.detail_modal_close', 'Đóng')}
           >
             <X className="w-5 h-5" />
           </button>
 
           <div className="flex items-start gap-4 pr-10">
-            <div className="w-14 h-14 rounded-2xl bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-md shrink-0">
+            <div
+              style={{ background: activePreset.gradient }}
+              className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md shrink-0"
+            >
               {member.name.slice(0, 1).toUpperCase()}
             </div>
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h2 className="text-lg sm:text-xl font-black text-slate-900">{member.name}</h2>
+                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">{member.name}</h2>
                 {member.status === 'inactive' ? (
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                     {t('members.status_inactive_badge', 'Đã nghỉ / Rời nhóm')}
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     {t('members.status_active_badge', 'Đang hoạt động')}
                   </span>
@@ -160,7 +170,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
               <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 flex-wrap">
                 {member.phone && (
                   <span className="flex items-center gap-1 font-mono">
-                    <Phone className="w-3.5 h-3.5 text-blue-600" />
+                    <Phone className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                     {member.phone}
                   </span>
                 )}
@@ -175,9 +185,10 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                 {roles.map((r) => (
                   <span
                     key={r}
-                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200"
+                    style={{ backgroundColor: `${activePreset.primary}12`, color: activePreset.primary, borderColor: `${activePreset.primary}25` }}
+                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border"
                   >
-                    <Briefcase className="w-3 h-3 text-slate-500" />
+                    <Briefcase className="w-3 h-3" style={{ color: activePreset.primary }} />
                     {r}
                   </span>
                 ))}
@@ -214,14 +225,14 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                   {t('members.detail_yearly_title', 'Chế độ đóng quỹ trọn gói theo năm (Đi công tác)')}
                 </span>
                 <span className="font-mono font-black text-sm">
-                  {formatVND(member.yearlyContributionAmount || 0)}{t('members.detail_yearly_unit', '/năm')}
+                  {displayVND(member.yearlyContributionAmount || 0)}{t('members.detail_yearly_unit', '/năm')}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-3 pt-2 border-t border-amber-200/80 dark:border-amber-900/80">
                 <div>
                   <span className="text-amber-700 dark:text-amber-400 block text-[11px]">{t('members.detail_yearly_paid_in_year', 'Đã nộp trong năm:')}</span>
                   <span className="font-bold text-sm text-emerald-700 dark:text-emerald-400">
-                    {formatVND(member.yearlyPaidAmount || 0)}
+                    {displayVND(member.yearlyPaidAmount || 0)}
                   </span>
                   {member.yearlyPaidDate && (
                     <span className="text-[10px] text-slate-500 block mt-0.5">
@@ -232,7 +243,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                 <div>
                   <span className="text-amber-700 dark:text-amber-400 block text-[11px]">{t('members.detail_yearly_status_label', 'Tình trạng:')}</span>
                   <span className={`font-bold text-sm ${totalRemaining === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                    {totalRemaining === 0 ? t('members.detail_yearly_completed', '✅ Đã hoàn thành cả năm') : `${t('members.detail_yearly_remaining', '⚠️ Còn thiếu:')} ${formatVND(totalRemaining)}`}
+                    {totalRemaining === 0 ? t('members.detail_yearly_completed', '✅ Đã hoàn thành cả năm') : `${t('members.detail_yearly_remaining', '⚠️ Còn thiếu:')} ${displayVND(totalRemaining)}`}
                   </span>
                 </div>
               </div>
@@ -251,20 +262,23 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
             <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200/70 dark:border-emerald-900/60">
               <span className="text-[11px] text-emerald-700 dark:text-emerald-400 block font-medium">{t('members.detail_kpi_paid', 'Tổng tiền đã nộp')}</span>
               <span className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-0.5 block">
-                {formatVND(totalPaid)}
+                {displayVND(totalPaid)}
               </span>
             </div>
 
             <div className="p-3.5 bg-rose-50/70 dark:bg-rose-950/30 rounded-2xl border border-rose-200/70 dark:border-rose-900/60">
               <span className="text-[11px] text-rose-700 dark:text-rose-400 block font-medium">{t('members.detail_kpi_missing', 'Số tiền còn thiếu')}</span>
               <span className="text-base font-black text-rose-600 dark:text-rose-400 mt-0.5 block">
-                {formatVND(totalRemaining)}
+                {displayVND(totalRemaining)}
               </span>
             </div>
 
-            <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/30 rounded-2xl border border-blue-200/70 dark:border-blue-900/60">
-              <span className="text-[11px] text-blue-700 dark:text-blue-400 block font-medium">{t('members.detail_kpi_progress', 'Tỷ lệ hoàn thành')}</span>
-              <span className="text-base font-black text-blue-600 dark:text-blue-400 mt-0.5 block">
+            <div
+              style={{ backgroundColor: `${activePreset.primary}10`, borderColor: `${activePreset.primary}25` }}
+              className="p-3.5 rounded-2xl border"
+            >
+              <span className="text-[11px] block font-medium" style={{ color: activePreset.primary }}>{t('members.detail_kpi_progress', 'Tỷ lệ hoàn thành')}</span>
+              <span className="text-base font-black mt-0.5 block" style={{ color: activePreset.primary }}>
                 {overallProgress}% ({paidCampaignsCount}/{totalCampaigns})
               </span>
             </div>
@@ -272,23 +286,24 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
 
           {/* Quick 1-Click QR Pay All Missing Button if debt > 0 */}
           {totalRemaining > 0 && (
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-blue-500/10 border border-purple-200 dark:border-purple-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  <Sparkles className="w-4 h-4" style={{ color: activePreset.primary }} />
                   {t('members.detail_pay_all_title', 'Thanh toán toàn bộ các khoản còn thiếu')}
                 </span>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  {t('members.detail_pay_all_desc', 'Quét 1 mã QR duy nhất để nộp tổng số tiền nợ:')} <strong className="text-purple-600 font-bold">{formatVND(totalRemaining)}</strong>
+                  {t('members.detail_pay_all_desc', 'Quét 1 mã QR duy nhất để nộp tổng số tiền nợ:')} <strong className="font-bold" style={{ color: activePreset.primary }}>{displayVND(totalRemaining)}</strong>
                 </p>
               </div>
 
               <button
                 onClick={handlePayAllMissing}
-                className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-bold shadow-md shadow-purple-600/20 flex items-center justify-center gap-2 transition-all shrink-0 cursor-pointer"
+                style={{ background: activePreset.gradient }}
+                className="px-4 py-2.5 rounded-xl text-white text-xs font-bold shadow-md hover:opacity-90 active:scale-95 flex items-center justify-center gap-2 transition-all shrink-0 cursor-pointer"
               >
                 <QrCode className="w-4 h-4" />
-                <span>{t('members.detail_pay_all_btn', 'Quét QR nộp')} {formatVND(totalRemaining)}</span>
+                <span>{t('members.detail_pay_all_btn', 'Quét QR nộp')} {displayVND(totalRemaining)}</span>
               </button>
             </div>
           )}
@@ -402,7 +417,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                         <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
                           <div className="text-right">
                             <div className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
-                              {formatVND(item.paid)} / {formatVND(item.required)}
+                              {displayVND(item.paid)} / {displayVND(item.required)}
                             </div>
                             <div>
                               {item.isPaidInFull ? (
@@ -413,12 +428,12 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                               ) : item.isPartial ? (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
                                   <Clock className="w-3.5 h-3.5" />
-                                  {t('members.detail_remaining_badge', 'Còn thiếu')} {formatVND(item.remaining)}
+                                  {t('members.detail_remaining_badge', 'Còn thiếu')} {displayVND(item.remaining)}
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400">
                                   <AlertCircle className="w-3.5 h-3.5" />
-                                  {t('members.detail_unpaid_badge', 'Chưa nộp')} ({formatVND(item.required)})
+                                  {t('members.detail_unpaid_badge', 'Chưa nộp')} ({displayVND(item.required)})
                                 </span>
                               )}
                             </div>
@@ -430,7 +445,8 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                               <button
                                 onClick={() => handlePaySingleCampaign(item)}
                                 title={t('members.detail_qr_title', 'Quét mã QR nộp đợt này')}
-                                className="p-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1"
+                                style={{ background: activePreset.gradient }}
+                                className="p-2 rounded-xl text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1 hover:opacity-90"
                               >
                                 <QrCode className="w-4 h-4" />
                                 <span className="hidden sm:inline">{t('members.detail_qr_btn', 'Quét QR')}</span>
@@ -462,7 +478,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                                 title={item.isPaidInFull ? t('members.detail_btn_cancel_pay_title', 'Hủy trạng thái đã nộp') : t('members.detail_btn_mark_paid_title', 'Đánh dấu đã nộp đủ')}
                                 className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                                   item.isPaidInFull
-                                    ? 'border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-rose-50 hover:text-rose-600'
+                                    ? 'border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-600 dark:hover:text-rose-400'
                                     : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
                                 }`}
                               >

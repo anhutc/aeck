@@ -233,7 +233,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleDownload}
-              className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
               <span>{t('transactions.bill_download_btn', 'Tải ảnh')}</span>

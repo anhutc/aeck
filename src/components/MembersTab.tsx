@@ -21,6 +21,7 @@ import { AppBranding, ContributionCampaign, Fund, Member } from '../types';
 import { formatDate, formatVND, getMemberRoles } from '../utils/formatters';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback } from '../context/FeedbackContext';
+import { useTheme } from '../context/ThemeContext';
 import { MemberContributionDetailModal } from './modals/MemberContributionDetailModal';
 
 interface MembersTabProps {
@@ -51,6 +52,13 @@ export const MembersTab: React.FC<MembersTabProps> = ({
 }) => {
   const { t } = useTranslation();
   const { showConfirm, showToast } = useFeedback();
+  const { activePreset, privacyMode } = useTheme();
+
+  const displayVND = (val: number, pfx = '') => {
+    if (privacyMode) return '•••••••• ₫';
+    return `${pfx}${formatVND(val)}`;
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -243,7 +251,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
         <div>
           <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-blue-600" />
+            <Users className="w-5 h-5" style={{ color: activePreset.primary }} />
             {t('members.title', 'Danh Sách Thành Viên')} ({members.length})
           </h2>
           <p className="text-xs text-slate-500">
@@ -256,9 +264,10 @@ export const MembersTab: React.FC<MembersTabProps> = ({
           <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs">
             <button
               onClick={() => setViewMode('cards')}
+              style={viewMode === 'cards' ? { backgroundColor: activePreset.primary, color: '#fff' } : undefined}
               className={`p-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
                 viewMode === 'cards'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold shadow-xs'
+                  ? 'font-bold shadow-xs'
                   : 'text-slate-600 dark:text-slate-400'
               }`}
               title={t('members.view_cards_title', 'Xem dạng thẻ')}
@@ -267,9 +276,10 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             </button>
             <button
               onClick={() => setViewMode('table')}
+              style={viewMode === 'table' ? { backgroundColor: activePreset.primary, color: '#fff' } : undefined}
               className={`p-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
                 viewMode === 'table'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold shadow-xs'
+                  ? 'font-bold shadow-xs'
                   : 'text-slate-600 dark:text-slate-400'
               }`}
               title={t('members.view_table_title', 'Xem dạng bảng')}
@@ -283,7 +293,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             <button
               id="export-member-dues-btn"
               onClick={() => onOpenPrintDuesModal()}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all shrink-0 cursor-pointer active:scale-95"
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer active:scale-95"
               title={t('members.export_dues_title', 'Xuất ảnh danh sách đóng quỹ & công nợ để chia sẻ')}
             >
               <ReceiptText className="w-4 h-4" />
@@ -296,7 +306,8 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             <button
               id="add-member-btn"
               onClick={() => onOpenMemberModal()}
-              className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 flex items-center gap-2 transition-all shrink-0 cursor-pointer"
+              style={{ background: activePreset.gradient }}
+              className="px-4 py-2.5 rounded-xl text-white text-xs font-bold shadow-xs hover:opacity-95 flex items-center gap-2 transition-all shrink-0 cursor-pointer active:scale-95"
             >
               <UserPlus className="w-4 h-4" />
               <span>{t('members.btn_add_member', '+ Thêm Thành Viên')}</span>
@@ -332,7 +343,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                 <span className="text-[10px] text-rose-500 underline opacity-0 group-hover:opacity-100 transition-opacity">{t('members.export_dues_btn_short', 'Xuất ảnh')}</span>
               )}
             </div>
-            <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">{formatVND(totalMembersDebt)}</span>
+            <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">{displayVND(totalMembersDebt)}</span>
           </div>
           <div className="p-3 bg-amber-50/60 dark:bg-amber-950/20 rounded-xl border border-amber-200/60 dark:border-amber-900/60">
             <span className="text-amber-700 dark:text-amber-300 block">{t('members.kpi_yearly', 'Đóng theo năm:')}</span>
@@ -445,14 +456,17 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                 className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border transition-all flex flex-col justify-between space-y-3.5 hover:shadow-md ${
                   isInactive
                     ? 'border-slate-200 dark:border-slate-800 opacity-80 bg-slate-50/50 dark:bg-slate-900/50'
-                    : 'border-slate-200/90 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600'
+                    : 'border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
                 {/* Member Card Top Header */}
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-base shadow-sm shrink-0">
+                      <div
+                        style={{ background: activePreset.gradient }}
+                        className="w-11 h-11 rounded-2xl flex items-center justify-center text-white font-black text-base shadow-xs shrink-0"
+                      >
                         {member.name.slice(0, 1).toUpperCase()}
                       </div>
                       <div className="min-w-0">
@@ -474,7 +488,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                           <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono mt-0.5">
                             <a
                               href={`tel:${member.phone}`}
-                              className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                              className="flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
                               title={t('members.call_phone', 'Gọi điện')}
                             >
                               <Phone className="w-3 h-3 text-slate-400" />
@@ -483,7 +497,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                             <button
                               onClick={handleCopyPhone}
                               title={t('members.copy_phone', 'Sao chép số điện thoại')}
-                              className="text-slate-400 hover:text-blue-600 p-0.5 rounded transition-colors cursor-pointer"
+                              className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5 rounded transition-colors cursor-pointer"
                             >
                               {isCopied ? (
                                 <Check className="w-3 h-3 text-emerald-500" />
@@ -504,7 +518,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                         <button
                           onClick={() => onOpenMemberModal(member)}
                           title={t('common.edit', 'Chỉnh sửa thông tin')}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
@@ -536,9 +550,14 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                     {roles.map((r) => (
                       <span
                         key={r}
-                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/60"
+                        style={{
+                          backgroundColor: `${activePreset.primary}12`,
+                          color: activePreset.primary,
+                          borderColor: `${activePreset.primary}25`,
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-bold border"
                       >
-                        <Briefcase className="w-3 h-3 text-blue-500" />
+                        <Briefcase className="w-3 h-3" style={{ color: activePreset.primary }} />
                         {r}
                       </span>
                     ))}
@@ -567,7 +586,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                           <Plane className="w-3.5 h-3.5 text-amber-600" />
                           {t('members.mode_yearly', 'Đóng theo năm (Công tác)')}
                         </span>
-                        <span>{formatVND(member.yearlyContributionAmount || 0)}</span>
+                        <span>{displayVND(member.yearlyContributionAmount || 0)}</span>
                       </div>
                       {member.yearlyPaidDate && (
                         <p className="text-[10px] text-amber-600 dark:text-amber-400">
@@ -623,15 +642,15 @@ export const MembersTab: React.FC<MembersTabProps> = ({
 
                       <div className="flex items-center justify-between text-[11px]">
                         <span className="text-slate-500">
-                          {t('members.paid_label', 'Đã nộp:')} <strong className="text-emerald-600 dark:text-emerald-400">{formatVND(stats.totalPaid)}</strong>
+                          {t('members.paid_label', 'Đã nộp:')} <strong className="text-emerald-600 dark:text-emerald-400">{displayVND(stats.totalPaid)}</strong>
                         </span>
                         {stats.totalRemaining > 0 ? (
                           <span className="text-rose-600 dark:text-rose-400 font-bold">
-                            {t('members.remaining_label', 'Thiếu:')} {formatVND(stats.totalRemaining)}
+                            {t('members.remaining_label', 'Thiếu:')} {displayVND(stats.totalRemaining)}
                           </span>
                         ) : (
                           <span className="text-slate-400 font-medium">
-                            {t('members.full_label', 'Đủ')} {formatVND(stats.totalRequired)}
+                            {t('members.full_label', 'Đủ')} {displayVND(stats.totalRequired)}
                           </span>
                         )}
                       </div>
@@ -644,7 +663,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                       onClick={() => setDetailMember(member)}
                       className="flex-1 py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
-                      <ReceiptText className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      <ReceiptText className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                       <span>{t('members.view_history_btn', 'Xem lịch sử đóng quỹ')}</span>
                     </button>
 
@@ -656,9 +675,14 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                           onOpenQRModal(dueAmount, syntax);
                         }}
                         title={`${t('members.create_vietqr_for', 'Tạo mã VietQR thu quỹ cho')} ${member.name}`}
-                        className="p-2 rounded-xl border border-purple-200/80 dark:border-slate-700 bg-purple-50/80 dark:bg-slate-800 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-950/70 hover:border-purple-300 dark:hover:border-purple-600 dark:hover:text-purple-200 transition-colors active:scale-95 cursor-pointer shadow-2xs shrink-0"
+                        style={{
+                          borderColor: `${activePreset.primary}40`,
+                          backgroundColor: `${activePreset.primary}10`,
+                          color: activePreset.primary,
+                        }}
+                        className="p-2 rounded-xl border text-xs hover:opacity-85 transition-colors active:scale-95 cursor-pointer shadow-2xs shrink-0"
                       >
-                        <QrCode className="w-4 h-4" />
+                        <QrCode className="w-4 h-4" style={{ color: activePreset.primary }} />
                       </button>
                     )}
                   </div>
@@ -679,19 +703,26 @@ export const MembersTab: React.FC<MembersTabProps> = ({
               return (
                 <div
                   key={member.id}
-                  className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3"
+                  className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                      <div
+                        style={{ background: activePreset.gradient }}
+                        className="w-9 h-9 rounded-xl text-white font-bold flex items-center justify-center text-sm shadow-xs"
+                      >
                         {member.name.slice(0, 1).toUpperCase()}
                       </div>
                       <div>
-                        <h4 className="font-bold text-slate-900 text-sm">{member.name}</h4>
+                        <h4 className="font-bold text-slate-900 dark:text-white text-sm">{member.name}</h4>
                         <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                           <span className="font-mono">{member.phone || t('members.no_phone', 'Chưa có SĐT')}</span>
                           {roles.map(r => (
-                            <span key={r} className="px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 text-[10px] font-bold">
+                            <span
+                              key={r}
+                              style={{ backgroundColor: `${activePreset.primary}12`, color: activePreset.primary }}
+                              className="px-1.5 py-0.2 rounded text-[10px] font-bold"
+                            >
                               {r}
                             </span>
                           ))}
@@ -704,22 +735,22 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-xs">
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-xs">
                     <div>
                       <span className="text-slate-400 block text-[10px] uppercase font-semibold">{t('members.paid_label_short', 'Đã đóng')}</span>
-                      <span className="font-mono font-bold text-emerald-600">
-                        {formatVND(stats.totalPaid)}
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        {displayVND(stats.totalPaid)}
                       </span>
                     </div>
                     <div>
                       <span className="text-slate-400 block text-[10px] uppercase font-semibold">{t('members.remaining_label_short', 'Còn thiếu')}</span>
-                      <span className="font-mono font-bold text-rose-600">
-                        {formatVND(stats.totalRemaining)}
+                      <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
+                        {displayVND(stats.totalRemaining)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
                     <span className="text-xs text-slate-500">
                       {t('members.mode_label', 'Chế độ:')} {member.contributionType === 'yearly' ? t('members.mode_yearly_short', 'Theo năm') : member.contributionType === 'exempt' ? t('members.mode_exempt_short', 'Miễn đóng') : t('members.mode_campaign_short', 'Theo đợt')}
                     </span>
@@ -727,7 +758,8 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                       <button
                         onClick={() => setDetailMember(member)}
                         title={t('members.view_fund_history_title', 'Xem & cập nhật lịch sử đóng quỹ')}
-                        className="px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-1 cursor-pointer"
+                        style={{ backgroundColor: `${activePreset.primary}15`, color: activePreset.primary }}
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold hover:opacity-85 transition-colors flex items-center gap-1 cursor-pointer"
                       >
                         <ReceiptText className="w-3.5 h-3.5" />
                         <span>{t('members.fund_book', 'Sổ quỹ')}</span>
@@ -737,7 +769,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                           <button
                             onClick={() => onOpenMemberModal(member)}
                             title={t('common.edit', 'Chỉnh sửa thông tin')}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
@@ -756,7 +788,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                               });
                             }}
                             title={t('common.delete', 'Xóa thành viên')}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -770,9 +802,9 @@ export const MembersTab: React.FC<MembersTabProps> = ({
           </div>
 
           {/* Desktop Table (hidden on mobile, block on md+) */}
-          <div className="hidden md:block overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200 bg-white shadow-xs">
+          <div className="hidden md:block overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
             <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200">
+              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
                 <tr>
                   <th className="py-3 px-4">{t('members.th_member', 'Thành viên')}</th>
                   <th className="py-3 px-4">{t('members.th_phone', 'Số điện thoại')}</th>
@@ -784,43 +816,50 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                   <th className="py-3 px-4 text-right">{t('members.th_actions', 'Thao tác')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredMembers.map((member) => {
                   const roles = getMemberRoles(member);
                   const stats = computeMemberContributionStats(member);
 
                   return (
-                    <tr key={member.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-3 px-4 font-bold text-slate-900">
+                    <tr key={member.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
+                          <div
+                            style={{ background: activePreset.gradient }}
+                            className="w-7 h-7 rounded-lg text-white font-bold flex items-center justify-center text-xs shadow-2xs"
+                          >
                             {member.name.slice(0, 1).toUpperCase()}
                           </div>
                           <span>{member.name}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 font-mono text-slate-600">
+                      <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">
                         {member.phone || '---'}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex flex-wrap gap-1">
                           {roles.map(r => (
-                            <span key={r} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700">
+                            <span
+                              key={r}
+                              style={{ backgroundColor: `${activePreset.primary}12`, color: activePreset.primary }}
+                              className="px-2 py-0.5 rounded-md text-[10px] font-bold"
+                            >
                               {r}
                             </span>
                           ))}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-slate-600">
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                         {member.contributionType === 'yearly' && t('members.mode_yearly_short', 'Theo năm')}
                         {member.contributionType === 'exempt' && t('members.mode_exempt_short', 'Miễn đóng')}
                         {(!member.contributionType || member.contributionType === 'campaign') && t('members.mode_campaign_short', 'Theo đợt')}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-emerald-600">
-                        {formatVND(stats.totalPaid)}
+                      <td className="py-3 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        {displayVND(stats.totalPaid)}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-rose-600">
-                        {formatVND(stats.totalRemaining)}
+                      <td className="py-3 px-4 text-right font-mono font-bold text-rose-600 dark:text-rose-400">
+                        {displayVND(stats.totalRemaining)}
                       </td>
                       <td className="py-3 px-4 text-center">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${stats.badgeColor}`}>
@@ -832,7 +871,8 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                           <button
                             onClick={() => setDetailMember(member)}
                             title={t('members.view_fund_history_title', 'Xem & cập nhật lịch sử đóng quỹ')}
-                            className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 cursor-pointer transition-colors"
+                            style={{ color: activePreset.primary }}
+                            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                           >
                             <ReceiptText className="w-4 h-4" />
                           </button>
@@ -841,7 +881,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                               <button
                                 onClick={() => onOpenMemberModal(member)}
                                 title={t('common.edit', 'Chỉnh sửa thông tin')}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 cursor-pointer transition-colors"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                               >
                                 <Edit2 className="w-4 h-4" />
                               </button>
@@ -860,7 +900,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                                   });
                                 }}
                                 title={t('common.delete', 'Xóa thành viên')}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 cursor-pointer transition-colors"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>

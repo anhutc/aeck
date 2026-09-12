@@ -82,8 +82,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 sm:p-6 select-none font-sans py-8">
-      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/60 p-6 sm:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center items-center p-4 sm:p-6 select-none font-sans py-8 transition-colors duration-200">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl shadow-slate-200/60 dark:shadow-none p-6 sm:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-200">
         
         {/* Brand Header */}
         <div className="text-center space-y-2.5">
@@ -96,10 +96,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </div>
           
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
               {displayTitle}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 font-normal mt-1 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-normal mt-1 leading-relaxed">
               {displaySubtitle}
             </p>
           </div>
@@ -108,7 +108,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-3.5">
           {error && (
-            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5 leading-relaxed animate-in fade-in duration-150">
+            <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2.5 leading-relaxed animate-in fade-in duration-150">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -116,12 +116,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-bold text-slate-800">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
                 {t('login.password_label', 'Mật khẩu truy cập')}
               </label>
             </div>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                 <KeyRound className="w-4 h-4" />
               </div>
               <input
@@ -134,13 +134,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   setError('');
                 }}
                 placeholder={t('login.password_placeholder', 'Nhập mật khẩu Thành viên hoặc Admin...')}
-                className="w-full pl-10 pr-11 py-3 rounded-2xl border border-slate-300 bg-white text-slate-900 text-sm font-medium focus:ring-2 focus:ring-blue-600 focus:border-blue-600 focus:outline-hidden transition-all shadow-2xs placeholder:text-slate-400"
+                className="w-full pl-10 pr-11 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-medium focus:ring-2 focus:ring-blue-600 focus:border-blue-600 focus:outline-hidden transition-all shadow-2xs placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
                 title={showPassword ? t('login.hide_password', 'Ẩn mật khẩu') : t('login.show_password', 'Hiện mật khẩu')}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -159,13 +159,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         </form>
 
         {/* Fund Owner Information Card (Thông tin chủ quỹ) */}
-        <div className="p-3.5 sm:p-4 rounded-2xl bg-linear-to-b from-blue-50/70 to-slate-50/90 border border-blue-100/90 space-y-2.5">
-          <div className="flex items-center justify-between pb-2 border-b border-blue-200/50">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-              <UserCheck className="w-4 h-4 text-blue-600" />
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-linear-to-b from-blue-50/70 to-slate-50/90 dark:from-slate-800/80 dark:to-slate-900/80 border border-blue-100/90 dark:border-slate-700 space-y-2.5">
+          <div className="flex items-center justify-between pb-2 border-b border-blue-200/50 dark:border-slate-700">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
+              <UserCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <span>{t('login.contact_info_title', 'Thông tin liên hệ')}</span>
             </div>
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100/80 text-blue-700 border border-blue-200/60">
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800">
               {t('login.representative_badge', 'Đại diện')}
             </span>
           </div>
@@ -173,23 +173,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           <div className="space-y-2 text-xs">
             {/* Owner Name & Role */}
             <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-[11px]">{t('login.name_label', 'Tên:')}</span>
+              <span className="text-slate-500 dark:text-slate-400 text-[11px]">{t('login.name_label', 'Tên:')}</span>
               <div className="text-right">
-                <span className="font-bold text-slate-900 block">{ownerName}</span>
+                <span className="font-bold text-slate-900 dark:text-white block">{ownerName}</span>
               </div>
             </div>
 
             {/* Phone Number */}
             {ownerPhone && (
-              <div className="flex items-center justify-between pt-1 border-t border-slate-200/40">
-                <span className="text-slate-500 text-[11px] flex items-center gap-1">
-                  <Phone className="w-3 h-3 text-emerald-600" />
+              <div className="flex items-center justify-between pt-1 border-t border-slate-200/40 dark:border-slate-700/60">
+                <span className="text-slate-500 dark:text-slate-400 text-[11px] flex items-center gap-1">
+                  <Phone className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                   <span>{t('login.phone_label', 'Điện thoại:')}</span>
                 </span>
                 <div className="flex items-center gap-1.5">
                   <a
                     href={`tel:${ownerPhone}`}
-                    className="font-bold text-slate-900 hover:text-blue-600 font-mono text-xs transition-colors"
+                    className="font-bold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 font-mono text-xs transition-colors"
                     title={t('login.call_owner', 'Gọi điện cho chủ quỹ')}
                   >
                     {ownerPhone}
@@ -197,11 +197,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   <button
                     type="button"
                     onClick={() => handleCopy('phone', ownerPhone)}
-                    className="p-1 rounded-md hover:bg-slate-200/80 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                    className="p-1 rounded-md hover:bg-slate-200/80 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
                     title={t('login.copy_phone', 'Sao chép số điện thoại')}
                   >
                     {copiedKey === 'phone' ? (
-                      <Check className="w-3 h-3 text-emerald-600" />
+                      <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                     ) : (
                       <Copy className="w-3 h-3" />
                     )}
@@ -212,24 +212,24 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
             {/* Bank Account Details */}
             {accountNumber && (
-              <div className="flex items-center justify-between pt-1 border-t border-slate-200/40">
-                <span className="text-slate-500 text-[11px] flex items-center gap-1">
-                  <Landmark className="w-3 h-3 text-indigo-600" />
+              <div className="flex items-center justify-between pt-1 border-t border-slate-200/40 dark:border-slate-700/60">
+                <span className="text-slate-500 dark:text-slate-400 text-[11px] flex items-center gap-1">
+                  <Landmark className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
                   <span>{t('login.account_label', 'Tài khoản:')}</span>
                 </span>
                 <div className="flex items-center gap-1.5">
                   <div className="text-right">
-                    <span className="font-bold text-slate-900 font-mono text-xs block">{accountNumber}</span>
-                    <span className="text-[10px] text-slate-500">{bankName}</span>
+                    <span className="font-bold text-slate-900 dark:text-white font-mono text-xs block">{accountNumber}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">{bankName}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleCopy('bank', accountNumber)}
-                    className="p-1 rounded-md hover:bg-slate-200/80 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                    className="p-1 rounded-md hover:bg-slate-200/80 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
                     title={t('login.copy_account', 'Sao chép số tài khoản')}
                   >
                     {copiedKey === 'bank' ? (
-                      <Check className="w-3 h-3 text-emerald-600" />
+                      <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                     ) : (
                       <Copy className="w-3 h-3" />
                     )}
@@ -242,7 +242,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
       </div>
 
-      <div className="text-center mt-5 text-xs text-slate-400">
+      <div className="text-center mt-5 text-xs text-slate-400 dark:text-slate-500">
         {t('login.footer_copyright', 'Hệ thống Quản lý Thu Chi • AE Cây Khế')}
       </div>
     </div>

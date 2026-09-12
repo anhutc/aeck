@@ -7,6 +7,7 @@ import {
   ChevronRight,
   ShieldAlert,
   Printer,
+  QrCode,
   Calendar,
   CalendarDays,
   BarChart3,
@@ -31,6 +32,7 @@ import {
 import { AppBranding, Category, ContributionCampaign, Fund, TabType, Transaction } from '../types';
 import { formatVND, formatDate, formatNumberCompact } from '../utils/formatters';
 import { useTranslation } from '../i18n/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface OverviewTabProps {
   funds: Fund[];
@@ -40,6 +42,7 @@ interface OverviewTabProps {
   branding?: AppBranding;
   isAdmin?: boolean;
   onOpenPrintModal?: () => void;
+  onOpenQRModal?: () => void;
   setActiveTab: (tab: TabType) => void;
 }
 
@@ -49,12 +52,20 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   categories,
   campaigns,
   branding,
+  isAdmin,
   onOpenPrintModal,
+  onOpenQRModal,
   setActiveTab,
 }) => {
   const { t } = useTranslation();
+  const { activePreset, privacyMode, maskAmount } = useTheme();
   const [period, setPeriod] = useState<'all' | 'this_month' | 'this_quarter' | 'this_year'>('this_month');
   const [activeChartTab, setActiveChartTab] = useState<'monthly' | 'yearly' | 'trend' | 'categories'>('monthly');
+
+  const displayVND = (amount: number, prefix: string = '') => {
+    if (privacyMode) return maskAmount(`${prefix}${formatVND(amount)}`);
+    return `${prefix}${formatVND(amount)}`;
+  };
 
   const appFundName = branding?.appTitle?.trim() || 'AE Cây Khế';
   const fund = funds[0] || {
@@ -240,8 +251,15 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-5">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800 flex items-center gap-1.5">
-                <Wallet className="w-3.5 h-3.5" />
+              <span
+                className="px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 transition-colors"
+                style={{
+                  backgroundColor: activePreset.primaryLight,
+                  color: activePreset.primaryText,
+                  borderColor: activePreset.primaryBorder,
+                }}
+              >
+                <Wallet className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                 {appFundName}
               </span>
               {isBelowMin && (
@@ -257,23 +275,36 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
             <div className="flex items-baseline gap-3">
               <div className="text-3xl sm:text-4xl font-mono font-black tracking-tight text-slate-900 dark:text-white">
-                {formatVND(totalBalance)}
+                {displayVND(totalBalance)}
               </div>
             </div>
 
-            {onOpenPrintModal && (
-              <div className="flex flex-wrap items-center gap-2 pt-0.5">
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+              {onOpenQRModal && (
+                <button
+                  id="overview-quick-qr-btn"
+                  onClick={onOpenQRModal}
+                  style={{ background: activePreset.gradient }}
+                  className="px-3.5 py-1.5 rounded-xl active:scale-95 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer hover:opacity-90"
+                  title="Quét mã QR nộp quỹ"
+                >
+                  <QrCode className="w-4 h-4" />
+                  <span>{t('portal.scan_qr_pay', 'Đóng quỹ')}</span>
+                </button>
+              )}
+
+              {onOpenPrintModal && (
                 <button
                   id="overview-print-statement-btn"
                   onClick={onOpenPrintModal}
-                  className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-blue-600/20 hover:shadow-md hover:shadow-blue-600/30 flex items-center gap-2 transition-all cursor-pointer group"
+                  className="px-3.5 py-1.5 rounded-xl active:scale-95 border border-slate-200 dark:border-slate-700 bg-slate-100/80 dark:bg-slate-800 hover:bg-slate-200/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer group"
                   title="In báo cáo sao kê sổ quỹ chuẩn A4"
                 >
                   <Printer className="w-4 h-4 group-hover:scale-110 group-active:scale-95 transition-transform" />
                   <span>{t('reports.print_statement', 'In Báo Cáo')}</span>
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* All-time Accumulated Income & Expense Responsive Cards */}
@@ -293,7 +324,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   className="text-xs sm:text-sm md:text-base font-mono font-black text-emerald-700 dark:text-emerald-300 block whitespace-nowrap overflow-hidden text-ellipsis"
                   title={`+${formatVND(totalIncomeAllTime)}`}
                 >
-                  +{formatVND(totalIncomeAllTime)}
+                  {displayVND(totalIncomeAllTime, '+')}
                 </span>
               </div>
             </div>
@@ -313,7 +344,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   className="text-xs sm:text-sm md:text-base font-mono font-black text-rose-700 dark:text-rose-300 block whitespace-nowrap overflow-hidden text-ellipsis"
                   title={`-${formatVND(totalExpenseAllTime)}`}
                 >
-                  -{formatVND(totalExpenseAllTime)}
+                  {displayVND(totalExpenseAllTime, '-')}
                 </span>
               </div>
             </div>
@@ -326,7 +357,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-blue-600" />
+              <BarChart3 className="w-4 h-4" style={{ color: activePreset.primary }} />
               <span>Báo cáo & Phân tích thu chi ({getPeriodLabel()})</span>
             </h3>
             <p className="text-xs text-slate-500">
@@ -336,46 +367,30 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
           {/* Period Selector Tabs */}
           <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800/90 rounded-2xl text-xs font-semibold self-start sm:self-auto">
-            <button
-              onClick={() => setPeriod('this_month')}
-              className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                period === 'this_month'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              {t('reports.period_month', 'Tháng này')}
-            </button>
-            <button
-              onClick={() => setPeriod('this_quarter')}
-              className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                period === 'this_quarter'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              {t('reports.period_quarter', 'Quý này')}
-            </button>
-            <button
-              onClick={() => setPeriod('this_year')}
-              className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                period === 'this_year'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              {t('reports.period_year', 'Năm nay')}
-            </button>
-            <button
-              onClick={() => setPeriod('all')}
-              className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                period === 'all'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              {t('reports.period_all', 'Toàn bộ')}
-            </button>
+            {(
+              [
+                { id: 'this_month', label: t('reports.period_month', 'Tháng này') },
+                { id: 'this_quarter', label: t('reports.period_quarter', 'Quý này') },
+                { id: 'this_year', label: t('reports.period_year', 'Năm nay') },
+                { id: 'all', label: t('reports.period_all', 'Toàn bộ') },
+              ] as const
+            ).map((p) => {
+              const isSelected = period === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => setPeriod(p.id)}
+                  style={isSelected ? { color: activePreset.primary } : undefined}
+                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-white dark:bg-slate-700 shadow-xs font-bold'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -390,10 +405,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
             <div className="mt-2.5">
               <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">
-                +{formatVND(periodIncome)}
+                {displayVND(periodIncome, '+')}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                {periodFilteredTx.filter(t => t.type === 'income').length} {t('transactions.record_count', 'giao dịch thu')}
+                {periodFilteredTx.filter(t => t.type === 'income').length} {t('transactions.record_count_add', 'giao dịch thu')}
               </p>
             </div>
           </div>
@@ -407,10 +422,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
             <div className="mt-2.5">
               <div className="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400">
-                -{formatVND(periodExpense)}
+                {displayVND(periodExpense, '-')}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                {periodFilteredTx.filter(t => t.type === 'expense').length} {t('transactions.record_count', 'giao dịch chi')}
+                {periodFilteredTx.filter(t => t.type === 'expense').length} {t('transactions.record_count_sub', 'giao dịch chi')}
               </p>
             </div>
           </div>
@@ -418,19 +433,27 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <div className="p-4 sm:p-4.5 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-slate-500 font-semibold uppercase tracking-wider">
               <span>{t('reports.kpi_net', 'Dòng tiền ròng (Thu - Chi)')}</span>
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                netBalance >= 0 
-                  ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' 
-                  : 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400'
-              }`}>
-                <TrendingUp className="w-4 h-4" />
+              <div
+                className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={
+                  netBalance >= 0
+                    ? { backgroundColor: activePreset.primaryLight, color: activePreset.primary }
+                    : undefined
+                }
+              >
+                <TrendingUp
+                  className={`w-4 h-4 ${netBalance < 0 ? 'text-amber-600 dark:text-amber-400' : ''}`}
+                />
               </div>
             </div>
             <div className="mt-2.5">
-              <div className={`text-xl sm:text-2xl font-black ${
-                netBalance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-400'
-              }`}>
-                {netBalance >= 0 ? '+' : ''}{formatVND(netBalance)}
+              <div
+                className={`text-xl sm:text-2xl font-black ${
+                  netBalance < 0 ? 'text-amber-600 dark:text-amber-400' : ''
+                }`}
+                style={netBalance >= 0 ? { color: activePreset.primary } : undefined}
+              >
+                {displayVND(Math.abs(netBalance), netBalance >= 0 ? '+' : '-')}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
                 {netBalance >= 0 ? t('overview.cashflow_surplus', 'Quỹ thặng dư tăng trưởng') : t('overview.cashflow_deficit', 'Quỹ thâm hụt trong kỳ')}
@@ -455,9 +478,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl text-xs font-semibold flex-wrap gap-1">
             <button
               onClick={() => setActiveChartTab('monthly')}
+              style={activeChartTab === 'monthly' ? { color: activePreset.primary } : undefined}
               className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeChartTab === 'monthly'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
+                  ? 'bg-white dark:bg-slate-700 shadow-xs font-bold'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -467,9 +491,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
             <button
               onClick={() => setActiveChartTab('yearly')}
+              style={activeChartTab === 'yearly' ? { color: activePreset.primary } : undefined}
               className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeChartTab === 'yearly'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
+                  ? 'bg-white dark:bg-slate-700 shadow-xs font-bold'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -479,9 +504,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
             <button
               onClick={() => setActiveChartTab('trend')}
+              style={activeChartTab === 'trend' ? { color: activePreset.primary } : undefined}
               className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeChartTab === 'trend'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
+                  ? 'bg-white dark:bg-slate-700 shadow-xs font-bold'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -491,9 +517,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
             <button
               onClick={() => setActiveChartTab('categories')}
+              style={activeChartTab === 'categories' ? { color: activePreset.primary } : undefined}
               className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeChartTab === 'categories'
-                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
+                  ? 'bg-white dark:bg-slate-700 shadow-xs font-bold'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -602,8 +629,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs text-slate-500">
               <span>{t('reports.trend_desc', 'Biểu đồ tích lũy số dư thực tế theo trình tự thời gian')}</span>
-              <span className="font-semibold text-blue-600 dark:text-blue-400">
-                {t('reports.current_balance_status', 'Số dư hiện tại')}: {formatVND(totalBalance)}
+              <span className="font-semibold" style={{ color: activePreset.primary }}>
+                {t('reports.current_balance_status', 'Số dư hiện tại')}: {displayVND(totalBalance)}
               </span>
             </div>
 
@@ -613,15 +640,15 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <AreaChart data={cumulativeTrendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="balanceTrendGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.02} />
+                        <stop offset="5%" stopColor={activePreset.primary} stopOpacity={0.4} />
+                        <stop offset="95%" stopColor={activePreset.primary} stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.15} vertical={false} />
                     <XAxis dataKey="date" tick={{ fontSize: 11 }} />
                     <YAxis tickFormatter={(val) => formatNumberCompact(val)} tick={{ fontSize: 11 }} />
                     <Tooltip
-                      formatter={(val: number) => [formatVND(val), t('reports.trend_balance_label', 'Số dư tích lũy')]}
+                      formatter={(val: number) => [displayVND(val), t('reports.trend_balance_label', 'Số dư tích lũy')]}
                       contentStyle={{
                         backgroundColor: '#1e293b',
                         borderRadius: '12px',
@@ -634,7 +661,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                       type="monotone"
                       dataKey="balance"
                       name={t('reports.trend_balance_label', 'Số dư tích lũy')}
-                      stroke="#3B82F6"
+                      stroke={activePreset.primary}
                       strokeWidth={2.5}
                       fillOpacity={1}
                       fill="url(#balanceTrendGrad)"
@@ -660,7 +687,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   {t('overview.expense_structure', 'Cơ cấu chi tiêu')}
                 </span>
                 <span className="text-xs font-black text-rose-600">
-                  -{formatVND(periodExpense)}
+                  {displayVND(periodExpense, '-')}
                 </span>
               </div>
 
@@ -682,7 +709,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(val: number) => [formatVND(val), t('common.amount', 'Số tiền')]}
+                        formatter={(val: number) => [displayVND(val), t('common.amount', 'Số tiền')]}
                         contentStyle={{
                           backgroundColor: '#1e293b',
                           borderRadius: '12px',
@@ -707,7 +734,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                       <span className="text-slate-700 dark:text-slate-300 font-medium truncate">{item.name}</span>
                     </div>
-                    <span className="font-semibold text-slate-900 dark:text-white ml-2 shrink-0">{formatVND(item.value)}</span>
+                    <span className="font-semibold text-slate-900 dark:text-white ml-2 shrink-0">{displayVND(item.value)}</span>
                   </div>
                 ))}
               </div>
@@ -720,7 +747,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   Cơ cấu nguồn thu
                 </span>
                 <span className="text-xs font-black text-emerald-600">
-                  +{formatVND(periodIncome)}
+                  {displayVND(periodIncome, '+')}
                 </span>
               </div>
 
@@ -742,7 +769,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(val: number) => [formatVND(val), t('common.amount', 'Số tiền')]}
+                        formatter={(val: number) => [displayVND(val), t('common.amount', 'Số tiền')]}
                         contentStyle={{
                           backgroundColor: '#1e293b',
                           borderRadius: '12px',
@@ -767,7 +794,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                       <span className="text-slate-700 dark:text-slate-300 font-medium truncate">{item.name}</span>
                     </div>
-                    <span className="font-semibold text-slate-900 dark:text-white ml-2 shrink-0">{formatVND(item.value)}</span>
+                    <span className="font-semibold text-slate-900 dark:text-white ml-2 shrink-0">{displayVND(item.value)}</span>
                   </div>
                 ))}
               </div>
@@ -785,13 +812,20 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <h3 className="font-bold text-sm text-slate-900 dark:text-white">
                 {t('overview.active_campaigns', 'Đợt Đóng Quỹ Đang Thu')}
               </h3>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold">
+              <span
+                className="text-xs px-2.5 py-0.5 rounded-full font-bold"
+                style={{
+                  backgroundColor: activePreset.primaryLight,
+                  color: activePreset.primary,
+                }}
+              >
                 {activeCampaigns.length} {t('overview.campaign_unit', 'đợt')}
               </span>
             </div>
             <button
               onClick={() => setActiveTab('campaigns')}
-              className="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
+              style={{ color: activePreset.primary }}
+              className="text-xs font-semibold hover:underline flex items-center gap-1 cursor-pointer"
             >
               {t('overview.view_all', 'Xem tất cả')} <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -815,23 +849,23 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                           {camp.title}
                         </h4>
                         <span className="text-[11px] text-slate-500">
-                          {formatVND(camp.amountPerMember)}/{t('common.person', 'người')} • {t('overview.launch_date', 'Phát động')}: {formatDate(camp.launchDate || camp.createdAt)}
+                          {displayVND(camp.amountPerMember)}/{t('common.person', 'người')} • {t('overview.launch_date', 'Phát động')}: {formatDate(camp.launchDate || camp.createdAt)}
                         </span>
                       </div>
-                      <span className="font-black text-xs text-purple-600 dark:text-purple-400">
+                      <span className="font-black text-xs" style={{ color: activePreset.primary }}>
                         {progress}%
                       </span>
                     </div>
 
                     <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-purple-600 rounded-full transition-all"
-                        style={{ width: `${progress}%` }}
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${progress}%`, backgroundColor: activePreset.primary }}
                       />
                     </div>
 
                     <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-                      <span>{t('overview.collected', 'Đã thu')}: <strong>{formatVND(collected)}</strong></span>
+                      <span>{t('overview.collected', 'Đã thu')}: <strong>{displayVND(collected)}</strong></span>
                       <span>{t('overview.paid_count', 'Đã nộp')}: <strong>{paidCount}/{camp.participants.length} {t('common.person', 'người')}</strong></span>
                     </div>
                   </div>
@@ -853,7 +887,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </h3>
             <button
               onClick={() => setActiveTab('transactions')}
-              className="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
+              style={{ color: activePreset.primary }}
+              className="text-xs font-semibold hover:underline flex items-center gap-1 cursor-pointer"
             >
               {t('overview.open_ledger', 'Mở sổ cái')} <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -890,7 +925,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         isIncome ? 'text-emerald-600' : 'text-rose-600'
                       }`}
                     >
-                      {isIncome ? '+' : '-'}{formatVND(tx.amount)}
+                      {displayVND(tx.amount, isIncome ? '+' : '-')}
                     </span>
                   </div>
                 );

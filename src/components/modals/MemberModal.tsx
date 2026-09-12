@@ -294,7 +294,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 <button
                   type="button"
                   onClick={handleAddCustomRole}
-                  className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-white text-xs font-bold transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white text-xs font-bold transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   {t('common.add', 'Thêm')}

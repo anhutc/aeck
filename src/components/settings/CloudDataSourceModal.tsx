@@ -254,31 +254,31 @@ void listenToFund() {
 }`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div 
-        className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden text-slate-900 font-sans"
+        className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden text-slate-900 dark:text-slate-100 font-sans"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70 shrink-0">
+        <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/60 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20 shrink-0">
               <Database className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2 flex-wrap">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
                 <span>Nguồn Dữ Liệu Đám Mây (Cloud Firestore)</span>
                 {savedCustom ? (
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 border border-purple-200">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                     Dự án Tùy chỉnh (Đang kết nối)
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                     Dự án Mặc định của Hệ thống
                   </span>
                 )}
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Chỉnh sửa cấu hình để kết nối sang máy chủ Firestore khác hoặc xem hướng dẫn tích hợp
               </p>
             </div>
@@ -286,24 +286,24 @@ void listenToFund() {
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/70 rounded-xl transition-colors cursor-pointer"
+            className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation Tabs with High Contrast Light Styling */}
-        <div className="flex border-b border-slate-200 bg-white px-4 pt-2 gap-2 overflow-x-auto text-xs font-semibold shrink-0">
+        {/* Navigation Tabs */}
+        <div className="flex border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 pt-2 gap-2 overflow-x-auto text-xs font-semibold shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('config_editor')}
             className={`py-2.5 px-3.5 rounded-t-xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'config_editor'
-                ? 'border-blue-600 text-blue-700 bg-blue-50/70 font-bold shadow-2xs'
-                : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                ? 'border-blue-600 text-blue-700 dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/60 font-bold shadow-2xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800'
             }`}
           >
-            <Key className="w-4 h-4 text-blue-600" />
+            <Key className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span>Chỉnh Sửa Nguồn Dữ Liệu Máy Chủ</span>
           </button>
 
@@ -312,11 +312,11 @@ void listenToFund() {
             onClick={() => setActiveTab('guide_create')}
             className={`py-2.5 px-3.5 rounded-t-xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'guide_create'
-                ? 'border-emerald-600 text-emerald-700 bg-emerald-50/70 font-bold shadow-2xs'
-                : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/60 font-bold shadow-2xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800'
             }`}
           >
-            <BookOpen className="w-4 h-4 text-emerald-600" />
+            <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>Hướng Dẫn Tạo Firebase Riêng (5 Bước)</span>
           </button>
 
@@ -325,46 +325,46 @@ void listenToFund() {
             onClick={() => setActiveTab('guide_integrate')}
             className={`py-2.5 px-3.5 rounded-t-xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'guide_integrate'
-                ? 'border-purple-600 text-purple-700 bg-purple-50/70 font-bold shadow-2xs'
-                : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                ? 'border-purple-600 text-purple-700 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/60 font-bold shadow-2xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800'
             }`}
           >
-            <Code2 className="w-4 h-4 text-purple-600" />
+            <Code2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             <span>Kết Nối App Khác / Bot Zalo / Telegram</span>
           </button>
         </div>
 
         {/* Tab Content Area */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-slate-50/40">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-slate-50/40 dark:bg-slate-950/40">
           
           {/* TAB 1: CONFIG EDITOR */}
           {activeTab === 'config_editor' && (
             <div className="space-y-5">
               {/* Feature Introduction Banner */}
-              <div className="p-4 rounded-2xl bg-blue-50/80 border border-blue-200/90 flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+              <div className="p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/90 dark:border-blue-800 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <h4 className="font-bold text-blue-950 text-xs sm:text-sm">
+                  <h4 className="font-bold text-blue-950 dark:text-blue-200 text-xs sm:text-sm">
                     Tùy chỉnh & Kết nối máy chủ Firestore khác
                   </h4>
-                  <p className="text-[11px] sm:text-xs text-blue-900/80 leading-relaxed">
+                  <p className="text-[11px] sm:text-xs text-blue-900/80 dark:text-blue-300/80 leading-relaxed">
                     Bạn có thể tự do thay đổi kết nối sang dự án Firebase / Firestore của riêng bạn hoặc máy chủ khác. Chỉ cần dán đoạn mã cấu hình hoặc điền thông số bên dưới rồi bấm <strong>"Lưu & Chuyển Sang Database Này"</strong>, ứng dụng sẽ lập tức lưu trữ và đồng bộ vào máy chủ mới.
                   </p>
                 </div>
               </div>
 
               {/* Current Active Info Banner */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-3">
+              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-3">
                 <div className="flex items-center justify-between flex-wrap gap-2">
-                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Server className="w-4 h-4 text-blue-600" />
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <Server className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     Hạ Tầng Đang Hoạt Động Hiện Tại:
                   </span>
                   {savedCustom && (
                     <button
                       type="button"
                       onClick={handleResetToDefault}
-                      className="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      className="px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
                     >
                       <RefreshCw className="w-3 h-3" />
                       <span>Khôi phục về Cloud Mặc định</span>
@@ -373,21 +373,21 @@ void listenToFund() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-500 font-medium block">Project ID</span>
-                    <span className="font-bold text-slate-900 truncate block mt-0.5">
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">Project ID</span>
+                    <span className="font-bold text-slate-900 dark:text-white truncate block mt-0.5">
                       {activeInfo.config.projectId || 'Chưa thiết lập'}
                     </span>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-500 font-medium block">Database ID</span>
-                    <span className="font-bold text-slate-900 truncate block mt-0.5">
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">Database ID</span>
+                    <span className="font-bold text-slate-900 dark:text-white truncate block mt-0.5">
                       {activeInfo.config.firestoreDatabaseId || (savedCustom ? '(default)' : defaultFirebaseConfig.firestoreDatabaseId || '(default)')}
                     </span>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-500 font-medium block">Auth Domain</span>
-                    <span className="font-bold text-slate-900 truncate block mt-0.5">
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block">Auth Domain</span>
+                    <span className="font-bold text-slate-900 dark:text-white truncate block mt-0.5">
                       {activeInfo.config.authDomain || 'Không có'}
                     </span>
                   </div>
@@ -397,11 +397,11 @@ void listenToFund() {
               {/* Quick Paste Snippet Area */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <FileCode className="w-4 h-4 text-blue-600" />
+                  <label className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <FileCode className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     <span>Dán nhanh mã cấu hình Firebase SDK (Tự động nhận diện):</span>
                   </label>
-                  <span className="text-[11px] text-slate-500 font-medium">Hỗ trợ JS hoặc JSON</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Hỗ trợ JS hoặc JSON</span>
                 </div>
 
                 <textarea
@@ -409,11 +409,11 @@ void listenToFund() {
                   value={rawSnippet}
                   onChange={(e) => handleParseSnippet(e.target.value)}
                   placeholder={`const firebaseConfig = {\n  apiKey: "AIzaSy...",\n  authDomain: "my-app.firebaseapp.com",\n  projectId: "my-custom-project",\n  storageBucket: "...",\n  messagingSenderId: "...",\n  appId: "..."\n};`}
-                  className="w-full p-3 font-mono text-xs rounded-2xl border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 focus:outline-hidden shadow-2xs placeholder:text-slate-400"
+                  className="w-full p-3 font-mono text-xs rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 focus:outline-hidden shadow-2xs placeholder:text-slate-400"
                 />
 
                 {parseError && (
-                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                  <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{parseError}</span>
                   </div>
@@ -422,13 +422,13 @@ void listenToFund() {
 
               {/* Form Input Fields */}
               <div className="space-y-3 pt-1">
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                   Hoặc điền chi tiết từng trường thông số:
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div>
-                    <label className="block text-slate-700 font-semibold mb-1">
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
                       API Key <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <input
@@ -436,12 +436,12 @@ void listenToFund() {
                       value={formConfig.apiKey}
                       onChange={(e) => setFormConfig({ ...formConfig, apiKey: e.target.value })}
                       placeholder="AIzaSyB..."
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 font-semibold mb-1">
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
                       Project ID <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <input
@@ -449,12 +449,12 @@ void listenToFund() {
                       value={formConfig.projectId}
                       onChange={(e) => setFormConfig({ ...formConfig, projectId: e.target.value })}
                       placeholder="my-fund-project-123"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 font-semibold mb-1">
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
                       Auth Domain
                     </label>
                     <input
@@ -462,25 +462,25 @@ void listenToFund() {
                       value={formConfig.authDomain || ''}
                       onChange={(e) => setFormConfig({ ...formConfig, authDomain: e.target.value })}
                       placeholder="my-fund-project-123.firebaseapp.com"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 font-semibold mb-1">
-                      Database ID (mặc định là <code className="text-blue-600 font-bold">(default)</code>)
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                      Database ID (mặc định là <code className="text-blue-600 dark:text-blue-400 font-bold">(default)</code>)
                     </label>
                     <input
                       type="text"
                       value={formConfig.firestoreDatabaseId || '(default)'}
                       onChange={(e) => setFormConfig({ ...formConfig, firestoreDatabaseId: e.target.value })}
                       placeholder="(default)"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 font-semibold mb-1">
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
                       App ID
                     </label>
                     <input
@@ -488,12 +488,12 @@ void listenToFund() {
                       value={formConfig.appId || ''}
                       onChange={(e) => setFormConfig({ ...formConfig, appId: e.target.value })}
                       placeholder="1:1234567890:web:abcdef..."
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 font-semibold mb-1">
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
                       Storage Bucket (Tùy chọn)
                     </label>
                     <input
@@ -501,18 +501,18 @@ void listenToFund() {
                       value={formConfig.storageBucket || ''}
                       onChange={(e) => setFormConfig({ ...formConfig, storageBucket: e.target.value })}
                       placeholder="my-fund-project-123.appspot.com"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-200">
+              <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Đóng
                 </button>
@@ -530,32 +530,32 @@ void listenToFund() {
 
           {/* TAB 2: STEP BY STEP GUIDE TO CREATE FIREBASE */}
           {activeTab === 'guide_create' && (
-            <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
-              <div className="p-4 rounded-2xl bg-blue-50/80 border border-blue-200 flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+            <div className="space-y-4 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              <div className="p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-bold text-blue-950 text-sm">
+                  <h4 className="font-bold text-blue-950 dark:text-blue-200 text-sm">
                     Tự sở hữu 100% Cơ Sở Dữ Liệu Miễn Phí Với Google Firebase
                   </h4>
-                  <p className="text-blue-900/80 mt-1">
+                  <p className="text-blue-900/80 dark:text-blue-300/80 mt-1">
                     Gói miễn phí Spark của Firebase cung cấp 1 GB lưu trữ và 50,000 lượt đọc/ngày — hoàn toàn đủ cho nhu cầu quản lý quỹ hoạt động của đội nhóm trong nhiều năm mà không mất phí.
                   </p>
                 </div>
               </div>
 
               {/* Step 1 */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
+              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">1</span>
-                  <h4 className="font-bold text-slate-900 text-sm">Tạo Dự Án (Project) trên Firebase Console</h4>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">Tạo Dự Án (Project) trên Firebase Console</h4>
                 </div>
-                <p className="text-slate-600 pl-8">
+                <p className="text-slate-600 dark:text-slate-400 pl-8">
                   Truy cập{' '}
                   <a 
                     href="https://console.firebase.google.com/" 
                     target="_blank" 
                     rel="noreferrer" 
-                    className="text-blue-600 font-semibold underline inline-flex items-center gap-0.5"
+                    className="text-blue-600 dark:text-blue-400 font-semibold underline inline-flex items-center gap-0.5"
                   >
                     <span>Firebase Console</span>
                     <ExternalLink className="w-3 h-3" />
@@ -565,58 +565,58 @@ void listenToFund() {
               </div>
 
               {/* Step 2 */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
+              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">2</span>
-                  <h4 className="font-bold text-slate-900 text-sm">Khởi Tạo Cloud Firestore Database</h4>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">Khởi Tạo Cloud Firestore Database</h4>
                 </div>
-                <p className="text-slate-600 pl-8">
+                <p className="text-slate-600 dark:text-slate-400 pl-8">
                   Ở menu bên trái, chọn <strong>Build &gt; Firestore Database</strong> → Bấm <strong>Create database</strong> → Chọn vị trí máy chủ (nên chọn <code>asia-southeast1 (Singapore)</code> hoặc <code>asia-east1</code> để tốc độ truy cập từ Việt Nam nhanh nhất) → Bấm <strong>Next</strong>.
                 </p>
               </div>
 
               {/* Step 3 */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
+              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">3</span>
-                    <h4 className="font-bold text-slate-900 text-sm">Cài Đặt Quyền Bảo Mật (Rules)</h4>
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">Cài Đặt Quyền Bảo Mật (Rules)</h4>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleCopy(firestoreRulesSample, 'rules')}
-                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
                   >
-                    {copiedKey === 'rules' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedKey === 'rules' ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedKey === 'rules' ? 'Đã sao chép' : 'Sao chép Rules'}</span>
                   </button>
                 </div>
-                <p className="text-slate-600 pl-8">
+                <p className="text-slate-600 dark:text-slate-400 pl-8">
                   Chuyển sang tab <strong>Rules</strong> trên Firestore Console, dán đoạn mã phân quyền dưới đây rồi bấm <strong>Publish</strong>:
                 </p>
-                <div className="ml-8 p-3 rounded-xl bg-slate-900 text-slate-100 font-mono text-[11px] overflow-x-auto">
+                <div className="ml-8 p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 font-mono text-[11px] overflow-x-auto">
                   <pre>{firestoreRulesSample}</pre>
                 </div>
               </div>
 
               {/* Step 4 */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
+              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">4</span>
-                  <h4 className="font-bold text-slate-900 text-sm">Đăng Ký Web App Để Lấy Mã Cấu Hình</h4>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">Đăng Ký Web App Để Lấy Mã Cấu Hình</h4>
                 </div>
-                <p className="text-slate-600 pl-8">
+                <p className="text-slate-600 dark:text-slate-400 pl-8">
                   Bấm vào biểu tượng bánh răng <strong>Project settings</strong> ở góc trên bên trái → Kéo xuống mục <strong>Your apps</strong> → Bấm vào biểu tượng <strong>Web (<code>&lt;/&gt;</code>)</strong> → Đặt tên ứng dụng → Bấm <strong>Register app</strong>.
                 </p>
               </div>
 
               {/* Step 5 */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
+              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">5</span>
-                  <h4 className="font-bold text-slate-900 text-sm">Dán Mã Cấu Hình Vào Ứng Dụng</h4>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">Dán Mã Cấu Hình Vào Ứng Dụng</h4>
                 </div>
-                <p className="text-slate-600 pl-8">
+                <p className="text-slate-600 dark:text-slate-400 pl-8">
                   Sao chép toàn bộ khối <code>const firebaseConfig = &#123; ... &#125;;</code> hiển thị trên màn hình Firebase, quay lại ứng dụng này tại tab <strong>"Chỉnh Sửa Nguồn Dữ Liệu Máy Chủ"</strong>, dán vào ô nhập rồi bấm <strong>"Lưu & Chuyển Sang Database Này"</strong>.
                 </p>
               </div>
@@ -633,7 +633,7 @@ void listenToFund() {
                   className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     integrationType === 'bot'
                       ? 'bg-blue-600 text-white shadow-xs'
-                      : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                      : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
                   <Bot className="w-4 h-4" />
@@ -646,7 +646,7 @@ void listenToFund() {
                   className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     integrationType === 'nodejs'
                       ? 'bg-blue-600 text-white shadow-xs'
-                      : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                      : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
                   <Terminal className="w-4 h-4" />
@@ -659,7 +659,7 @@ void listenToFund() {
                   className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     integrationType === 'sheets'
                       ? 'bg-blue-600 text-white shadow-xs'
-                      : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                      : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
                   <Table className="w-4 h-4" />
@@ -672,7 +672,7 @@ void listenToFund() {
                   className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     integrationType === 'flutter'
                       ? 'bg-blue-600 text-white shadow-xs'
-                      : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                      : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
                   <Smartphone className="w-4 h-4" />
@@ -681,10 +681,10 @@ void listenToFund() {
               </div>
 
               {/* Snippet Card */}
-              <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
+              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Code2 className="w-4 h-4 text-blue-600" />
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <Code2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     <span>Mã Nguồn Mẫu Kết Nối:</span>
                   </span>
                   <button
@@ -696,14 +696,14 @@ void listenToFund() {
                         integrationType === 'sheets' ? googleSheetsCode : flutterCode;
                       handleCopy(text, integrationType);
                     }}
-                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
                   >
-                    {copiedKey === integrationType ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedKey === integrationType ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedKey === integrationType ? 'Đã sao chép' : 'Sao chép đoạn mã'}</span>
                   </button>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-slate-900 text-slate-100 font-mono text-[11px] overflow-x-auto leading-relaxed">
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 font-mono text-[11px] overflow-x-auto leading-relaxed">
                   <pre>
                     {integrationType === 'bot' && botTelegramCode}
                     {integrationType === 'nodejs' && nodejsAdminCode}
@@ -720,3 +720,4 @@ void listenToFund() {
     </div>
   );
 };
+  

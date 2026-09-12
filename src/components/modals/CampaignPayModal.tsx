@@ -162,7 +162,7 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
                     className={`px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer ${
                       paidDate === campaignLaunchDate
                         ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
-                        : 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-100'
+                        : 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/40'
                     }`}
                   >
                     {t('campaigns.pay_launch_date_btn', '⚡ Ngày tạo đợt')} ({campaignLaunchDate})
@@ -174,7 +174,7 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
                   className={`px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer ${
                     paidDate === todayStr
                       ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                      : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
+                      : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'
                   }`}
                 >
                   {t('campaigns.pay_today_btn', '📅 Hôm nay')} ({todayStr})

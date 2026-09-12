@@ -107,6 +107,10 @@ export interface AppBranding {
   groupEmoji?: string;
   currencySymbol?: string;
   themeAccent?: string;
+  customColor?: string;
+  themeMode?: 'light' | 'dark' | 'system';
+  themeRadius?: 'modern' | 'soft' | 'smooth' | 'sharp';
+  themeDensity?: 'comfortable' | 'compact';
 
   // 2. Người đại diện & Liên hệ
   treasurerName?: string;
@@ -140,6 +144,16 @@ export interface AppBranding {
   statementShowSignatory3?: boolean;
   statementShowFooterNote?: boolean;
   statementShowSummary?: boolean;
+
+  // 6. Tin nhắn Chia sẻ Zalo / Mạng xã hội
+  shareMessageIncludeBank?: boolean;
+  shareMessageIncludeCampaigns?: boolean;
+  socialShareTemplate?: string;
+  shareMessageGreeting?: string;
+  shareMessageBenefit1?: string;
+  shareMessageBenefit2?: string;
+  shareMessageBenefit3?: string;
+  shareMessageClosing?: string;
 }
 
 export interface BankSettings {

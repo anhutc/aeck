@@ -22,6 +22,7 @@ import { formatVND, formatDate, copyToClipboard } from '../utils/formatters';
 import { CampaignPayModal } from './modals/CampaignPayModal';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback } from '../context/FeedbackContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface CampaignsTabProps {
   campaigns: ContributionCampaign[];
@@ -49,6 +50,12 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
 }) => {
   const { t } = useTranslation();
   const { showConfirm, showToast } = useFeedback();
+  const { activePreset, privacyMode, maskAmount } = useTheme();
+
+  const displayVND = (amount: number) => {
+    return privacyMode ? maskAmount(amount) : formatVND(amount);
+  };
+
   const [expandedCampId, setExpandedCampId] = useState<string>(campaigns[0]?.id || '');
   
   // Copy state feedback
@@ -232,7 +239,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
         <div>
           <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Target className="w-5 h-5 text-purple-600" />
+            <Target className="w-5 h-5" style={{ color: activePreset.primary }} />
             {t('campaigns.title', 'Quản Lý Đợt Thu Quỹ & Chỉ Tiêu Đóng Góp')}
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -259,7 +266,8 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
             <button
               id="create-campaign-btn"
               onClick={() => onOpenCampaignModal()}
-              className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-purple-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer group"
+              style={{ background: activePreset.gradient }}
+              className="px-4 py-2.5 rounded-xl active:scale-95 text-white text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer group hover:opacity-95"
             >
               <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
               <span>{t('campaigns.btn_add_campaign', 'Tạo đợt thu mới')}</span>
@@ -343,13 +351,16 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
             return (
               <div
                 key={camp.id}
-                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-purple-200 dark:hover:border-purple-900/50 transition-all duration-200 overflow-hidden"
+                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 overflow-hidden"
               >
                 {/* Campaign Header Card */}
                 <div className="p-4 sm:p-5">
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div className="flex items-start gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 shadow-xs">
+                      <div
+                        style={{ backgroundColor: activePreset.primaryLight, color: activePreset.primary }}
+                        className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
+                      >
                         <Target className="w-5 h-5" />
                       </div>
                       <div>
@@ -357,8 +368,15 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                           <h3 className="font-bold text-base text-slate-900 dark:text-white">
                             {camp.title}
                           </h3>
-                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-100/80 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 flex items-center gap-1 border border-purple-200/60 dark:border-purple-900/50">
-                            <Calendar className="w-3 h-3 text-purple-500" />
+                          <span
+                            style={{
+                              backgroundColor: `${activePreset.primary}12`,
+                              color: activePreset.primary,
+                              borderColor: `${activePreset.primary}30`,
+                            }}
+                            className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold flex items-center gap-1 border"
+                          >
+                            <Calendar className="w-3 h-3" style={{ color: activePreset.primary }} />
                             <span>{t('campaigns.launch_date_prefix', 'Phát động')}: {formatDate(camp.launchDate || camp.createdAt)}</span>
                           </span>
                         </div>
@@ -374,10 +392,15 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                       <button
                         onClick={() => onOpenQRModal(camp.amountPerMember, `${prefix} ${camp.title}`.trim().toUpperCase())}
                         title={t('campaigns.create_vietqr_tooltip', 'Tạo mã QR chuyển khoản nhanh')}
-                        className="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-purple-100 dark:hover:bg-purple-900/60 hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                        style={{
+                          borderColor: `${activePreset.primary}40`,
+                          backgroundColor: `${activePreset.primary}10`,
+                          color: activePreset.primary,
+                        }}
+                        className="px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 hover:opacity-85 hover:shadow-xs active:scale-95 transition-all cursor-pointer"
                       >
-                        <QrCode className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                        <span>{t('campaigns.qr_code_label', 'Mã QR')} ({formatVND(camp.amountPerMember)})</span>
+                        <QrCode className="w-4 h-4" style={{ color: activePreset.primary }} />
+                        <span>{t('campaigns.qr_code_label', 'Mã QR')} ({displayVND(camp.amountPerMember)})</span>
                       </button>
 
                       {/* Admin Copy Dropdown Menu vs Member Direct Syntax Copy */}
@@ -527,18 +550,18 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                   <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
                     <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
                       <div>
-                        {t('campaigns.collected_label', 'Đã thu')}: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{formatVND(collected)}</strong> / {formatVND(camp.totalTarget)}
+                        {t('campaigns.collected_label', 'Đã thu')}: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{displayVND(collected)}</strong> / {displayVND(camp.totalTarget)}
                       </div>
                       <div className="flex items-center gap-3">
                         <span>{t('campaigns.progress_label', 'Tiến độ')}: <strong>{paidCount}/{camp.participants.length} {t('common.members_unit', 'người')}</strong></span>
-                        <span className="font-bold text-purple-600 dark:text-purple-400">{progress}%</span>
+                        <span className="font-bold" style={{ color: activePreset.primary }}>{progress}%</span>
                       </div>
                     </div>
 
                     <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full transition-all duration-500"
-                        style={{ width: `${progress}%` }}
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${progress}%`, background: activePreset.gradient }}
                       />
                     </div>
                   </div>
@@ -552,10 +575,11 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                       <div className="flex items-center flex-wrap gap-1.5">
                         <button
                           onClick={() => setFilterStatuses(prev => ({ ...prev, [camp.id]: 'all' }))}
+                          style={currentFilter === 'all' ? { backgroundColor: activePreset.primary } : undefined}
                           className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                             currentFilter === 'all'
-                              ? 'bg-purple-600 text-white shadow-xs'
-                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-slate-700'
+                              ? 'text-white shadow-xs'
+                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                           }`}
                         >
                           {t('campaigns.filter_all', 'Tất cả')} ({camp.participants.length})
@@ -601,7 +625,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                             id={`sort-participants-${camp.id}`}
                             value={currentSort}
                             onChange={(e) => setSortOptions(prev => ({ ...prev, [camp.id]: e.target.value as any }))}
-                            className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-hidden cursor-pointer"
+                            className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
                             title={t('campaigns.sort_title', 'Sắp xếp danh sách đóng quỹ')}
                           >
                             <option value="paidDate_desc">{t('campaigns.sort_latest_paid', '📅 Mới nộp gần nhất')}</option>
@@ -619,7 +643,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                             placeholder={t('campaigns.search_member_placeholder', 'Tìm tên thành viên...')}
                             value={searchQueries[camp.id] || ''}
                             onChange={(e) => setSearchQueries(prev => ({ ...prev, [camp.id]: e.target.value }))}
-                            className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500 focus:outline-hidden"
+                            className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
                           />
                         </div>
                       </div>
@@ -643,7 +667,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                   ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50 hover:border-emerald-300 hover:shadow-xs'
                                   : isPartial
                                   ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50 hover:border-amber-300 hover:shadow-xs'
-                                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-xs'
+                                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs'
                               }`}
                             >
                               <div className="min-w-0 flex-1">
@@ -657,7 +681,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                     <button
                                       onClick={() => copyMemberTransferSyntax(camp, member)}
                                       title={`${t('campaigns.copy_member_syntax_tooltip', 'Sao chép cú pháp chuyển khoản cho')} ${member.name}`}
-                                      className="text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 p-0.5 rounded transition-colors cursor-pointer"
+                                      className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 rounded transition-colors cursor-pointer"
                                     >
                                       {isMemberCopied ? (
                                         <Check className="w-3 h-3 text-emerald-500" />
@@ -673,7 +697,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                     <>
                                       <span className="text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1">
                                         <CheckCircle2 className="w-3 h-3 shrink-0" />
-                                        <span>{formatVND(p.amountPaid)}</span>
+                                        <span>{displayVND(p.amountPaid)}</span>
                                       </span>
                                       {p.paidDate && (
                                         <span className="text-[10px] font-medium text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 px-1.5 py-0.2 rounded font-mono">
@@ -684,7 +708,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                   ) : isPartial ? (
                                     <>
                                       <span className="text-amber-700 dark:text-amber-300 font-semibold">
-                                        {t('campaigns.partial_deposit', 'Đã cọc')} {formatVND(p.amountPaid)} (thiếu {formatVND(p.amountRequired - p.amountPaid)})
+                                        {t('campaigns.partial_deposit', 'Đã cọc')} {displayVND(p.amountPaid)} (thiếu {displayVND(p.amountRequired - p.amountPaid)})
                                       </span>
                                       {p.paidDate && (
                                         <span className="text-[10px] font-mono text-slate-500">
@@ -694,7 +718,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                     </>
                                   ) : (
                                     <span className="text-slate-400">
-                                      {t('campaigns.need_pay', 'Cần nộp:')} <strong className="text-slate-600 dark:text-slate-300">{formatVND(p.amountRequired)}</strong>
+                                      {t('campaigns.need_pay', 'Cần nộp:')} <strong className="text-slate-600 dark:text-slate-300">{displayVND(p.amountRequired)}</strong>
                                     </span>
                                   )}
                                 </div>
@@ -711,7 +735,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                         onOpenQRModal(dueAmount, `${prefix} ${camp.title} ${memberName}`.trim().toUpperCase());
                                       }}
                                       title={`${t('campaigns.create_vietqr_for_member', 'Tạo mã VietQR chuyển khoản cho')} ${member?.name || t('members.role_member', 'thành viên')}`}
-                                      className="p-1.5 rounded-lg border border-purple-200/80 dark:border-slate-700 bg-purple-50/80 dark:bg-slate-800 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-950/70 hover:border-purple-300 dark:hover:border-purple-600 dark:hover:text-purple-200 transition-colors active:scale-95 cursor-pointer shadow-2xs"
+                                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors active:scale-95 cursor-pointer shadow-2xs"
                                     >
                                       <QrCode className="w-3.5 h-3.5" />
                                     </button>
@@ -751,7 +775,8 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                         onOpenQRModal(dueAmount, `${prefix} ${camp.title} ${memberName}`.trim().toUpperCase());
                                       }}
                                       title={t('campaigns.scan_vietqr_tooltip', 'Quét mã VietQR để đóng quỹ')}
-                                      className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold flex items-center gap-1.5 shadow-sm shadow-purple-600/30 transition-all active:scale-95 cursor-pointer whitespace-nowrap"
+                                      style={{ background: activePreset.gradient }}
+                                      className="px-3 py-1.5 rounded-lg text-white text-[11px] font-bold flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer whitespace-nowrap hover:opacity-95"
                                     >
                                       <QrCode className="w-3.5 h-3.5" />
                                       <span>{t('campaigns.pay_fund', 'Nộp quỹ')}</span>

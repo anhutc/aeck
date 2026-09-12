@@ -21,7 +21,6 @@ import {
   Target,
   Pencil,
   X,
-  FileText,
   Database,
   Activity,
   Zap,
@@ -30,7 +29,12 @@ import {
   Copy,
   Lock,
   Bell,
-  RotateCcw
+  RotateCcw,
+  Palette,
+  Sun,
+  Moon,
+  Laptop,
+  Sparkles
 } from 'lucide-react';
 import { BankSettings, Category, GroupNotice, AppBranding, MemberViewPermissions, ContributionCampaign } from '../types';
 import { VIETNAMESE_BANKS, INITIAL_BRANDING, INITIAL_VIEW_PERMISSIONS } from '../data/initialData';
@@ -38,8 +42,10 @@ import { CloudDataSourceModal } from './settings/CloudDataSourceModal';
 import { getSavedCustomFirebaseConfig } from '../lib/firebase';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback } from '../context/FeedbackContext';
+import { useTheme } from '../context/ThemeContext';
+import { THEME_PRESETS, RADIUS_OPTIONS, ThemeRadius, ThemeDensity, ThemeMode } from '../utils/theme';
 
-export type SettingSubTab = 'branding' | 'statement' | 'notice' | 'permissions' | 'security' | 'bank' | 'categories' | 'backup' | 'all';
+export type SettingSubTab = 'branding' | 'notice' | 'permissions' | 'security' | 'bank' | 'categories' | 'backup' | 'all';
 
 interface SettingsTabProps {
   bankSettings: BankSettings;
@@ -77,8 +83,7 @@ const SETTING_NAV_ITEMS: Array<{
   iconColor: string;
   activeColor: string;
 }> = [
-  { id: 'branding', label: 'Nhận Diện & Thông Báo', sublabel: 'Tên nhóm, vị trí thông báo Toast', icon: Type, iconColor: 'text-blue-500', activeColor: 'border-blue-600 text-blue-700 bg-blue-50' },
-  { id: 'statement', label: 'Mẫu In Sao Kê & Chữ Ký', sublabel: 'Tiêu đề, người ký duyệt', icon: FileText, iconColor: 'text-indigo-500', activeColor: 'border-indigo-600 text-indigo-700 bg-indigo-50' },
+  { id: 'branding', label: 'Nhận Diện & Giao Diện', sublabel: 'Tên nhóm, bảng màu & giao diện, Toast', icon: Palette, iconColor: 'text-indigo-500', activeColor: 'border-indigo-600 text-indigo-700 bg-indigo-50' },
   { id: 'notice', label: 'Nội Quy Hoạt Động', sublabel: 'Quy chế & điều khoản quỹ', icon: ScrollText, iconColor: 'text-emerald-500', activeColor: 'border-emerald-600 text-emerald-700 bg-emerald-50' },
   { id: 'permissions', label: 'Phân Quyền Thành Viên', sublabel: 'Bảo mật & quyền hiển thị', icon: Sliders, iconColor: 'text-purple-500', activeColor: 'border-purple-600 text-purple-700 bg-purple-50' },
   { id: 'security', label: 'Bảo Mật & Mật Khẩu', sublabel: 'Mật khẩu Admin & Thành viên', icon: KeyRound, iconColor: 'text-amber-500', activeColor: 'border-amber-600 text-amber-700 bg-amber-50' },
@@ -149,23 +154,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [groupEmoji, setGroupEmoji] = useState(branding.groupEmoji || '💼');
   const [brandingSaved, setBrandingSaved] = useState(false);
 
-  // Statement Signatories & Print Template state
-  const [statementHeaderTitle, setStatementHeaderTitle] = useState(branding.statementHeaderTitle || 'BÁO CÁO THU CHI & SAO KÊ SỔ QUỸ');
-  const [statementSubtitle, setStatementSubtitle] = useState(branding.statementSubtitle || 'Trích xuất tự động từ hệ thống quản lý thu chi minh bạch');
-  const [statementSignatory1Title, setStatementSignatory1Title] = useState(branding.statementSignatory1Title || 'Người lập biểu');
-  const [statementSignatory1Name, setStatementSignatory1Name] = useState(branding.statementSignatory1Name || 'Kế toán quỹ');
-  const [statementSignatory2Title, setStatementSignatory2Title] = useState(branding.statementSignatory2Title || 'Thủ quỹ');
-  const [statementSignatory2Name, setStatementSignatory2Name] = useState(branding.statementSignatory2Name || 'Trần Thị Mai');
-  const [statementSignatory3Title, setStatementSignatory3Title] = useState(branding.statementSignatory3Title || 'Trưởng ban duyệt');
-  const [statementSignatory3Name, setStatementSignatory3Name] = useState(branding.statementSignatory3Name || 'Đại diện ban quản lý');
-  const [statementFooterNote, setStatementFooterNote] = useState(branding.statementFooterNote || 'Báo cáo này được trích xuất tự động từ hệ thống quản lý thu chi minh bạch và có giá trị lưu hành nội bộ.');
-  const [statementShowSummary, setStatementShowSummary] = useState(branding.statementShowSummary !== false);
-  const [statementShowSignatory1, setStatementShowSignatory1] = useState(branding.statementShowSignatory1 !== false);
-  const [statementShowSignatory2, setStatementShowSignatory2] = useState(branding.statementShowSignatory2 !== false);
-  const [statementShowSignatory3, setStatementShowSignatory3] = useState(branding.statementShowSignatory3 !== false);
-  const [statementShowFooterNote, setStatementShowFooterNote] = useState(branding.statementShowFooterNote !== false);
-  const [statementSaved, setStatementSaved] = useState(false);
-
   // Sync branding when props change from Cloud Firestore
   useEffect(() => {
     if (branding) {
@@ -175,22 +163,44 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setTreasurerPhone(branding.treasurerPhone || '0988.888.888');
       setTransferSyntaxPrefix(branding.transferSyntaxPrefix || 'NOP QUY');
       setGroupEmoji(branding.groupEmoji || '💼');
-      setStatementHeaderTitle(branding.statementHeaderTitle || 'BÁO CÁO THU CHI & SAO KÊ SỔ QUỸ');
-      setStatementSubtitle(branding.statementSubtitle || 'Trích xuất tự động từ hệ thống quản lý thu chi minh bạch');
-      setStatementSignatory1Title(branding.statementSignatory1Title || 'Người lập biểu');
-      setStatementSignatory1Name(branding.statementSignatory1Name || 'Kế toán quỹ');
-      setStatementSignatory2Title(branding.statementSignatory2Title || 'Thủ quỹ');
-      setStatementSignatory2Name(branding.statementSignatory2Name || 'Trần Thị Mai');
-      setStatementSignatory3Title(branding.statementSignatory3Title || 'Trưởng ban duyệt');
-      setStatementSignatory3Name(branding.statementSignatory3Name || 'Đại diện ban quản lý');
-      setStatementFooterNote(branding.statementFooterNote || 'Báo cáo này được trích xuất tự động từ hệ thống quản lý thu chi minh bạch và có giá trị lưu hành nội bộ.');
-      setStatementShowSummary(branding.statementShowSummary !== false);
-      setStatementShowSignatory1(branding.statementShowSignatory1 !== false);
-      setStatementShowSignatory2(branding.statementShowSignatory2 !== false);
-      setStatementShowSignatory3(branding.statementShowSignatory3 !== false);
-      setStatementShowFooterNote(branding.statementShowFooterNote !== false);
     }
   }, [branding]);
+
+  // Theme state from ThemeContext
+  const {
+    themeAccent,
+    setThemeAccent,
+    customColor,
+    setCustomColor,
+    themeMode,
+    setThemeMode,
+    themeRadius,
+    setThemeRadius,
+    themeDensity,
+    setThemeDensity,
+    activePreset,
+    setIsCustomizerOpen,
+    resetToDefaultTheme,
+  } = useTheme();
+
+  const [customHexInput, setCustomHexInput] = useState(customColor);
+  const [isThemeCloudSyncing, setIsThemeCloudSyncing] = useState(false);
+
+  const handleSaveThemeSettings = () => {
+    setIsThemeCloudSyncing(true);
+    onUpdateBranding({
+      ...branding,
+      themeAccent,
+      customColor: themeAccent === 'custom' ? customColor : undefined,
+      themeMode,
+      themeRadius,
+      themeDensity,
+    });
+    setTimeout(() => {
+      setIsThemeCloudSyncing(false);
+      showToast('Đã lưu và đồng bộ bảng màu & giao diện nhóm lên đám mây thành công!', 'success', 'Bảng Màu & Giao Diện');
+    }, 500);
+  };
 
   // Bank form state
   const [bankId, setBankId] = useState(bankSettings.bankId || 'MB');
@@ -361,29 +371,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     setTimeout(() => setBrandingSaved(false), 2500);
   };
 
-  const handleSaveStatement = (e: React.FormEvent) => {
-    e.preventDefault();
-    onUpdateBranding({
-      ...branding,
-      statementHeaderTitle: statementHeaderTitle.trim(),
-      statementSubtitle: statementSubtitle.trim(),
-      statementSignatory1Title: statementSignatory1Title.trim(),
-      statementSignatory1Name: statementSignatory1Name.trim(),
-      statementSignatory2Title: statementSignatory2Title.trim(),
-      statementSignatory2Name: statementSignatory2Name.trim(),
-      statementSignatory3Title: statementSignatory3Title.trim(),
-      statementSignatory3Name: statementSignatory3Name.trim(),
-      statementFooterNote: statementFooterNote.trim(),
-      statementShowSummary,
-      statementShowSignatory1,
-      statementShowSignatory2,
-      statementShowSignatory3,
-      statementShowFooterNote,
-    });
-    setStatementSaved(true);
-    setTimeout(() => setStatementSaved(false), 2500);
-  };
-
   const handleResetBranding = () => {
     if (branding) {
       setAppTitle(branding.appTitle || 'Quản Lý Quỹ');
@@ -393,26 +380,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setTransferSyntaxPrefix(branding.transferSyntaxPrefix || 'DONG QUY');
       setGroupEmoji(branding.groupEmoji || '💼');
       showToast('Đã hủy thay đổi nhận diện thương hiệu!', 'info');
-    }
-  };
-
-  const handleResetStatement = () => {
-    if (branding) {
-      setStatementHeaderTitle(branding.statementHeaderTitle || 'BÁO CÁO THU CHI & SAO KÊ QUỸ NHÓM');
-      setStatementSubtitle(branding.statementSubtitle || 'Bảng kê khai chi tiết các khoản thu, chi và tồn quỹ');
-      setStatementSignatory1Title(branding.statementSignatory1Title || 'Người lập biểu');
-      setStatementSignatory1Name(branding.statementSignatory1Name || 'Thủ quỹ ghi sổ');
-      setStatementSignatory2Title(branding.statementSignatory2Title || 'Kế toán / Kiểm soát');
-      setStatementSignatory2Name(branding.statementSignatory2Name || 'Người kiểm tra số liệu');
-      setStatementSignatory3Title(branding.statementSignatory3Title || 'Trưởng ban duyệt');
-      setStatementSignatory3Name(branding.statementSignatory3Name || 'Đại diện ban quản lý');
-      setStatementFooterNote(branding.statementFooterNote || 'Báo cáo này được trích xuất tự động từ hệ thống quản lý thu chi minh bạch và có giá trị lưu hành nội bộ.');
-      setStatementShowSummary(branding.statementShowSummary !== false);
-      setStatementShowSignatory1(branding.statementShowSignatory1 !== false);
-      setStatementShowSignatory2(branding.statementShowSignatory2 !== false);
-      setStatementShowSignatory3(branding.statementShowSignatory3 !== false);
-      setStatementShowFooterNote(branding.statementShowFooterNote !== false);
-      showToast('Đã hủy thay đổi mẫu in sao kê!', 'info');
     }
   };
 
@@ -870,7 +837,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <button
                         type="button"
                         onClick={handleResetBranding}
-                        className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                        className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-xs transition-all cursor-pointer"
                       >
                         Hủy thay đổi
                       </button>
@@ -883,6 +850,306 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       </button>
                     </div>
                   </form>
+                </div>
+              )}
+
+              {/* 1.2 THEME & COLOR PALETTE CUSTOMIZER CARD */}
+              {(activeSubTab === 'branding' || activeSubTab === 'all') && (
+                <div id="settings-theme" className="scroll-mt-28 sm:scroll-mt-24 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-6">
+                  {/* Card Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm transition-all duration-300 shrink-0"
+                        style={{ background: activePreset.gradient }}
+                      >
+                        <Palette className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                          <span>Bảng Màu & Giao Diện Ứng Dụng</span>
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[11px] font-bold border"
+                            style={{
+                              backgroundColor: activePreset.primaryLight,
+                              color: activePreset.primaryText,
+                              borderColor: activePreset.primaryBorder,
+                            }}
+                          >
+                            {activePreset.name}
+                          </span>
+                        </h3>
+                        <p className="text-xs text-slate-500">Tùy biến bảng màu thương hiệu, chế độ Sáng / Tối, độ bo góc và mật độ giao diện</p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomizerOpen(true)}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer shadow-2xs shrink-0"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
+                      <span>Studio Xem Trước Nâng Cao</span>
+                    </button>
+                  </div>
+
+                  {/* 1. Color Palette Presets */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                        <Palette className="w-3.5 h-3.5 text-slate-500" />
+                        <span>1. Tông Màu Chủ Đạo (Theme Palettes)</span>
+                      </label>
+                      <span className="text-[11px] text-slate-500 hidden sm:inline">
+                        {THEME_PRESETS.length} màu chuẩn + Mã HEX tự chọn
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                      {THEME_PRESETS.map((preset) => {
+                        const isSelected = themeAccent === preset.id;
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => setThemeAccent(preset.id)}
+                            className={`text-left p-3 rounded-xl border transition-all flex items-center justify-between gap-2.5 cursor-pointer ${
+                              isSelected
+                                ? 'border-2 shadow-sm ring-1'
+                                : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/60'
+                            }`}
+                            style={{
+                              borderColor: isSelected ? preset.primary : undefined,
+                              boxShadow: isSelected ? `0 0 0 2px ${preset.primaryLight}` : undefined,
+                            }}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-xs shrink-0 text-xs"
+                                style={{ background: preset.gradient }}
+                              >
+                                {preset.sampleEmoji}
+                              </div>
+                              <div className="min-w-0">
+                                <span className="font-bold text-xs text-slate-800 dark:text-slate-100 block truncate">
+                                  {preset.name}
+                                </span>
+                                <span className="text-[10px] text-slate-500 block truncate">
+                                  {preset.tagline}
+                                </span>
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <div
+                                className="w-5 h-5 rounded-full flex items-center justify-center text-white shrink-0"
+                                style={{ backgroundColor: preset.primary }}
+                              >
+                                <Check className="w-3 h-3" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+
+                      {/* Custom Hex Card */}
+                      <div
+                        className={`p-3 rounded-xl border transition-all ${
+                          themeAccent === 'custom'
+                            ? 'border-2 shadow-sm ring-1'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60'
+                        }`}
+                        style={{
+                          borderColor: themeAccent === 'custom' ? customColor : undefined,
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={customColor}
+                              onChange={(e) => {
+                                setCustomColor(e.target.value);
+                                setCustomHexInput(e.target.value);
+                                setThemeAccent('custom');
+                              }}
+                              className="w-7 h-7 rounded-lg border-0 cursor-pointer shrink-0 p-0"
+                              title="Chọn màu sắc tùy ý"
+                            />
+                            <span className="font-bold text-xs text-slate-800 dark:text-slate-100">
+                              Mã Màu Tự Chọn
+                            </span>
+                          </div>
+                          {themeAccent === 'custom' && (
+                            <div
+                              className="w-5 h-5 rounded-full flex items-center justify-center text-white shrink-0"
+                              style={{ backgroundColor: customColor }}
+                            >
+                              <Check className="w-3 h-3" />
+                            </div>
+                          )}
+                        </div>
+                        <input
+                          type="text"
+                          value={customHexInput}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCustomHexInput(val);
+                            if (/^#[0-9A-F]{6}$/i.test(val)) {
+                              setCustomColor(val);
+                              setThemeAccent('custom');
+                            }
+                          }}
+                          placeholder="#10B981"
+                          className="w-full px-2.5 py-1 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 uppercase"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Theme Mode (Light / Dark / System) */}
+                  <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sun className="w-3.5 h-3.5 text-slate-500" />
+                      <span>2. Chế Độ Hiển Thị (Theme Mode)</span>
+                    </label>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { id: 'light' as ThemeMode, name: 'Sáng (Light)', icon: Sun, desc: 'Nền trắng sáng chuẩn mực' },
+                        { id: 'dark' as ThemeMode, name: 'Tối (Dark)', icon: Moon, desc: 'Slate thẫm êm dịu bảo vệ mắt' },
+                        { id: 'system' as ThemeMode, name: 'Hệ thống (Auto)', icon: Laptop, desc: 'Tự động theo thiết bị' },
+                      ].map((item) => {
+                        const isSelected = themeMode === item.id;
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => setThemeMode(item.id)}
+                            className={`p-3 rounded-xl border text-center transition-all cursor-pointer ${
+                              isSelected
+                                ? 'border-2 shadow-sm ring-1 bg-white dark:bg-slate-800'
+                                : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                            }`}
+                            style={{
+                              borderColor: isSelected ? activePreset.primary : undefined,
+                            }}
+                          >
+                            <div className="flex flex-col items-center gap-1.5">
+                              <Icon
+                                className="w-5 h-5"
+                                style={{ color: isSelected ? activePreset.primary : undefined }}
+                              />
+                              <span className="font-bold text-xs text-slate-800 dark:text-slate-200 block">
+                                {item.name}
+                              </span>
+                              <span className="text-[10px] text-slate-500 hidden sm:block">
+                                {item.desc}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 3. Radius & Density */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    {/* Radius */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">
+                        3. Độ Bo Góc (Corner Radius)
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {RADIUS_OPTIONS.map((opt) => {
+                          const isSelected = themeRadius === opt.id;
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => setThemeRadius(opt.id)}
+                              className={`px-3 py-2 border text-left transition-all cursor-pointer ${opt.pillRadius} ${
+                                isSelected
+                                  ? 'border-2 shadow-xs bg-white dark:bg-slate-800 font-bold'
+                                  : 'border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400'
+                              }`}
+                              style={{
+                                borderColor: isSelected ? activePreset.primary : undefined,
+                                color: isSelected ? activePreset.primary : undefined,
+                              }}
+                            >
+                              <span className="text-xs block font-semibold">{opt.name}</span>
+                              <span className="text-[10px] text-slate-500 block truncate">{opt.desc}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Density */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">
+                        4. Mật Độ Hiển Thị (Density)
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { id: 'comfortable' as ThemeDensity, name: 'Thoáng Đãng', desc: 'Rộng rãi, dễ đọc và chạm' },
+                          { id: 'compact' as ThemeDensity, name: 'Gọn Gàng', desc: 'Mật độ cao, hiển thị nhiều dữ liệu' },
+                        ].map((item) => {
+                          const isSelected = themeDensity === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => setThemeDensity(item.id)}
+                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'border-2 shadow-xs bg-white dark:bg-slate-800 font-bold'
+                                  : 'border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400'
+                              }`}
+                              style={{
+                                borderColor: isSelected ? activePreset.primary : undefined,
+                                color: isSelected ? activePreset.primary : undefined,
+                              }}
+                            >
+                              <span className="text-xs block font-semibold">{item.name}</span>
+                              <span className="text-[10px] text-slate-500 block truncate">{item.desc}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions: Reset & Save to Cloud */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetToDefaultTheme();
+                        showToast('Đã đặt lại giao diện về thiết lập mặc định của hệ thống', 'info', 'Khôi Phục');
+                      }}
+                      className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 cursor-pointer w-full sm:w-auto justify-center transition-colors"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Khôi phục mặc định</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleSaveThemeSettings}
+                      disabled={isThemeCloudSyncing}
+                      className="px-4 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-2 shadow-sm transition-all cursor-pointer w-full sm:w-auto justify-center"
+                      style={{ background: activePreset.gradient }}
+                    >
+                      {isThemeCloudSyncing ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Save className="w-3.5 h-3.5" />
+                      )}
+                      <span>Lưu & Đồng Bộ Bảng Màu Nhóm Lên Đám Mây</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -1053,269 +1320,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 </div>
               )}
 
-              {/* 2. STATEMENT SIGNATORIES & PRINT TEMPLATE CARD */}
-              {(activeSubTab === 'statement' || activeSubTab === 'all') && (
-                <div id="settings-statement" className="scroll-mt-28 sm:scroll-mt-24 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-                  <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm shadow-indigo-500/20">
-                    <FileText className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                      Mẫu In Sao Kê & Chữ Ký Ban Quản Lý
-                    </h3>
-                    <p className="text-xs text-slate-500">Tùy biến tiêu đề báo cáo, chức danh và người ký duyệt sao kê</p>
-                  </div>
-                </div>
-
-                <form onSubmit={handleSaveStatement} className="space-y-3.5 pt-1">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                      Tiêu đề chính trên bản in sao kê / báo cáo
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="VD: BÁO CÁO THU CHI & SAO KÊ SỔ QUỸ"
-                      value={statementHeaderTitle}
-                      onChange={(e) => setStatementHeaderTitle(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                      Phụ đề báo cáo / Đơn vị ban hành
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="VD: Trích xuất tự động từ hệ thống quản lý thu chi minh bạch"
-                      value={statementSubtitle}
-                      onChange={(e) => setStatementSubtitle(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
-                    />
-                  </div>
-
-                  {/* General Component Visibility Toggles */}
-                  <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2">
-                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block">
-                      Tùy chọn Ẩn / Hiện các phần trên Báo cáo & Bản in:
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setStatementShowSummary(!statementShowSummary)}
-                        className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                          statementShowSummary 
-                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700' 
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-300 dark:border-slate-700 line-through'
-                        }`}
-                      >
-                        {statementShowSummary ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                        <span>Bảng tổng hợp thu chi (KPI)</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setStatementShowFooterNote(!statementShowFooterNote)}
-                        className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                          statementShowFooterNote 
-                            ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700' 
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-300 dark:border-slate-700 line-through'
-                        }`}
-                      >
-                        {statementShowFooterNote ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                        <span>Ghi chú chân trang in ấn</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 3 Signatories Configuration */}
-                  <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                        Chức danh, Họ tên & Bật/Tắt 3 Vị trí Chữ ký:
-                      </span>
-                      <span className="text-[10px] text-slate-500">
-                        Bật/tắt để quyết định chữ ký có xuất hiện trên bản in hay không
-                      </span>
-                    </div>
-
-                    {/* Signatory 1 */}
-                    <div className={`p-3 rounded-xl border transition-all ${
-                      statementShowSignatory1 
-                        ? 'bg-slate-50 dark:bg-slate-800/40 border-indigo-200 dark:border-indigo-800/50' 
-                        : 'bg-slate-100/60 dark:bg-slate-800/20 border-slate-200 dark:border-slate-700 opacity-70'
-                    }`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          Vị trí 1 (Bên trái)
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setStatementShowSignatory1(!statementShowSignatory1)}
-                          className={`px-2 py-0.5 rounded-md text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
-                            statementShowSignatory1
-                              ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300'
-                              : 'bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-400'
-                          }`}
-                        >
-                          {statementShowSignatory1 ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                          <span>{statementShowSignatory1 ? 'Đang hiện' : 'Đã ẩn'}</span>
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Chức danh</label>
-                          <input
-                            type="text"
-                            placeholder="Chức danh (VD: Người lập biểu)"
-                            value={statementSignatory1Title}
-                            onChange={(e) => setStatementSignatory1Title(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-medium"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Họ tên người ký 1</label>
-                          <input
-                            type="text"
-                            placeholder="Họ tên (VD: Kế toán quỹ)"
-                            value={statementSignatory1Name}
-                            onChange={(e) => setStatementSignatory1Name(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Signatory 2 */}
-                    <div className={`p-3 rounded-xl border transition-all ${
-                      statementShowSignatory2 
-                        ? 'bg-slate-50 dark:bg-slate-800/40 border-indigo-200 dark:border-indigo-800/50' 
-                        : 'bg-slate-100/60 dark:bg-slate-800/20 border-slate-200 dark:border-slate-700 opacity-70'
-                    }`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          Vị trí 2 (Ở giữa)
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setStatementShowSignatory2(!statementShowSignatory2)}
-                          className={`px-2 py-0.5 rounded-md text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
-                            statementShowSignatory2
-                              ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300'
-                              : 'bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-400'
-                          }`}
-                        >
-                          {statementShowSignatory2 ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                          <span>{statementShowSignatory2 ? 'Đang hiện' : 'Đã ẩn'}</span>
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Chức danh</label>
-                          <input
-                            type="text"
-                            placeholder="Chức danh (VD: Thủ quỹ)"
-                            value={statementSignatory2Title}
-                            onChange={(e) => setStatementSignatory2Title(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-medium"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Họ tên người ký 2</label>
-                          <input
-                            type="text"
-                            placeholder="Họ tên (VD: Trần Thị Mai)"
-                            value={statementSignatory2Name}
-                            onChange={(e) => setStatementSignatory2Name(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Signatory 3 */}
-                    <div className={`p-3 rounded-xl border transition-all ${
-                      statementShowSignatory3 
-                        ? 'bg-slate-50 dark:bg-slate-800/40 border-indigo-200 dark:border-indigo-800/50' 
-                        : 'bg-slate-100/60 dark:bg-slate-800/20 border-slate-200 dark:border-slate-700 opacity-70'
-                    }`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          Vị trí 3 (Bên phải)
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setStatementShowSignatory3(!statementShowSignatory3)}
-                          className={`px-2 py-0.5 rounded-md text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
-                            statementShowSignatory3
-                              ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300'
-                              : 'bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-400'
-                          }`}
-                        >
-                          {statementShowSignatory3 ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                          <span>{statementShowSignatory3 ? 'Đang hiện' : 'Đã ẩn'}</span>
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Chức danh</label>
-                          <input
-                            type="text"
-                            placeholder="Chức danh (VD: Trưởng ban duyệt)"
-                            value={statementSignatory3Title}
-                            onChange={(e) => setStatementSignatory3Title(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-medium"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Họ tên người ký 3</label>
-                          <input
-                            type="text"
-                            placeholder="Họ tên (VD: Đại diện ban quản lý)"
-                            value={statementSignatory3Name}
-                            onChange={(e) => setStatementSignatory3Name(e.target.value)}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                      Ghi chú / Khẩu hiệu chân trang in
-                    </label>
-                    <textarea
-                      rows={2}
-                      placeholder="Ghi chú pháp lý hoặc lưu hành nội bộ..."
-                      value={statementFooterNote}
-                      onChange={(e) => setStatementFooterNote(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden leading-relaxed"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={handleResetStatement}
-                      className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
-                    >
-                      Hủy thay đổi
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                    >
-                      {statementSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                      <span>{statementSaved ? 'Đã lưu mẫu in sao kê & chữ ký!' : 'Lưu Cấu Hình Mẫu In Sao Kê'}</span>
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-
             {/* 3. GROUP RULES & CHARTER BOARD (BẢNG NỘI QUY HOẠT ĐỘNG) */}
             {(activeSubTab === 'notice' || activeSubTab === 'all') && (
               <div id="settings-notice" className="scroll-mt-28 sm:scroll-mt-24 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
@@ -1380,7 +1384,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     <button
                       type="button"
                       onClick={handleResetNotice}
-                      className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                      className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-xs transition-all cursor-pointer"
                     >
                       Hủy thay đổi
                     </button>
@@ -1706,7 +1710,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <button
                         type="button"
                         onClick={handleResetPerms}
-                        className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                        className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-xs transition-all cursor-pointer"
                       >
                         Hủy thay đổi
                       </button>
@@ -1768,7 +1772,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <button
                         type="button"
                         onClick={() => setShowAdminPassValue(!showAdminPassValue)}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 transition-colors flex items-center gap-1 cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-700 transition-colors flex items-center gap-1 cursor-pointer"
                         title={showAdminPassValue ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                       >
                         {showAdminPassValue ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -1777,7 +1781,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCopyPassword(adminPassword || 'admin', 'Admin')}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 transition-colors flex items-center gap-1 cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-700 transition-colors flex items-center gap-1 cursor-pointer"
                         title="Sao chép mật khẩu Admin"
                       >
                         <Copy className="w-3.5 h-3.5" />
@@ -1790,7 +1794,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   <form onSubmit={handleChangePassword} className="space-y-3.5 pt-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                           Mật khẩu Admin mới
                         </label>
                         <div className="relative">
@@ -1800,12 +1804,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             placeholder="Tối thiểu 4 ký tự..."
                             value={newPassInput}
                             onChange={(e) => setNewPassInput(e.target.value)}
-                            className="w-full px-3 py-2 pr-10 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                            className="w-full px-3 py-2 pr-10 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                           />
                           <button
                             type="button"
                             onClick={() => setShowNewPass(!showNewPass)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                           >
                             {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -1813,7 +1817,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                           Xác nhận mật khẩu Admin mới
                         </label>
                         <input
@@ -1822,7 +1826,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                           placeholder="Nhập lại mật khẩu Admin mới..."
                           value={confirmPassInput}
                           onChange={(e) => setConfirmPassInput(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                         />
                       </div>
                     </div>
@@ -1838,7 +1842,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <button
                         type="button"
                         onClick={handleResetAdminPasswordToDefault}
-                        className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                        className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-xs transition-all cursor-pointer"
                         title="Đặt lại mật khẩu Admin về 'admin'"
                       >
                         Khôi phục về "admin"
@@ -1873,8 +1877,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   {/* Active Member Password Display */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-slate-600">Mật khẩu Thành viên hiện tại:</span>
-                      <span className="font-mono text-sm font-bold text-blue-700 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200 tracking-wider">
+                      <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Mật khẩu Thành viên hiện tại:</span>
+                      <span className="font-mono text-sm font-bold text-blue-700 dark:text-blue-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 tracking-wider">
                         {showMemberPassValue ? (memberPassword || '123') : '••••••'}
                       </span>
                     </div>
@@ -1882,7 +1886,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <button
                         type="button"
                         onClick={() => setShowMemberPassValue(!showMemberPassValue)}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 transition-colors flex items-center gap-1 cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-700 transition-colors flex items-center gap-1 cursor-pointer"
                         title={showMemberPassValue ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                       >
                         {showMemberPassValue ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -1891,7 +1895,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCopyPassword(memberPassword || '123', 'Thành viên')}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-1.5 cursor-pointer border border-blue-200/60"
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors flex items-center gap-1.5 cursor-pointer border border-blue-200/60 dark:border-blue-800"
                         title="Sao chép mật khẩu gửi cho thành viên trong nhóm"
                       >
                         <Copy className="w-3.5 h-3.5" />
@@ -1904,7 +1908,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   <form onSubmit={handleChangeMemberPassword} className="space-y-3.5 pt-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                           Mật khẩu Thành viên mới
                         </label>
                         <div className="relative">
@@ -1914,12 +1918,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             placeholder="Tối thiểu 3 ký tự..."
                             value={newMemberPassInput}
                             onChange={(e) => setNewMemberPassInput(e.target.value)}
-                            className="w-full px-3 py-2 pr-10 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                            className="w-full px-3 py-2 pr-10 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
                           />
                           <button
                             type="button"
                             onClick={() => setShowNewMemberPass(!showNewMemberPass)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                           >
                             {showNewMemberPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -1927,7 +1931,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                           Xác nhận mật khẩu Thành viên mới
                         </label>
                         <input
@@ -1936,7 +1940,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                           placeholder="Nhập lại mật khẩu Thành viên mới..."
                           value={confirmMemberPassInput}
                           onChange={(e) => setConfirmMemberPassInput(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
                         />
                       </div>
                     </div>
@@ -1952,7 +1956,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <button
                         type="button"
                         onClick={handleResetMemberPasswordToDefault}
-                        className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                        className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-xs transition-all cursor-pointer"
                         title="Đặt lại mật khẩu Thành viên về '123'"
                       >
                         Khôi phục về "123"
@@ -2035,7 +2039,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     <button
                       type="button"
                       onClick={handleResetBank}
-                      className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-all cursor-pointer"
+                      className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-xs transition-all cursor-pointer"
                     >
                       Hủy thay đổi
                     </button>
@@ -2243,7 +2247,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         Xuất tệp sao lưu (JSON)
                       </span>
                       <span className="text-[11px] text-slate-500">
-                        Tải về máy tính toàn bộ danh sách quỹ, giao dịch, thành viên
+                        Tải về máy tính toàn bộ giao dịch, đợt thu, thành viên và cài đặt
                       </span>
                     </div>
                     <button
@@ -2363,7 +2367,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                 <button
                                   type="button"
                                   onClick={handleCancelEditCat}
-                                  className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-700 dark:text-slate-300 font-medium text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                                  className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium text-xs flex items-center gap-1 transition-colors cursor-pointer"
                                   title="Hủy"
                                 >
                                   <X className="w-3.5 h-3.5" />

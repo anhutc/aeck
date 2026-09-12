@@ -41,10 +41,12 @@ import { PrintStatementModal } from './components/modals/PrintStatementModal';
 import { PrintMemberDuesModal } from './components/modals/PrintMemberDuesModal';
 import { ShareModal } from './components/modals/ShareModal';
 import { NoticeEditModal } from './components/modals/NoticeEditModal';
+import { ThemeCustomizerModal } from './components/modals/ThemeCustomizerModal';
 import { MemberPortalView } from './components/MemberPortalView';
 import { FloatingTransactionButton } from './components/common/FloatingTransactionButton';
 import { subscribeToCloudState, saveCloudState, fetchCloudStateOnce, testCloudConnection, CloudConnectionResult } from './lib/cloudStore';
 import { useFeedback } from './context/FeedbackContext';
+import { useTheme } from './context/ThemeContext';
 import { motion, AnimatePresence } from 'motion/react';
 
 const STORAGE_KEYS = {
@@ -75,6 +77,7 @@ function deduplicateById<T extends { id: string }>(items: T[]): T[] {
 
 export default function App() {
   const { showToast, showConfirm } = useFeedback();
+  const { isCustomizerOpen, setIsCustomizerOpen } = useTheme();
 
   // User Authentication State (dual-password: 'member' or 'admin')
   // Session is strictly kept in-memory for the current page life only.
@@ -690,13 +693,16 @@ export default function App() {
 
   // Full Export & Import JSON
   const handleExportAllData = () => {
+    // Strip obsolete fundId and deprecated fields from transactions and campaigns
+    const cleanTransactions = transactions.map(({ fundId: _fId, ...rest }) => rest);
+    const cleanCampaigns = campaigns.map(({ fundId: _fId, dueDate: _dDate, status: _st, ...rest }) => rest);
+
     const fullBackup = {
-      version: '2.3',
+      version: '2.4',
       exportedAt: new Date().toISOString(),
-      funds,
-      transactions,
+      transactions: cleanTransactions,
       categories,
-      campaigns,
+      campaigns: cleanCampaigns,
       members,
       bankSettings,
       groupNotice,
@@ -718,10 +724,7 @@ export default function App() {
   const handleImportAllData = (jsonString: string) => {
     try {
       const data = JSON.parse(jsonString);
-      if (data.funds) setFunds(data.funds);
-      if (data.transactions) setTransactions(data.transactions);
       if (data.categories) setCategories(data.categories);
-      if (data.campaigns) setCampaigns(data.campaigns);
       if (data.members) setMembers(data.members);
       if (data.bankSettings) setBankSettings(data.bankSettings);
       if (data.groupNotice) setGroupNotice(data.groupNotice);
@@ -729,6 +732,41 @@ export default function App() {
       if (data.viewPermissions) setViewPermissions(data.viewPermissions);
       if (data.adminPassword) setAdminPassword(data.adminPassword);
       if (data.memberPassword) setMemberPassword(data.memberPassword);
+
+      if (data.transactions) {
+        const normalizedTx: Transaction[] = data.transactions.map((t: any) => ({
+          ...t,
+          fundId: t.fundId || 'fund_general',
+        }));
+        setTransactions(normalizedTx);
+
+        // Auto-recalculate group treasury balance from transactions
+        const compTx = normalizedTx.filter((t: Transaction) => t.status === 'completed');
+        const netBalance = compTx.reduce(
+          (sum: number, t: Transaction) => sum + (t.type === 'income' ? t.amount : -t.amount),
+          0
+        );
+        setFunds(prev => {
+          const appName = data.branding?.appTitle?.trim() || prev[0]?.name || 'AE Cây Khế';
+          return [{
+            ...(prev[0] || INITIAL_FUNDS[0]),
+            name: appName,
+            balance: netBalance,
+          }];
+        });
+      } else if (data.funds && Array.isArray(data.funds) && data.funds.length > 0) {
+        // Fallback backward compatibility for legacy backup files that still contained funds
+        setFunds(data.funds);
+      }
+
+      if (data.campaigns) {
+        const normalizedCamp: ContributionCampaign[] = data.campaigns.map((c: any) => ({
+          ...c,
+          fundId: c.fundId || 'fund_general',
+        }));
+        setCampaigns(normalizedCamp);
+      }
+
       showToast('Đã nhập dữ liệu sao lưu thành công!', 'success');
     } catch (err) {
       showToast('Tệp dữ liệu không hợp lệ!', 'error');
@@ -941,7 +979,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen w-full overflow-x-clip bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen w-full overflow-x-clip bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-emerald-600 selection:text-white transition-colors duration-200">
       {/* Header & Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -1152,6 +1190,14 @@ export default function App() {
         funds={funds}
         activeCampaigns={campaigns.filter(c => c.status === 'active')}
         branding={branding}
+      />
+
+      <ThemeCustomizerModal
+        isOpen={isCustomizerOpen}
+        onClose={() => setIsCustomizerOpen(false)}
+        isAdmin={!isMemberView}
+        branding={branding}
+        onUpdateBranding={handleUpdateBranding}
       />
 
       {/* Dedicated Floating Thu/Chi Action Button at bottom-right */}

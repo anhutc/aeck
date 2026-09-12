@@ -505,7 +505,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
             <button
               id="close-print-dues-modal-btn"
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               title={t('common.close_window', 'Đóng')}
             >
               <X className="w-5 h-5" />
@@ -547,7 +547,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
                   filterDebt === 'all'
                     ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <span>{t('dues.filter_all', 'Tất cả')} ({summaryStats.totalMembers})</span>
@@ -559,7 +559,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   filterDebt === 'unpaid_only'
                     ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <span className="w-2 h-2 rounded-full bg-rose-500" />
@@ -572,7 +572,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   filterDebt === 'paid_only'
                     ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
