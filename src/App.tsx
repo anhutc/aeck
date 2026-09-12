@@ -98,6 +98,18 @@ export default function App() {
     };
 
     window.addEventListener('pageshow', handlePageShow);
+
+    // Clean legacy or accidental ?view=member from browser address bar
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('view') === 'member') {
+        url.searchParams.delete('view');
+        const searchStr = url.searchParams.toString();
+        const cleanUrl = searchStr ? `${url.pathname}?${searchStr}` : url.pathname;
+        window.history.replaceState({}, '', cleanUrl);
+      }
+    }
+
     return () => {
       window.removeEventListener('pageshow', handlePageShow);
     };
@@ -424,11 +436,13 @@ export default function App() {
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
       if (memberMode) {
-        url.searchParams.set('view', 'member');
+        url.searchParams.delete('view');
       } else {
         url.searchParams.set('view', 'admin');
       }
-      window.history.replaceState({}, '', url.toString());
+      const searchStr = url.searchParams.toString();
+      const newUrl = searchStr ? `${url.pathname}?${searchStr}` : url.pathname;
+      window.history.replaceState({}, '', newUrl);
     }
   };
 
@@ -1034,6 +1048,7 @@ export default function App() {
                   bankSettings={bankSettings}
                   onUpdateBankSettings={setBankSettings}
                   categories={categories}
+                  campaigns={campaigns}
                   onAddCategory={handleAddCategory}
                   onUpdateCategory={handleUpdateCategory}
                   onDeleteCategory={handleDeleteCategory}
@@ -1104,6 +1119,7 @@ export default function App() {
         defaultAmount={qrAmount}
         defaultContent={qrContent}
         branding={branding}
+        isAdmin={!isMemberView}
       />
 
       <PrintStatementModal
@@ -1131,7 +1147,7 @@ export default function App() {
       <ShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
-        onSwitchToMemberView={handleSwitchToMemberView}
+        isAdmin={!isMemberView}
         bankSettings={bankSettings}
         funds={funds}
         activeCampaigns={campaigns.filter(c => c.status === 'active')}

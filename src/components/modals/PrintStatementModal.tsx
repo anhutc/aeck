@@ -453,7 +453,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               onClick={handleExportImage}
               disabled={isExportingImage || isExportingPDF}
               className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
-              title="Tải ảnh PNG rõ nét để gửi qua Zalo / Messenger"
+              title="Tải ảnh PNG"
             >
               {isExportingImage ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

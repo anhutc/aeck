@@ -284,7 +284,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
               id="export-member-dues-btn"
               onClick={() => onOpenPrintDuesModal()}
               className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all shrink-0 cursor-pointer active:scale-95"
-              title="Xuất ảnh danh sách đóng quỹ & công nợ để chia sẻ vào Zalo"
+              title="Xuất ảnh danh sách đóng quỹ & công nợ để chia sẻ vào"
             >
               <ReceiptText className="w-4 h-4" />
               <span className="hidden sm:inline">Xuất ảnh đóng quỹ</span>

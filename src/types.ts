@@ -142,10 +142,13 @@ export interface AppBranding {
 
   // 6. Tin nhắn Chia sẻ Zalo / Nhóm
   shareMessageGreeting?: string;
+  shareMessageIncludeBank?: boolean;
+  shareMessageIncludeCampaigns?: boolean;
   shareMessageBenefit1?: string;
   shareMessageBenefit2?: string;
   shareMessageBenefit3?: string;
   shareMessageClosing?: string;
+  socialShareTemplate?: string;
 }
 
 export interface BankSettings {

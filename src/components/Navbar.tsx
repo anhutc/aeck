@@ -605,7 +605,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {treasurerPhone && (
                 <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between">
                   <div>
-                    <span className="text-[11px] text-emerald-800 font-medium block">Số điện thoại / Zalo</span>
+                    <span className="text-[11px] text-emerald-800 font-medium block">Số điện thoại</span>
                     <a
                       href={`tel:${treasurerPhone}`}
                       className="font-bold text-slate-900 font-mono text-sm"

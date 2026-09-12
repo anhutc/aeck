@@ -176,7 +176,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
 
     const success = await copyToClipboard(text);
     if (success) {
-      showCopyToast(camp.id + '_full', 'Đã sao chép báo cáo Zalo!');
+      showCopyToast(camp.id + '_full', 'Đã sao chép báo cáo!');
     }
     setActiveCopyMenuId(null);
   };
@@ -247,7 +247,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
               id="export-campaigns-dues-btn"
               onClick={() => onOpenPrintDuesModal()}
               className="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-              title="Xuất ảnh danh sách đóng quỹ & nợ quỹ chia sẻ Zalo"
+              title="Xuất ảnh danh sách đóng quỹ & nợ quỹ chia sẻ"
             >
               <ReceiptText className="w-4 h-4" />
               <span className="hidden sm:inline">Xuất ảnh đóng quỹ</span>
@@ -380,84 +380,103 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                         <span>{t('campaigns.qr_code_label', 'Mã QR')} ({formatVND(camp.amountPerMember)})</span>
                       </button>
 
-                      {/* Rich Copy Dropdown Menu */}
-                      <div className="relative">
+                      {/* Admin Copy Dropdown Menu vs Member Direct Syntax Copy */}
+                      {isAdmin ? (
+                        <div className="relative">
+                          <button
+                            onClick={() => setActiveCopyMenuId(isMenuOpen ? null : camp.id)}
+                            title={t('campaigns.copy_options_tooltip', 'Sao chép danh sách, báo cáo hoặc cú pháp chuyển khoản')}
+                            className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
+                              copiedKey?.startsWith(camp.id)
+                                ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300'
+                                : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 hover:border-slate-400'
+                            }`}
+                          >
+                            {copiedKey?.startsWith(camp.id) ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-600 animate-in zoom-in-50" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5 text-slate-500" />
+                            )}
+                            <span>{copiedKey?.startsWith(camp.id) ? t('campaigns.copied', 'Đã sao chép!') : t('campaigns.copy_dots', 'Sao chép...')}</span>
+                            <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          {/* Dropdown Options */}
+                          {isMenuOpen && (
+                            <div className="absolute right-0 top-full mt-1.5 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-1.5 z-30 animate-in fade-in zoom-in-95 duration-100">
+                              <div className="text-[10px] font-bold text-slate-400 px-2.5 py-1 uppercase tracking-wider">
+                                {t('campaigns.copy_options', 'Tùy chọn sao chép')}
+                              </div>
+
+                              {onOpenPrintDuesModal && (
+                                <button
+                                  onClick={() => {
+                                    setActiveCopyMenuId(null);
+                                    onOpenPrintDuesModal(camp.id);
+                                  }}
+                                  className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-2 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 pb-1.5"
+                                >
+                                  <ReceiptText className="w-3.5 h-3.5 text-emerald-600" />
+                                  <div>
+                                    <div className="font-semibold text-emerald-700 dark:text-emerald-400">Xuất ảnh đóng quỹ đợt này</div>
+                                    <div className="text-[10px] text-slate-400">Tạo ảnh danh sách & mã QR VietQR</div>
+                                  </div>
+                                </button>
+                              )}
+
+                              <button
+                                onClick={() => copyCampaignSummary(camp)}
+                                className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-2 transition-colors cursor-pointer"
+                              >
+                                <Copy className="w-3.5 h-3.5 text-purple-600" />
+                                <div>
+                                  <div className="font-semibold">{t('campaigns.copy_full_report', 'Báo cáo đầy đủ')}</div>
+                                  <div className="text-[10px] text-slate-400">{t('campaigns.copy_full_report_desc', 'Gồm tiến độ, đã nộp & chưa nộp')}</div>
+                                </div>
+                              </button>
+
+                              <button
+                                onClick={() => copyUnpaidReminder(camp)}
+                                className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/50 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-2 transition-colors cursor-pointer"
+                              >
+                                <BellRing className="w-3.5 h-3.5 text-amber-500" />
+                                <div>
+                                  <div className="font-semibold">{t('campaigns.copy_unpaid_list', 'Danh sách nhắc nộp')} ({unpaidMembers.length})</div>
+                                  <div className="text-[10px] text-slate-400">{t('campaigns.copy_unpaid_list_desc', 'Chỉ người chưa hoàn thành')}</div>
+                                </div>
+                              </button>
+
+                              <button
+                                onClick={() => copyTransferSyntax(camp)}
+                                className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-2 transition-colors cursor-pointer border-t border-slate-100 dark:border-slate-700 mt-1 pt-1.5"
+                              >
+                                <CreditCard className="w-3.5 h-3.5 text-blue-500" />
+                                <div>
+                                  <div className="font-semibold">{t('campaigns.copy_transfer_syntax', 'Cú pháp chuyển khoản')}</div>
+                                  <div className="text-[10px] text-slate-400 font-mono">{prefix} {camp.title}</div>
+                                </div>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
                         <button
-                          onClick={() => setActiveCopyMenuId(isMenuOpen ? null : camp.id)}
-                          title={t('campaigns.copy_options_tooltip', 'Sao chép danh sách, báo cáo Zalo hoặc cú pháp chuyển khoản')}
+                          onClick={() => copyTransferSyntax(camp)}
+                          title="Sao chép cú pháp nội dung chuyển khoản"
                           className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
-                            copiedKey?.startsWith(camp.id)
-                              ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300'
+                            copiedKey === camp.id + '_syntax'
+                              ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300'
                               : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 hover:border-slate-400'
                           }`}
                         >
-                          {copiedKey?.startsWith(camp.id) ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-600 animate-in zoom-in-50" />
+                          {copiedKey === camp.id + '_syntax' ? (
+                            <Check className="w-3.5 h-3.5 text-blue-600 animate-in zoom-in-50" />
                           ) : (
                             <Copy className="w-3.5 h-3.5 text-slate-500" />
                           )}
-                          <span>{copiedKey?.startsWith(camp.id) ? t('campaigns.copied', 'Đã sao chép!') : t('campaigns.copy_dots', 'Sao chép...')}</span>
-                          <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
+                          <span>{copiedKey === camp.id + '_syntax' ? 'Đã chép cú pháp!' : 'Chép cú pháp'}</span>
                         </button>
-
-                        {/* Dropdown Options */}
-                        {isMenuOpen && (
-                          <div className="absolute right-0 top-full mt-1.5 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-1.5 z-30 animate-in fade-in zoom-in-95 duration-100">
-                            <div className="text-[10px] font-bold text-slate-400 px-2.5 py-1 uppercase tracking-wider">
-                              {t('campaigns.copy_options', 'Tùy chọn sao chép')}
-                            </div>
-
-                            {isAdmin && onOpenPrintDuesModal && (
-                              <button
-                                onClick={() => {
-                                  setActiveCopyMenuId(null);
-                                  onOpenPrintDuesModal(camp.id);
-                                }}
-                                className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-2 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 pb-1.5"
-                              >
-                                <ReceiptText className="w-3.5 h-3.5 text-emerald-600" />
-                                <div>
-                                  <div className="font-semibold text-emerald-700 dark:text-emerald-400">Xuất ảnh đóng quỹ đợt này</div>
-                                  <div className="text-[10px] text-slate-400">Tạo ảnh danh sách & mã QR VietQR</div>
-                                </div>
-                              </button>
-                            )}
-
-                            <button
-                              onClick={() => copyCampaignSummary(camp)}
-                              className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-2 transition-colors cursor-pointer"
-                            >
-                              <Copy className="w-3.5 h-3.5 text-purple-600" />
-                              <div>
-                                <div className="font-semibold">{t('campaigns.copy_full_report', 'Báo cáo Zalo đầy đủ')}</div>
-                                <div className="text-[10px] text-slate-400">{t('campaigns.copy_full_report_desc', 'Gồm tiến độ, đã nộp & chưa nộp')}</div>
-                              </div>
-                            </button>
-
-                            <button
-                              onClick={() => copyUnpaidReminder(camp)}
-                              className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/50 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-2 transition-colors cursor-pointer"
-                            >
-                              <BellRing className="w-3.5 h-3.5 text-amber-500" />
-                              <div>
-                                <div className="font-semibold">{t('campaigns.copy_unpaid_list', 'Danh sách nhắc nộp')} ({unpaidMembers.length})</div>
-                                <div className="text-[10px] text-slate-400">{t('campaigns.copy_unpaid_list_desc', 'Chỉ người chưa hoàn thành')}</div>
-                              </div>
-                            </button>
-
-                            <button
-                              onClick={() => copyTransferSyntax(camp)}
-                              className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-2 transition-colors cursor-pointer border-t border-slate-100 dark:border-slate-700 mt-1 pt-1.5"
-                            >
-                              <CreditCard className="w-3.5 h-3.5 text-blue-500" />
-                              <div>
-                                <div className="font-semibold">{t('campaigns.copy_transfer_syntax', 'Cú pháp chuyển khoản')}</div>
-                                <div className="text-[10px] text-slate-400 font-mono">{prefix} {camp.title}</div>
-                              </div>
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                      )}
 
                       {/* Edit Button */}
                       {isAdmin && (

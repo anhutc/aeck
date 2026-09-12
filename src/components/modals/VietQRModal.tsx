@@ -8,6 +8,7 @@ import { AmountInput } from '../common/AmountInput';
 interface VietQRModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isAdmin?: boolean;
   bankSettings: BankSettings;
   defaultAmount?: number;
   defaultContent?: string;
@@ -17,6 +18,7 @@ interface VietQRModalProps {
 export const VietQRModal: React.FC<VietQRModalProps> = ({
   isOpen,
   onClose,
+  isAdmin = false,
   bankSettings,
   defaultAmount = 0,
   defaultContent = '',
@@ -69,6 +71,15 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
       `📝 ${t('transactions.transfer_content', 'Nội dung CK')}: ${content}\n\n` +
       `${footer}`;
     handleCopy(text, 'all');
+  };
+
+  const copyTransferInfo = () => {
+    const text = `Ngân hàng: ${bankSettings.bankName}\n` +
+      `Số tài khoản: ${bankSettings.accountNumber}\n` +
+      `Chủ tài khoản: ${bankSettings.accountName}\n` +
+      (numAmount > 0 ? `Số tiền: ${formatVND(numAmount)}\n` : '') +
+      `Nội dung CK: ${content}`;
+    handleCopy(text, 'transfer_info');
   };
 
   return (
@@ -191,14 +202,25 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
 
         {/* Footer Quick Share Buttons - Sticky & Non-clipping */}
         <div className="p-4 sm:p-6 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 shrink-0 bg-white dark:bg-slate-900 sticky bottom-0 z-10">
-          <button
-            id="copy-full-share-text-btn"
-            onClick={copyFullShareText}
-            className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
-          >
-            {copiedField === 'all' ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
-            {copiedField === 'all' ? t('vietqr.copied_full_msg', 'Đã sao chép toàn bộ lời nhắn!') : t('vietqr.copy_full_msg', 'Sao chép tin nhắn gửi Zalo/Nhóm')}
-          </button>
+          {isAdmin ? (
+            <button
+              id="copy-full-share-text-btn"
+              onClick={copyFullShareText}
+              className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+            >
+              {copiedField === 'all' ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+              {copiedField === 'all' ? t('vietqr.copied_full_msg', 'Đã sao chép toàn bộ lời nhắn!') : t('vietqr.copy_full_msg', 'Sao chép tin nhắn')}
+            </button>
+          ) : (
+            <button
+              id="copy-transfer-info-btn"
+              onClick={copyTransferInfo}
+              className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+            >
+              {copiedField === 'transfer_info' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copiedField === 'transfer_info' ? 'Đã sao chép thông tin CK!' : 'Sao chép thông tin chuyển khoản'}
+            </button>
+          )}
           <a
             id="download-qr-btn"
             href={qrUrl}
