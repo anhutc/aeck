@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   ArrowDownLeft,
@@ -7,11 +7,20 @@ import {
   Tag,
   FileText,
   Check,
-  AlertCircle
+  AlertCircle,
+  Image as ImageIcon,
+  Camera,
+  Trash2,
+  Eye,
+  RefreshCw,
+  Loader2,
+  ShieldCheck
 } from 'lucide-react';
 import { AppBranding, Category, Fund, Transaction, TransactionType } from '../../types';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { AmountInput } from '../common/AmountInput';
+import { compressBillImage } from '../../utils/imageCompressor';
+import { BillViewModal } from './BillViewModal';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -41,7 +50,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [categoryId, setCategoryId] = useState<string>('');
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [description, setDescription] = useState<string>('');
+  const [billImage, setBillImage] = useState<string>('');
+  const [imageSizeKb, setImageSizeKb] = useState<number | null>(null);
+  const [isCompressing, setIsCompressing] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isPreviewBillOpen, setIsPreviewBillOpen] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const appFundName = branding?.appTitle?.trim() || funds[0]?.name || 'AE Cây Khế';
   const targetFund = funds[0] || { id: 'fund_general', name: appFundName };
@@ -63,12 +79,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setCategoryId(editingTransaction.categoryId || '');
       setDate(editingTransaction.date || new Date().toISOString().slice(0, 10));
       setDescription(editingTransaction.description || '');
+      setBillImage(editingTransaction.billImage || '');
+      setImageSizeKb(null);
     } else {
       const activeType = initialType === 'expense' ? 'expense' : 'income';
       setType(activeType);
       setAmount('');
       setDate(new Date().toISOString().slice(0, 10));
       setDescription('');
+      setBillImage('');
+      setImageSizeKb(null);
       
       const matchingCats = categories.filter(c => c.type === activeType);
       setCategoryId(matchingCats[0]?.id || categories[0]?.id || '');
@@ -85,6 +105,59 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     } else {
       setCategoryId('');
     }
+  };
+
+  const processFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setError('Vui lòng chỉ chọn tệp hình ảnh (JPG, PNG, WebP).');
+      return;
+    }
+    try {
+      setIsCompressing(true);
+      setError('');
+      const result = await compressBillImage(file, 1280, 0.78);
+      setBillImage(result.dataUrl);
+      setImageSizeKb(result.compressedSizeKb);
+    } catch (err: any) {
+      setError(err?.message || 'Không thể xử lý ảnh hóa đơn. Vui lòng thử lại.');
+    } finally {
+      setIsCompressing(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+    // Reset file input so user can choose the same file again if re-uploading
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setBillImage('');
+    setImageSizeKb(null);
   };
 
   if (!isOpen) return null;
@@ -120,6 +193,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         categoryId,
         date,
         description: description.trim(),
+        billImage: billImage ? billImage : undefined,
         status: 'completed',
       },
       editingTransaction ? editingTransaction.id : undefined
@@ -288,6 +362,121 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden leading-relaxed"
               />
             </div>
+
+            {/* 5. ẢNH HÓA ĐƠN / BILL CHI TIÊU (TÙY CHỌN) */}
+            <div className="pt-1">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <ImageIcon className={`w-3.5 h-3.5 ${type === 'expense' ? 'text-rose-600' : 'text-emerald-600'}`} />
+                  <span>{type === 'expense' ? 'Ảnh hóa đơn' : 'Biên lai thu'}</span>
+                </label>
+                {type === 'expense' && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-200/60 dark:border-rose-900/60">
+                    <ShieldCheck className="w-3 h-3 text-rose-500" />
+                    Minh bạch
+                  </span>
+                )}
+              </div>
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                id="tx-bill-image-file-input"
+              />
+
+              {!billImage ? (
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-2xl p-4 sm:p-5 text-center cursor-pointer transition-all ${
+                    isDragging
+                      ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 scale-[0.99]'
+                      : 'border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/80'
+                  }`}
+                >
+                  {isCompressing ? (
+                    <div className="py-2 flex flex-col items-center justify-center gap-2 text-slate-500">
+                      <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                      <span className="text-xs font-semibold">Đang xử lý & tối ưu độ nét ảnh hóa đơn...</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-1.5">
+                      <div className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-700 shadow-xs border border-slate-200/80 dark:border-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-300">
+                        <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                        {type === 'expense' ? 'Đính kèm ảnh hóa đơn / bill chi' : 'Đính kèm ảnh biên lai / chứng từ'}
+                      </div>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-xs">
+                        Chụp ảnh hóa đơn hoặc chọn tệp (JPG, PNG, WebP). Hệ thống tự động nén nhẹ & giữ nét chữ.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      onClick={() => setIsPreviewBillOpen(true)}
+                      className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 shrink-0 cursor-pointer group"
+                      title="Nhấp để phóng to ảnh"
+                    >
+                      <img
+                        src={billImage}
+                        alt="Hóa đơn"
+                        className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                        <Eye className="w-4 h-4" />
+                      </div>
+                    </div>
+
+                    <div className="min-w-0 text-xs">
+                      <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span className="truncate">Đã đính kèm ảnh hóa đơn</span>
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {imageSizeKb ? `Dung lượng: ~${imageSizeKb} KB • Rõ nét` : 'Ảnh hóa đơn hợp lệ'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setIsPreviewBillOpen(true)}
+                      title="Xem ảnh lớn"
+                      className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Đổi ảnh khác"
+                      className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      title="Xóa ảnh này"
+                      className="p-2 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-900/60 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Footer Buttons - Sticky, Non-clipping */}
@@ -314,6 +503,27 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           </div>
         </form>
       </div>
+
+      {/* Quick Preview Modal inside form */}
+      {billImage && (
+        <BillViewModal
+          isOpen={isPreviewBillOpen}
+          onClose={() => setIsPreviewBillOpen(false)}
+          transaction={{
+            id: 'preview',
+            type,
+            fundId: targetFund.id,
+            amount: typeof amount === 'number' ? amount : (parseFloat(amount) || 0),
+            categoryId,
+            date,
+            description: description || 'Xem trước ảnh hóa đơn',
+            billImage,
+            status: 'completed',
+            createdAt: new Date().toISOString(),
+          }}
+          category={availableCategories.find(c => c.id === categoryId)}
+        />
+      )}
     </div>
   );
 };

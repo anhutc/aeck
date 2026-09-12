@@ -34,6 +34,7 @@ export interface Transaction {
   description: string; // Lý do / Nội dung chi tiết
   payerOrReceiver?: string; // Tùy chọn
   campaignId?: string; // Thuộc đợt thu nào (nếu có)
+  billImage?: string; // Ảnh hóa đơn / bill chi tiêu (base64 data URL)
   status: 'completed' | 'pending';
   createdAt: string;
 }

@@ -10,12 +10,16 @@ import {
   RotateCcw,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Receipt,
+  Eye,
+  FileImage
 } from 'lucide-react';
 import { AppBranding, Category, Fund, Member, Transaction, TransactionType } from '../types';
 import { formatVND, formatDate } from '../utils/formatters';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback } from '../context/FeedbackContext';
+import { BillViewModal } from './modals/BillViewModal';
 
 interface TransactionsTabProps {
   transactions: Transaction[];
@@ -41,12 +45,15 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
+  const [selectedBillFilter, setSelectedBillFilter] = useState<'all' | 'has_bill' | 'no_bill'>('all');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [sortBy, setSortBy] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc');
   const [selectedTxIds, setSelectedTxIds] = useState<string[]>([]);
+  const [viewingBillTx, setViewingBillTx] = useState<Transaction | null>(null);
 
   const catMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
+  const countWithBill = useMemo(() => transactions.filter(t => !!t.billImage).length, [transactions]);
 
   // Filtered and Sorted transactions
   const filteredTransactions = useMemo(() => {
@@ -69,6 +76,10 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
       if (selectedCategoryId !== 'all') {
         if (tx.categoryId !== selectedCategoryId) return false;
       }
+
+      // Bill Filter
+      if (selectedBillFilter === 'has_bill' && !tx.billImage) return false;
+      if (selectedBillFilter === 'no_bill' && tx.billImage) return false;
 
       // Date range
       if (startDate && tx.date < startDate) return false;
@@ -97,6 +108,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
     searchQuery,
     selectedType,
     selectedCategoryId,
+    selectedBillFilter,
     startDate,
     endDate,
     sortBy
@@ -156,6 +168,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
     setSearchQuery('');
     setSelectedType('all');
     setSelectedCategoryId('all');
+    setSelectedBillFilter('all');
     setStartDate('');
     setEndDate('');
   };
@@ -280,7 +293,23 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
               </select>
             </div>
 
-            {(searchQuery || selectedType !== 'all' || selectedCategoryId !== 'all' || startDate || endDate) && (
+            {/* Bill / Proof Filter */}
+            <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+              <Receipt className="w-3.5 h-3.5 text-blue-500" />
+              <span>Hóa đơn / Bill:</span>
+              <select
+                id="filter-bill-select"
+                value={selectedBillFilter}
+                onChange={(e) => setSelectedBillFilter(e.target.value as any)}
+                className="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-semibold text-slate-900 dark:text-white text-xs focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+              >
+                <option value="all">Tất cả ({transactions.length})</option>
+                <option value="has_bill">📎 Có ảnh bill ({countWithBill})</option>
+                <option value="no_bill">Chưa có ảnh bill</option>
+              </select>
+            </div>
+
+            {(searchQuery || selectedType !== 'all' || selectedCategoryId !== 'all' || selectedBillFilter !== 'all' || startDate || endDate) && (
               <button
                 onClick={resetFilters}
                 className="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 cursor-pointer"
@@ -388,6 +417,19 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                 <div className="text-sm font-semibold text-slate-900 mb-2.5 break-words">
                   {tx.description}
                 </div>
+
+                {tx.billImage && (
+                  <div className="mb-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setViewingBillTx(tx)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/80 hover:bg-blue-100 transition-colors cursor-pointer active:scale-95"
+                    >
+                      <Receipt className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      <span>Xem ảnh hóa đơn / bill</span>
+                    </button>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                   <div>
@@ -549,6 +591,19 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                         <div className="font-semibold text-slate-900 line-clamp-2">
                           {tx.description}
                         </div>
+                        {tx.billImage && (
+                          <div className="mt-1">
+                            <button
+                              type="button"
+                              onClick={() => setViewingBillTx(tx)}
+                              title="Nhấp để xem ảnh hóa đơn / bill"
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800/80 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
+                            >
+                              <Receipt className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                              <span>Xem bill chi</span>
+                            </button>
+                          </div>
+                        )}
                       </td>
 
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
@@ -610,6 +665,16 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
           </table>
         </div>
       </div>
+
+      {/* Modal viewing bill image */}
+      {viewingBillTx && (
+        <BillViewModal
+          isOpen={!!viewingBillTx}
+          onClose={() => setViewingBillTx(null)}
+          transaction={viewingBillTx}
+          category={catMap.get(viewingBillTx.categoryId)}
+        />
+      )}
     </div>
   );
 };
