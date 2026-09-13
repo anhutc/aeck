@@ -253,7 +253,12 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
             <button
               id="export-campaigns-dues-btn"
               onClick={() => onOpenPrintDuesModal()}
-              className="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              style={{
+                backgroundColor: activePreset.primaryLight,
+                color: activePreset.primaryText,
+                borderColor: activePreset.primaryBorder,
+              }}
+              className="px-3.5 py-2.5 rounded-xl border active:scale-95 text-xs font-bold shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:opacity-90"
               title={t('campaigns.export_dues_btn_title', 'Xuất ảnh danh sách đóng quỹ & nợ quỹ chia sẻ')}
             >
               <ReceiptText className="w-4 h-4" />
@@ -471,9 +476,9 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
 
                               <button
                                 onClick={() => copyTransferSyntax(camp)}
-                                className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-2 transition-colors cursor-pointer border-t border-slate-100 dark:border-slate-700 mt-1 pt-1.5"
+                                className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-[var(--theme-primary)] flex items-center gap-2 transition-colors cursor-pointer border-t border-slate-100 dark:border-slate-700 mt-1 pt-1.5"
                               >
-                                <CreditCard className="w-3.5 h-3.5 text-blue-500" />
+                                <CreditCard className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                                 <div>
                                   <div className="font-semibold">{t('campaigns.copy_transfer_syntax', 'Cú pháp chuyển khoản')}</div>
                                   <div className="text-[10px] text-slate-400 font-mono">{prefix} {camp.title}</div>
@@ -488,12 +493,12 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                           title={t('campaigns.copy_transfer_syntax_tooltip', 'Sao chép cú pháp nội dung chuyển khoản')}
                           className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                             copiedKey === camp.id + '_syntax'
-                              ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300'
+                              ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300'
                               : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 hover:border-slate-400'
                           }`}
                         >
                           {copiedKey === camp.id + '_syntax' ? (
-                            <Check className="w-3.5 h-3.5 text-blue-600 animate-in zoom-in-50" />
+                            <Check className="w-3.5 h-3.5 text-emerald-600 animate-in zoom-in-50" />
                           ) : (
                             <Copy className="w-3.5 h-3.5 text-slate-500" />
                           )}
@@ -506,7 +511,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                         <button
                           onClick={() => onOpenCampaignModal(camp)}
                           title={t('common.edit', 'Sửa đợt thu')}
-                          className="p-2 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-all active:scale-95 cursor-pointer"
+                          className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
@@ -607,10 +612,11 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                         {partialMembers.length > 0 && (
                           <button
                             onClick={() => setFilterStatuses(prev => ({ ...prev, [camp.id]: 'partial' }))}
+                            style={currentFilter === 'partial' ? { backgroundColor: activePreset.primary } : undefined}
                             className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                               currentFilter === 'partial'
-                                ? 'bg-blue-600 text-white shadow-xs'
-                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700'
+                                ? 'text-white shadow-xs'
+                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:opacity-80'
                             }`}
                           >
                             {t('campaigns.filter_partial', 'Đã cọc')} ({partialMembers.length})
@@ -625,7 +631,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                             id={`sort-participants-${camp.id}`}
                             value={currentSort}
                             onChange={(e) => setSortOptions(prev => ({ ...prev, [camp.id]: e.target.value as any }))}
-                            className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
+                            className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden cursor-pointer"
                             title={t('campaigns.sort_title', 'Sắp xếp danh sách đóng quỹ')}
                           >
                             <option value="paidDate_desc">{t('campaigns.sort_latest_paid', '📅 Mới nộp gần nhất')}</option>
@@ -643,7 +649,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                             placeholder={t('campaigns.search_member_placeholder', 'Tìm tên thành viên...')}
                             value={searchQueries[camp.id] || ''}
                             onChange={(e) => setSearchQueries(prev => ({ ...prev, [camp.id]: e.target.value }))}
-                            className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                            className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden"
                           />
                         </div>
                       </div>
@@ -753,7 +759,8 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                       <button
                                         onClick={() => handleOpenPayModal(camp, p.memberId)}
                                         title={t('campaigns.pay_modal_btn_title', 'Ghi nhận nộp quỹ (chọn ngày & số tiền tùy chỉnh)')}
-                                        className="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 hover:shadow-xs text-white text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer whitespace-nowrap"
+                                        style={{ background: activePreset.gradient }}
+                                        className="px-2.5 py-1.5 rounded-lg text-white text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer whitespace-nowrap shadow-xs hover:opacity-95"
                                       >
                                         <Calendar className="w-3 h-3" />
                                         <span>{t('campaigns.pay_full', 'Nộp đủ')}</span>

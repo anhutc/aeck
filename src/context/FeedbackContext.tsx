@@ -6,9 +6,11 @@ import {
   Info, 
   HelpCircle,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  LogOut
 } from 'lucide-react';
 import { useTranslation } from '../i18n/LanguageContext';
+import { useTheme } from './ThemeContext';
 import { 
   ToastContainer, 
   ToastItem, 
@@ -24,7 +26,7 @@ export interface ConfirmOptions {
   confirmText?: string;
   cancelText?: string;
   type?: DialogType;
-  icon?: 'trash' | 'alert' | 'info' | 'check' | 'question';
+  icon?: 'trash' | 'alert' | 'info' | 'check' | 'question' | 'logout';
   onConfirm: () => void | Promise<void>;
   onCancel?: () => void;
 }
@@ -51,6 +53,7 @@ const FeedbackContext = createContext<FeedbackContextValue | undefined>(undefine
 
 export const FeedbackProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
+  const { activePreset } = useTheme();
   // Confirm Dialog State
   const [confirmDialog, setConfirmDialog] = useState<ConfirmOptions | null>(null);
   const [isConfirmLoading, setIsConfirmLoading] = useState(false);
@@ -171,78 +174,103 @@ export const FeedbackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       />
 
       {/* 2. Custom Confirm Popup Modal */}
-      {confirmDialog && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div 
-            className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl overflow-hidden p-6 animate-in zoom-in-95 duration-150"
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
-                confirmDialog.type === 'danger'
-                  ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-800'
-                  : confirmDialog.type === 'warning'
-                  ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800'
-                  : 'bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800'
-              }`}>
-                {confirmDialog.type === 'danger' ? (
-                  <Trash2 className="w-6 h-6" />
-                ) : confirmDialog.type === 'warning' ? (
-                  <AlertTriangle className="w-6 h-6" />
-                ) : (
-                  <HelpCircle className="w-6 h-6" />
-                )}
-              </div>
+      {confirmDialog && (() => {
+        const isLogout = confirmDialog.icon === 'logout' || 
+          confirmDialog.title?.toLowerCase().includes('đăng xuất') || 
+          confirmDialog.confirmText?.toLowerCase().includes('đăng xuất');
+        const isThemeStyled = isLogout || (confirmDialog.type !== 'danger' && confirmDialog.type !== 'warning');
 
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
-                  {confirmDialog.title || (
-                    confirmDialog.type === 'danger' 
-                      ? t('dialog.confirm_delete_title', 'Xác Nhận Xóa') 
-                      : t('dialog.confirm_action_title', 'Xác Nhận Thao Tác')
-                  )}
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-normal">
-                  {confirmDialog.message}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={handleCancelAction}
-                disabled={isConfirmLoading}
-                className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
-              >
-                {confirmDialog.cancelText || t('common.cancel', 'Hủy Bỏ')}
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmAction}
-                disabled={isConfirmLoading}
-                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white shadow-md transition-all cursor-pointer flex items-center gap-2 ${
-                  confirmDialog.type === 'danger'
-                    ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/25 active:scale-98'
+        return (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+            <div 
+              className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl overflow-hidden p-6 animate-in zoom-in-95 duration-150"
+              role="dialog"
+              aria-modal="true"
+            >
+              <div className="flex items-start gap-4">
+                <div
+                  style={isThemeStyled ? {
+                    backgroundColor: activePreset.primaryLight,
+                    color: activePreset.primaryText,
+                    borderColor: activePreset.primaryBorder,
+                  } : undefined}
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${
+                  isThemeStyled
+                    ? ''
+                    : confirmDialog.type === 'danger'
+                    ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 border-rose-200/80 dark:border-rose-800'
                     : confirmDialog.type === 'warning'
-                    ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/25 active:scale-98'
-                    : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/25 active:scale-98'
-                }`}
-              >
-                {isConfirmLoading && (
-                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                )}
-                {confirmDialog.confirmText || (
-                  confirmDialog.type === 'danger' 
-                    ? t('dialog.confirm_delete_btn', 'Đồng Ý Xóa') 
-                    : t('dialog.confirm_btn', 'Xác Nhận')
-                )}
-              </button>
+                    ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border-amber-200/80 dark:border-amber-800'
+                    : ''
+                }`}>
+                  {isLogout ? (
+                    <LogOut className="w-6 h-6" style={{ color: activePreset.primary }} />
+                  ) : confirmDialog.icon === 'trash' || confirmDialog.type === 'danger' ? (
+                    <Trash2 className="w-6 h-6" />
+                  ) : confirmDialog.icon === 'alert' || confirmDialog.type === 'warning' ? (
+                    <AlertTriangle className="w-6 h-6" />
+                  ) : confirmDialog.icon === 'check' ? (
+                    <CheckCircle2 className="w-6 h-6" />
+                  ) : (
+                    <HelpCircle className="w-6 h-6" />
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
+                    {confirmDialog.title || (
+                      confirmDialog.type === 'danger' 
+                        ? t('dialog.confirm_delete_title', 'Xác Nhận Xóa') 
+                        : t('dialog.confirm_action_title', 'Xác Nhận Thao Tác')
+                    )}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-normal">
+                    {confirmDialog.message}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={handleCancelAction}
+                  disabled={isConfirmLoading}
+                  className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+                >
+                  {confirmDialog.cancelText || t('common.cancel', 'Hủy Bỏ')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmAction}
+                  disabled={isConfirmLoading}
+                  style={isThemeStyled ? {
+                    background: activePreset.gradient,
+                    boxShadow: `0 4px 14px ${activePreset.primary}40`,
+                  } : undefined}
+                  className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white shadow-md transition-all cursor-pointer flex items-center gap-2 ${
+                    isThemeStyled
+                      ? 'hover:opacity-95 active:scale-98'
+                      : confirmDialog.type === 'danger'
+                      ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/25 active:scale-98'
+                      : confirmDialog.type === 'warning'
+                      ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/25 active:scale-98'
+                      : 'hover:opacity-95 active:scale-98'
+                  }`}
+                >
+                  {isConfirmLoading && (
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  )}
+                  {confirmDialog.confirmText || (
+                    confirmDialog.type === 'danger' 
+                      ? t('dialog.confirm_delete_btn', 'Đồng Ý Xóa') 
+                      : t('dialog.confirm_btn', 'Xác Nhận')
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 3. Custom Alert Popup Modal */}
       {alertDialog && (
@@ -253,14 +281,20 @@ export const FeedbackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             aria-modal="true"
           >
             <div className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+              <div
+                style={alertDialog.type !== 'error' && alertDialog.type !== 'success' && alertDialog.type !== 'warning' ? {
+                  backgroundColor: activePreset.primaryLight,
+                  color: activePreset.primaryText,
+                  borderColor: activePreset.primaryBorder,
+                } : undefined}
+                className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${
                 alertDialog.type === 'error'
-                  ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-800'
+                  ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 border-rose-200/80 dark:border-rose-800'
                   : alertDialog.type === 'success'
-                  ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800'
+                  ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border-emerald-200/80 dark:border-emerald-800'
                   : alertDialog.type === 'warning'
-                  ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800'
-                  : 'bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800'
+                  ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border-amber-200/80 dark:border-amber-800'
+                  : ''
               }`}>
                 {alertDialog.type === 'error' ? (
                   <XCircle className="w-6 h-6" />
@@ -295,7 +329,8 @@ export const FeedbackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               <button
                 type="button"
                 onClick={handleCloseAlert}
-                className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/25 transition-all cursor-pointer active:scale-98"
+                style={{ background: activePreset.gradient, boxShadow: `0 4px 14px ${activePreset.primary}35` }}
+                className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white transition-all cursor-pointer active:scale-98 hover:opacity-95"
               >
                 {alertDialog.buttonText || t('dialog.btn_understood', 'Đã Hiểu')}
               </button>

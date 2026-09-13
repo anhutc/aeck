@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ScrollText, X, Save, Sparkles, AlertCircle, Calendar, Info } from 'lucide-react';
 import { GroupNotice } from '../../types';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface NoticeEditModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const NoticeEditModal: React.FC<NoticeEditModalProps> = ({
   onSaveNotice,
 }) => {
   const { t } = useTranslation();
+  const { activePreset } = useTheme();
   const [enabled, setEnabled] = useState(notice?.enabled ?? true);
   const [title, setTitle] = useState(notice?.title || '');
   const [content, setContent] = useState(notice?.content || '');
@@ -83,7 +85,10 @@ export const NoticeEditModal: React.FC<NoticeEditModalProps> = ({
         {/* Sticky Header */}
         <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-white dark:bg-slate-900">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+            <div
+              style={{ backgroundColor: activePreset.primary, boxShadow: `0 4px 12px ${activePreset.primary}33` }}
+              className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shrink-0"
+            >
               <ScrollText className="w-5 h-5" />
             </div>
             <div>
@@ -151,7 +156,10 @@ export const NoticeEditModal: React.FC<NoticeEditModalProps> = ({
                   onChange={(e) => setEnabled(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                <div
+                  style={enabled ? { backgroundColor: activePreset.primary } : undefined}
+                  className="w-11 h-6 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600"
+                ></div>
               </label>
             </div>
 
@@ -164,14 +172,20 @@ export const NoticeEditModal: React.FC<NoticeEditModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setType('info')}
+                  style={type === 'info' ? {
+                    backgroundColor: activePreset.primaryLight,
+                    borderColor: activePreset.primary,
+                    color: activePreset.primaryText,
+                    boxShadow: `0 0 0 2px ${activePreset.primary}33`,
+                  } : undefined}
                   className={`p-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     type === 'info'
-                      ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/20'
+                      ? ''
                       : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                   }`}
                 >
-                  <Info className="w-3.5 h-3.5 text-blue-500" />
-                  <span>{t('notice.style_info', 'Quy chế (Xanh)')}</span>
+                  <Info className="w-3.5 h-3.5" style={{ color: type === 'info' ? activePreset.primary : undefined }} />
+                  <span>{t('notice.style_info', 'Chủ đạo')}</span>
                 </button>
 
                 <button
@@ -214,13 +228,13 @@ export const NoticeEditModal: React.FC<NoticeEditModalProps> = ({
                   placeholder={t('notice.title_placeholder', 'VD: Nội quy & Quy định quỹ hoạt động...')}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-slate-400 focus:outline-hidden"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                  <Calendar className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                   <span>{t('notice.effective_date_label', 'Ngày áp dụng')}</span>
                 </label>
                 <input
@@ -228,7 +242,7 @@ export const NoticeEditModal: React.FC<NoticeEditModalProps> = ({
                   required
                   value={updatedAt}
                   onChange={(e) => setUpdatedAt(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-slate-400 focus:outline-hidden"
                 />
               </div>
             </div>
@@ -244,7 +258,7 @@ export const NoticeEditModal: React.FC<NoticeEditModalProps> = ({
                 placeholder={t('notice.content_placeholder', 'Nhập từng điều khoản quy định hoạt động, mức đóng, quyền lợi và nguyên tắc thu chi minh bạch...')}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden leading-relaxed"
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-slate-400 focus:outline-hidden leading-relaxed"
               />
             </div>
           </div>
@@ -260,7 +274,8 @@ export const NoticeEditModal: React.FC<NoticeEditModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
+              style={{ background: activePreset.gradient, boxShadow: `0 4px 14px ${activePreset.primary}35` }}
+              className="px-5 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer hover:opacity-95 active:scale-95"
             >
               <Save className="w-4 h-4" />
               <span>{savedSuccess ? t('notice.saved_sync_success', 'Đã lưu & đồng bộ!') : t('notice.save_notice_btn', 'Lưu Bảng Nội Quy')}</span>

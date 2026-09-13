@@ -249,8 +249,12 @@ export function applyThemeToDocument(
 
   if (isDark) {
     root.classList.add('dark');
+    root.setAttribute('data-theme', 'dark');
+    root.style.colorScheme = 'dark';
   } else {
     root.classList.remove('dark');
+    root.setAttribute('data-theme', 'light');
+    root.style.colorScheme = 'light';
   }
 
   // 2. CSS Custom Properties for Colors

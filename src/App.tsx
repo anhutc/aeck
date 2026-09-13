@@ -77,7 +77,7 @@ function deduplicateById<T extends { id: string }>(items: T[]): T[] {
 
 export default function App() {
   const { showToast, showConfirm } = useFeedback();
-  const { isCustomizerOpen, setIsCustomizerOpen } = useTheme();
+  const { isCustomizerOpen, setIsCustomizerOpen, syncFromBranding, revertToSavedTheme } = useTheme();
 
   // User Authentication State (dual-password: 'member' or 'admin')
   // Session is strictly kept in-memory for the current page life only.
@@ -255,6 +255,7 @@ export default function App() {
         if (cloudData.branding) {
           setBranding(cloudData.branding);
           localStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(cloudData.branding));
+          syncFromBranding(cloudData.branding);
         }
         if (cloudData.adminPassword) {
           setAdminPassword(cloudData.adminPassword);
@@ -422,13 +423,15 @@ export default function App() {
     showConfirm({
       title: 'Đăng Xuất',
       message: 'Bạn có chắc chắn muốn đăng xuất khỏi phiên làm việc hiện tại không?',
-      type: 'warning',
+      type: 'confirm',
+      icon: 'logout',
       confirmText: 'Đăng xuất',
       cancelText: 'Hủy bỏ',
       onConfirm: () => {
         setCurrentUserRole(null);
         sessionStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
         localStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
+        revertToSavedTheme(branding);
         setIsMemberView(true);
         showToast('Đã đăng xuất!', 'info');
       },
@@ -693,12 +696,57 @@ export default function App() {
 
   // Full Export & Import JSON
   const handleExportAllData = () => {
-    // Strip obsolete fundId and deprecated fields from transactions and campaigns
+    // 1. Strip obsolete fundId and clean up transactions
     const cleanTransactions = transactions.map(({ fundId: _fId, ...rest }) => rest);
-    const cleanCampaigns = campaigns.map(({ fundId: _fId, dueDate: _dDate, status: _st, ...rest }) => rest);
+
+    // 2. Strip deprecated fields from campaigns and participant cleanups
+    const cleanCampaigns = campaigns.map(({ fundId: _fId, dueDate: _dDate, status: _st, participants, ...rest }) => ({
+      ...rest,
+      participants: (participants || []).map(p => {
+        const cleanP: any = {
+          memberId: p.memberId,
+          amountRequired: p.amountRequired,
+          amountPaid: p.amountPaid,
+        };
+        if (p.paidDate) cleanP.paidDate = p.paidDate;
+        if (p.note) cleanP.note = p.note;
+        if (p.transactionId) cleanP.transactionId = p.transactionId;
+        return cleanP;
+      }),
+    }));
+
+    // 3. Strip redundant report signatures, statement print templates, social share templates from branding
+    const {
+      statementHeaderTitle: _sht,
+      statementSubtitle: _sst,
+      statementSignatory1Title: _s1t,
+      statementSignatory1Name: _s1n,
+      statementSignatory2Title: _s2t,
+      statementSignatory2Name: _s2n,
+      statementSignatory3Title: _s3t,
+      statementSignatory3Name: _s3n,
+      statementFooterNote: _sfn,
+      statementShowSignatory1: _ss1,
+      statementShowSignatory2: _ss2,
+      statementShowSignatory3: _ss3,
+      statementShowFooterNote: _ssfn,
+      statementShowSummary: _sssum,
+      socialShareTemplate: _sstmp,
+      shareMessageGreeting: _smg,
+      shareMessageBenefit1: _smb1,
+      shareMessageBenefit2: _smb2,
+      shareMessageBenefit3: _smb3,
+      shareMessageClosing: _smc,
+      shareMessageIncludeBank: _smib,
+      shareMessageIncludeCampaigns: _smic,
+      customFooterText: _cft,
+      qrShareHeader: _qsh,
+      qrShareFooter: _qsf,
+      ...cleanBranding
+    } = (branding || {}) as any;
 
     const fullBackup = {
-      version: '2.4',
+      version: '2.5',
       exportedAt: new Date().toISOString(),
       transactions: cleanTransactions,
       categories,
@@ -707,7 +755,7 @@ export default function App() {
       bankSettings,
       groupNotice,
       viewPermissions,
-      branding,
+      branding: cleanBranding,
       adminPassword,
       memberPassword,
     };
@@ -716,7 +764,7 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `sổ_quỹ_${branding.appTitle.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `sổ_quỹ_${(branding.appTitle || 'AE_Cay_Khe').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -728,7 +776,13 @@ export default function App() {
       if (data.members) setMembers(data.members);
       if (data.bankSettings) setBankSettings(data.bankSettings);
       if (data.groupNotice) setGroupNotice(data.groupNotice);
-      if (data.branding) setBranding(data.branding);
+      if (data.branding) {
+        setBranding(prev => ({
+          ...INITIAL_BRANDING,
+          ...prev,
+          ...data.branding,
+        }));
+      }
       if (data.viewPermissions) setViewPermissions(data.viewPermissions);
       if (data.adminPassword) setAdminPassword(data.adminPassword);
       if (data.memberPassword) setMemberPassword(data.memberPassword);
@@ -940,6 +994,7 @@ export default function App() {
   const handleUpdateBranding = (newBranding: AppBranding) => {
     setBranding(newBranding);
     localStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(newBranding));
+    syncFromBranding(newBranding);
     const newAppName = newBranding?.appTitle?.trim() || 'AE Cây Khế';
     setFunds(prev => {
       if (prev.length === 0) return prev;

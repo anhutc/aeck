@@ -13,6 +13,7 @@ import {
 import { Member, MemberContributionType } from '../../types';
 import { getMemberRoles } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface MemberModalProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
   initialData,
 }) => {
   const { t } = useTranslation();
+  const { activePreset } = useTheme();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [roles, setRoles] = useState<string[]>(['Thành viên']);
@@ -165,7 +167,10 @@ export const MemberModal: React.FC<MemberModalProps> = ({
         {/* Header - Sticky, Never Clipped */}
         <div className="px-5 sm:px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 sticky top-0 z-20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+            <div
+              style={{ backgroundColor: activePreset.primary, boxShadow: `0 4px 12px ${activePreset.primary}33` }}
+              className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shrink-0"
+            >
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
@@ -209,7 +214,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                   placeholder={t('members.name_placeholder', 'Ví dụ: Nguyễn Văn An, Trần Thị Bình...')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-slate-400 focus:outline-hidden"
                 />
               </div>
 
@@ -224,7 +229,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                   placeholder={t('members.phone_placeholder', '0912 345 678')}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-slate-400 focus:outline-hidden"
                 />
               </div>
             </div>
@@ -233,10 +238,10 @@ export const MemberModal: React.FC<MemberModalProps> = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  <Briefcase className="w-3.5 h-3.5 text-blue-600" />
+                  <Briefcase className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                   {t('members.role_management_label', 'Vai trò / Chức danh (Một người có thể kiêm nhiều vai trò)')} <span className="text-rose-500">*</span>
                 </label>
-                <span className="text-[11px] text-blue-600 font-semibold">{t('members.selected_count', 'Đã chọn:')} {roles.length}</span>
+                <span className="text-[11px] font-semibold" style={{ color: activePreset.primary }}>{t('members.selected_count', 'Đã chọn:')} {roles.length}</span>
               </div>
 
               {/* Selected active roles chips */}
@@ -248,10 +253,14 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                       key={r}
                       type="button"
                       onClick={() => handleToggleRole(r)}
+                      style={isSelected ? {
+                        backgroundColor: activePreset.primary,
+                        boxShadow: `0 2px 8px ${activePreset.primary}35`,
+                      } : undefined}
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                         isSelected
-                          ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/30'
-                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-blue-400'
+                          ? 'text-white'
+                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-400'
                       }`}
                     >
                       {isSelected && <Check className="w-3.5 h-3.5" />}
@@ -268,7 +277,11 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                       key={r}
                       type="button"
                       onClick={() => handleToggleRole(r)}
-                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white shadow-xs flex items-center gap-1.5 cursor-pointer"
+                      style={{
+                        backgroundColor: activePreset.primary,
+                        boxShadow: `0 2px 8px ${activePreset.primary}35`,
+                      }}
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white shadow-xs flex items-center gap-1.5 cursor-pointer"
                     >
                       <Check className="w-3.5 h-3.5" />
                       <span>{r}</span>
@@ -289,7 +302,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                       handleAddCustomRole();
                     }
                   }}
-                  className="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  className="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden"
                 />
                 <button
                   type="button"
@@ -306,7 +319,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                  <Calendar className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                   {t('members.joined_date_label', 'Ngày tham gia nhóm')} <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -315,7 +328,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                   required
                   value={joinedDate}
                   onChange={(e) => setJoinedDate(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden"
                 />
               </div>
 
@@ -334,7 +347,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                       setStatus('inactive');
                     }
                   }}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden"
                 />
               </div>
             </div>
@@ -390,9 +403,13 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setContributionType('campaign')}
+                  style={contributionType === 'campaign' ? {
+                    backgroundColor: activePreset.primary,
+                    borderColor: activePreset.primary,
+                  } : undefined}
                   className={`py-2 px-2 rounded-xl text-[11px] font-bold text-center border transition-all cursor-pointer ${
                     contributionType === 'campaign'
-                      ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
+                      ? 'text-white shadow-xs'
                       : 'border-amber-200 dark:border-amber-900/80 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-amber-400'
                   }`}
                 >
@@ -495,7 +512,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
             <button
               id="submit-member-btn"
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
+              style={{ background: activePreset.gradient, boxShadow: `0 4px 14px ${activePreset.primary}35` }}
+              className="px-5 py-2.5 rounded-xl text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer hover:opacity-95 active:scale-95"
             >
               <Check className="w-4 h-4" />
               <span>{initialData ? t('members.update_member_btn', 'Cập Nhật Thành Viên') : t('members.save_member_btn', 'Lưu Thành Viên')}</span>

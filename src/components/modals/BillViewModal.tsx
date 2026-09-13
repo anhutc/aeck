@@ -15,6 +15,7 @@ import {
 import { Transaction, Category } from '../../types';
 import { formatVND, formatDate } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface BillViewModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
   category,
 }) => {
   const { t } = useTranslation();
+  const { activePreset } = useTheme();
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
 
@@ -129,7 +131,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
             <button
               onClick={handleDownload}
               title={t('transactions.bill_download_btn', 'Tải ảnh')}
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:opacity-80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
             >
               <Download className="w-4 h-4" />
             </button>
@@ -147,7 +149,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
         <div className="px-4 sm:px-6 py-2 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-300">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400 font-medium">
-              <Calendar className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <Calendar className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
               <span>{formatDate(transaction.date)}</span>
             </span>
             {category && (
@@ -174,7 +176,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
               onClick={handleZoomOut}
               disabled={zoom <= 0.5}
               title={t('transactions.bill_zoom_out', 'Thu nhỏ')}
-              className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-30 cursor-pointer"
+              className="p-1 rounded text-slate-500 dark:text-slate-400 hover:opacity-75 disabled:opacity-30 cursor-pointer"
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
@@ -185,7 +187,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
               onClick={handleZoomIn}
               disabled={zoom >= 3}
               title={t('transactions.bill_zoom_in', 'Phóng to')}
-              className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-30 cursor-pointer"
+              className="p-1 rounded text-slate-500 dark:text-slate-400 hover:opacity-75 disabled:opacity-30 cursor-pointer"
             >
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
@@ -193,14 +195,14 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
             <button
               onClick={handleRotate}
               title={t('transactions.bill_rotate_btn', 'Xoay ảnh')}
-              className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
+              className="p-1 rounded text-slate-500 dark:text-slate-400 hover:opacity-75 cursor-pointer"
             >
               <RotateCw className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleReset}
               title={t('text_editor.reset_all_btn', 'Kích thước ban đầu')}
-              className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
+              className="p-1 rounded text-slate-500 dark:text-slate-400 hover:opacity-75 cursor-pointer"
             >
               <Maximize2 className="w-3.5 h-3.5" />
             </button>
@@ -233,7 +235,12 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleDownload}
-              className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5"
+              style={{
+                backgroundColor: activePreset.primaryLight,
+                color: activePreset.primaryText,
+                borderColor: activePreset.primaryBorder,
+              }}
+              className="px-3 py-1.5 rounded-xl border font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5 hover:opacity-90"
             >
               <Download className="w-3.5 h-3.5" />
               <span>{t('transactions.bill_download_btn', 'Tải ảnh')}</span>

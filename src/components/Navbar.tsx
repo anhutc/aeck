@@ -17,6 +17,8 @@ import {
   Palette,
   Eye,
   EyeOff,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { TabType, Fund, AppBranding } from '../types';
 import { formatVND, copyToClipboard, formatNumberCompact } from '../utils/formatters';
@@ -56,7 +58,13 @@ export const Navbar: React.FC<NavbarProps> = ({
     privacyMode,
     togglePrivacyMode,
     maskAmount,
+    isDarkMode,
+    setThemeMode,
   } = useTheme();
+
+  const handleToggleTheme = () => {
+    setThemeMode(isDarkMode ? 'light' : 'dark');
+  };
   
   // States
   const [isTreasurerModalOpen, setIsTreasurerModalOpen] = useState(false);
@@ -122,8 +130,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* COL 1 (LEFT): Brand Identity Capsule */}
             <div className="flex items-center gap-2.5 justify-self-start min-w-0">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-md shadow-emerald-500/20 shrink-0 text-lg transition-all duration-300"
-                style={{ background: activePreset.gradient }}
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 text-lg transition-all duration-300"
+                style={{ background: activePreset.gradient, boxShadow: `0 4px 12px ${activePreset.primary}33` }}
               >
                 {branding?.groupEmoji ? (
                   <span>{branding.groupEmoji}</span>
@@ -238,10 +246,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="desktop-header-share-btn"
                 onClick={onOpenShareModal}
                 title="Chia sẻ link sổ quỹ cho thành viên"
-                className="px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-all flex items-center gap-1.5 text-xs font-bold shrink-0 cursor-pointer"
+                style={{
+                  backgroundColor: `${activePreset.primary}12`,
+                  borderColor: `${activePreset.primary}30`,
+                  color: activePreset.primary,
+                }}
+                className="px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold shrink-0 cursor-pointer hover:opacity-85 border"
               >
-                <Share2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                <Share2 className="w-3.5 h-3.5 shrink-0" style={{ color: activePreset.primary }} />
                 <span>Chia sẻ</span>
+              </button>
+
+              {/* Theme Mode Quick Toggle (Sun / Moon) */}
+              <button
+                type="button"
+                id="desktop-header-theme-toggle-btn"
+                onClick={handleToggleTheme}
+                title={isDarkMode ? "Chuyển sang giao diện Sáng" : "Chuyển sang giao diện Tối"}
+                className="w-8 h-8 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 hover:text-slate-900 dark:hover:text-amber-300 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
+                aria-label="Đổi giao diện Tối/Sáng"
+              >
+                {isDarkMode ? <Sun className="w-4 h-4 text-amber-400 fill-amber-400/20" /> : <Moon className="w-4 h-4 text-slate-600" />}
               </button>
 
               {/* Direct Desktop Logout Button */}
@@ -266,8 +291,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Left: Brand Identity */}
             <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0">
               <div
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-white shadow-md shadow-emerald-500/20 shrink-0 text-base sm:text-lg transition-all duration-300"
-                style={{ background: activePreset.gradient }}
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-white shrink-0 text-base sm:text-lg transition-all duration-300"
+                style={{ background: activePreset.gradient, boxShadow: `0 4px 12px ${activePreset.primary}33` }}
               >
                 {branding?.groupEmoji ? (
                   <span>{branding.groupEmoji}</span>
@@ -343,10 +368,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="medium-header-share-btn"
                 onClick={onOpenShareModal}
                 title="Chia sẻ link sổ quỹ cho thành viên"
-                className="px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-all flex items-center gap-1.5 text-xs font-bold shrink-0 cursor-pointer"
+                style={{
+                  backgroundColor: `${activePreset.primary}12`,
+                  borderColor: `${activePreset.primary}30`,
+                  color: activePreset.primary,
+                }}
+                className="px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold shrink-0 cursor-pointer hover:opacity-85 border"
               >
-                <Share2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                <Share2 className="w-3.5 h-3.5 shrink-0" style={{ color: activePreset.primary }} />
                 <span>Chia sẻ</span>
+              </button>
+
+              {/* Theme Mode Quick Toggle (Sun / Moon) */}
+              <button
+                type="button"
+                id="medium-header-theme-toggle-btn"
+                onClick={handleToggleTheme}
+                title={isDarkMode ? "Chuyển sang giao diện Sáng" : "Chuyển sang giao diện Tối"}
+                className="w-8 h-8 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 hover:text-slate-900 dark:hover:text-amber-300 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
+                aria-label="Đổi giao diện Tối/Sáng"
+              >
+                {isDarkMode ? <Sun className="w-4 h-4 text-amber-400 fill-amber-400/20" /> : <Moon className="w-4 h-4 text-slate-600" />}
               </button>
 
               {/* Direct Desktop Logout Button */}
@@ -395,10 +437,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="mobile-top-share-btn"
                 onClick={onOpenShareModal}
                 title="Chia sẻ link sổ quỹ"
-                className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
+                style={{
+                  backgroundColor: `${activePreset.primary}12`,
+                  borderColor: `${activePreset.primary}30`,
+                  color: activePreset.primary,
+                }}
+                className="w-8 h-8 rounded-xl border active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0 hover:opacity-85"
                 aria-label="Chia sẻ"
               >
-                <Share2 className="w-3.5 h-3.5" />
+                <Share2 className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
+              </button>
+
+              {/* Mobile Theme Toggle Button */}
+              <button
+                type="button"
+                id="mobile-top-theme-btn"
+                onClick={handleToggleTheme}
+                title={isDarkMode ? "Chuyển sang giao diện Sáng" : "Chuyển sang giao diện Tối"}
+                className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-amber-400 border border-slate-200 dark:border-slate-700 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
+                aria-label="Đổi giao diện Tối/Sáng"
+              >
+                {isDarkMode ? <Sun className="w-3.5 h-3.5 fill-amber-400/20" /> : <Moon className="w-3.5 h-3.5" />}
               </button>
 
               {/* Mobile Quick Logout Button */}
@@ -679,7 +738,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-5 space-y-4 shadow-2xl z-10 animate-in zoom-in-95 duration-150 border border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
-                <UserCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <UserCheck className="w-4 h-4" style={{ color: activePreset.primary }} />
                 <span>Thông tin Đại diện Chủ quỹ</span>
               </div>
               <button
@@ -695,13 +754,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700 space-y-1">
                 <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Thủ quỹ / Chủ quản:</span>
                 <span className="text-sm font-bold text-slate-900 dark:text-white block">{treasurerName}</span>
-                <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium block">{treasurerTitle}</span>
+                <span className="text-[11px] font-medium block" style={{ color: activePreset.primary }}>{treasurerTitle}</span>
               </div>
 
               {treasurerPhone && (
-                <div className="p-3 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800 flex items-center justify-between">
+                <div
+                  style={{ backgroundColor: `${activePreset.primary}0D`, borderColor: `${activePreset.primary}25` }}
+                  className="p-3 rounded-2xl border flex items-center justify-between"
+                >
                   <div>
-                    <span className="text-[11px] text-emerald-800 dark:text-emerald-300 font-medium block">Số điện thoại</span>
+                    <span className="text-[11px] font-medium block" style={{ color: activePreset.primary }}>Số điện thoại</span>
                     <a
                       href={`tel:${treasurerPhone}`}
                       className="font-bold text-slate-900 dark:text-white font-mono text-sm"
@@ -713,13 +775,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                       type="button"
                       onClick={() => handleCopy('phone', treasurerPhone)}
-                      className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-50 dark:hover:bg-emerald-900/40 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:opacity-80 transition-colors cursor-pointer"
                     >
-                      {copiedKey === 'phone' ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedKey === 'phone' ? <Check className="w-3.5 h-3.5" style={{ color: activePreset.primary }} /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                     <a
                       href={`tel:${treasurerPhone}`}
-                      className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
+                      style={{ background: activePreset.gradient }}
+                      className="px-2.5 py-1.5 rounded-lg hover:opacity-90 active:scale-95 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
                     >
                       Gọi
                     </a>

@@ -13,6 +13,7 @@ import { Category, Fund, Transaction, AppBranding } from '../../types';
 import { formatVND, formatDate } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { useFeedback } from '../../context/FeedbackContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface PrintStatementModalProps {
   isOpen: boolean;
@@ -45,6 +46,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { showToast } = useFeedback();
+  const { activePreset } = useTheme();
 
   const [isExportingImage, setIsExportingImage] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
@@ -389,7 +391,10 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
         {/* Modal Controls Header */}
         <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0 bg-white dark:bg-slate-900">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <div
+              style={{ backgroundColor: `${activePreset.primary}18`, color: activePreset.primary }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            >
               <FileText className="w-4 h-4" />
             </div>
             <div>
@@ -397,7 +402,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                 <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-tight">
                   {t('print.preview_title', 'Bản xem trước sao kê & báo cáo quỹ')}
                 </h2>
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                   {totalPages} {t('print.page_unit', 'trang')}
                 </span>
               </div>
@@ -411,9 +416,10 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               <button
                 type="button"
                 onClick={() => setDensity('normal')}
+                style={density === 'normal' ? { backgroundColor: activePreset.primary, color: '#ffffff' } : undefined}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   density === 'normal'
-                    ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-xs border border-slate-200 dark:border-slate-600 font-bold'
+                    ? 'shadow-xs font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title={t('print.density_normal_title', 'Chuẩn A4 (~24 dòng/trang, tối ưu lấp đầy trang in)')}
@@ -423,9 +429,10 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               <button
                 type="button"
                 onClick={() => setDensity('compact')}
+                style={density === 'compact' ? { backgroundColor: activePreset.primary, color: '#ffffff' } : undefined}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   density === 'compact'
-                    ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-xs border border-slate-200 dark:border-slate-600 font-bold'
+                    ? 'shadow-xs font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title={t('print.density_compact_title', 'Tiết kiệm (~30 dòng/trang, giảm tối đa số trang)')}
@@ -435,9 +442,10 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               <button
                 type="button"
                 onClick={() => setDensity('spacious')}
+                style={density === 'spacious' ? { backgroundColor: activePreset.primary, color: '#ffffff' } : undefined}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   density === 'spacious'
-                    ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-xs border border-slate-200 dark:border-slate-600 font-bold'
+                    ? 'shadow-xs font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title={t('print.density_spacious_title', 'Thoáng (~16 dòng/trang, phù hợp khi diễn giải thu chi dài)')}
@@ -452,7 +460,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               id="export-statement-image-btn"
               onClick={handleExportImage}
               disabled={isExportingImage || isExportingPDF}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
               title={t('print.btn_export_image_title', 'Tải ảnh PNG')}
             >
               {isExportingImage ? (
@@ -469,7 +477,8 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               id="export-statement-pdf-btn"
               onClick={handleExportPDF}
               disabled={isExportingImage || isExportingPDF}
-              className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              style={{ background: activePreset.gradient, boxShadow: `0 4px 14px ${activePreset.primary}35` }}
+              className="px-3.5 py-2 rounded-xl disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer hover:opacity-95"
               title={t('print.btn_export_pdf_title', 'Lưu tệp PDF tải thẳng về máy tính (mỗi trang có tiêu đề riêng)')}
             >
               {isExportingPDF ? (
@@ -503,7 +512,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
               {/* Page Indicator Badge */}
               <div className="flex items-center justify-between max-w-[794px] mx-auto mb-1.5 px-2 text-[11px] text-slate-500 font-medium">
                 <span className="flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500" />
+                  <CheckCircle2 className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                   <span>{t('print.page_label', 'Trang')} {page.pageNumber} / {totalPages}</span>
                   {page.isFirstPage && <span className="text-slate-400">• {t('print.first_page_badge', 'Trang mở đầu & Tổng hợp')}</span>}
                   {page.isLastPage && <span className="text-slate-400">• {t('print.last_page_badge', 'Trang kết thúc & Chữ ký')}</span>}
@@ -536,13 +545,13 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                         <p className="text-xs text-slate-700 font-medium mt-1">
                           <span className="font-bold text-slate-900">{appFundName}</span>
                           <span className="mx-1.5 text-slate-400">•</span>
-                          <span>{t('print.current_balance_label', 'Số dư hiện tại:')} <strong className="font-bold text-blue-700 font-mono">{formatVND(fund.balance)}</strong></span>
+                          <span>{t('print.current_balance_label', 'Số dư hiện tại:')} <strong className="font-bold font-mono" style={{ color: activePreset.primary }}>{formatVND(fund.balance)}</strong></span>
                         </p>
                       </div>
                       <div className="text-left sm:text-right text-xs text-slate-500 font-mono shrink-0">
                         <p>{t('print.created_date_label', 'Ngày lập:')} <span className="font-semibold text-slate-700">{currentDateFormatted}</span></p>
                         <p>{t('print.doc_code_label', 'Mã tài liệu:')} <span className="font-semibold text-slate-700">{documentCode}</span></p>
-                        <p className="font-bold text-indigo-700 text-xs mt-1">{t('print.page_label', 'Trang')} 1 / {totalPages}</p>
+                        <p className="font-bold text-xs mt-1" style={{ color: activePreset.primary }}>{t('print.page_label', 'Trang')} 1 / {totalPages}</p>
                       </div>
                     </div>
                   ) : (
@@ -560,12 +569,12 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                         <p className="text-xs text-slate-600 font-medium mt-0.5">
                           <span className="font-bold text-slate-900">{appFundName}</span>
                           <span className="mx-1.5 text-slate-400">•</span>
-                          <span>{t('print.balance_short_label', 'Số dư:')} <strong className="font-bold text-blue-700 font-mono">{formatVND(fund.balance)}</strong></span>
+                          <span>{t('print.balance_short_label', 'Số dư:')} <strong className="font-bold font-mono" style={{ color: activePreset.primary }}>{formatVND(fund.balance)}</strong></span>
                         </p>
                       </div>
                       <div className="text-left sm:text-right text-xs text-slate-500 font-mono shrink-0">
                         <p>{t('print.created_date_label', 'Ngày lập:')} {currentDateFormatted}</p>
-                        <p className="font-bold text-indigo-700 text-xs mt-0.5">{t('print.page_label', 'Trang')} {page.pageNumber} / {totalPages}</p>
+                        <p className="font-bold text-xs mt-0.5" style={{ color: activePreset.primary }}>{t('print.page_label', 'Trang')} {page.pageNumber} / {totalPages}</p>
                       </div>
                     </div>
                   )}
@@ -583,7 +592,10 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
                       </div>
                       <div>
                         <p className="text-[11px] text-slate-500 font-medium">{t('print.net_cashflow_label', 'Dòng tiền ròng')}</p>
-                        <p className={`text-base sm:text-lg font-bold mt-0.5 font-mono ${netBalance >= 0 ? 'text-blue-600' : 'text-rose-600'}`}>
+                        <p
+                          style={netBalance >= 0 ? { color: activePreset.primary } : undefined}
+                          className={`text-base sm:text-lg font-bold mt-0.5 font-mono ${netBalance >= 0 ? '' : 'text-rose-600'}`}
+                        >
                           {netBalance >= 0 ? '+' : ''}{formatVND(netBalance)}
                         </p>
                       </div>

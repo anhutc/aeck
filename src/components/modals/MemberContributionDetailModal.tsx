@@ -312,7 +312,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-blue-600" />
+                <DollarSign className="w-4 h-4" style={{ color: activePreset.primary }} />
                 {t('members.detail_history_title', 'Lịch sử & chi tiết từng đợt đóng quỹ')} ({memberCampaignsData.length})
               </h3>
 
@@ -320,9 +320,10 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
               <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs">
                 <button
                   onClick={() => setFilterStatus('all')}
+                  style={filterStatus === 'all' ? { color: activePreset.primary } : undefined}
                   className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
                     filterStatus === 'all'
-                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold'
+                      ? 'bg-white dark:bg-slate-700 shadow-xs font-bold'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                 >
@@ -360,7 +361,15 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                   placeholder={t('members.detail_search_placeholder', 'Tìm đợt thu theo tên, quỹ hoặc ghi chú...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:outline-hidden"
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = activePreset.primary;
+                    e.currentTarget.style.boxShadow = `0 0 0 2px ${activePreset.primary}33`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '';
+                    e.currentTarget.style.boxShadow = '';
+                  }}
                 />
               </div>
             )}

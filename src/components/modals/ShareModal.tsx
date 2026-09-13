@@ -14,6 +14,7 @@ import {
 import { BankSettings, ContributionCampaign, Fund, AppBranding } from '../../types';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { useFeedback } from '../../context/FeedbackContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { showToast } = useFeedback();
+  const { activePreset } = useTheme();
 
   const [copiedLink, setCopiedLink] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
@@ -106,7 +108,10 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         {/* Header */}
         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/40 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+            <div
+              style={{ backgroundColor: activePreset.primary, boxShadow: `0 4px 12px ${activePreset.primary}33` }}
+              className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shrink-0"
+            >
               <Share2 className="w-5 h-5" />
             </div>
             <div>
@@ -147,7 +152,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               <button
                 id="copy-member-url-btn"
                 onClick={handleCopyLink}
-                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold shadow-sm shadow-blue-600/20 flex items-center gap-1.5 shrink-0 transition-all cursor-pointer"
+                style={{ background: activePreset.gradient, boxShadow: `0 4px 14px ${activePreset.primary}35` }}
+                className="px-4 py-2.5 rounded-xl active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer hover:opacity-95"
               >
                 {copiedLink ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
                 <span>{copiedLink ? t('common.copied', 'Đã chép!') : t('common.copy', 'Sao chép')}</span>
@@ -160,7 +166,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 href={shareUrl || '#'}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-semibold hover:underline"
+                style={{ color: activePreset.primary }}
+                className="inline-flex items-center gap-1.5 font-semibold hover:underline"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 <span>{t('share.open_new_tab', 'Mở trong tab mới')}</span>
@@ -169,9 +176,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               <button
                 type="button"
                 onClick={handleNativeShare}
-                className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-blue-600 font-semibold cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:opacity-80 font-semibold cursor-pointer"
               >
-                <Share2 className="w-3.5 h-3.5 text-blue-600" />
+                <Share2 className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                 <span>{t('share.quick_share', 'Chia sẻ nhanh...')}</span>
               </button>
             </div>
@@ -229,7 +236,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               <div className="space-y-2 flex-1 min-w-0">
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <Smartphone className="w-4 h-4 text-blue-600 shrink-0" />
+                    <Smartphone className="w-4 h-4 shrink-0" style={{ color: activePreset.primary }} />
                     <span>{t('share.qr_title', 'Quét Mã QR Truy Cập Nhanh')}</span>
                   </h4>
                   <p className="text-[11px] text-slate-500 leading-relaxed">
@@ -242,7 +249,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                   onClick={handleDownloadQr}
                   className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
                 >
-                  <Download className="w-3.5 h-3.5 text-blue-600" />
+                  <Download className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                   <span>{t('share.download_qr', 'Tải ảnh QR')}</span>
                 </button>
               </div>

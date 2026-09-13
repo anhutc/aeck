@@ -414,18 +414,25 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                       key={opt.id}
                       type="button"
                       onClick={() => setThemeRadius(opt.id)}
+                      style={isSelected ? {
+                        borderColor: activePreset.primary,
+                        backgroundColor: activePreset.primaryLight,
+                        color: activePreset.primaryText,
+                        boxShadow: `0 0 0 2px ${activePreset.primary}33`,
+                      } : undefined}
                       className={`p-3 border text-center transition-all flex flex-col items-center justify-between gap-1.5 cursor-pointer ${
                         opt.id === 'modern' ? 'rounded-2xl' : opt.id === 'soft' ? 'rounded-xl' : opt.id === 'smooth' ? 'rounded-3xl' : 'rounded-md'
                       } ${
                         isSelected
-                          ? 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100 ring-2 ring-emerald-500/20 shadow-xs font-bold'
+                          ? 'shadow-xs font-bold'
                           : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:border-slate-300'
                       }`}
                     >
                       <div
+                        style={isSelected ? { borderColor: activePreset.primary, color: activePreset.primary } : undefined}
                         className={`w-8 h-8 border-2 border-dashed flex items-center justify-center text-xs font-bold ${
                           opt.id === 'modern' ? 'rounded-xl' : opt.id === 'soft' ? 'rounded-lg' : opt.id === 'smooth' ? 'rounded-2xl' : 'rounded-xs'
-                        } ${isSelected ? 'border-emerald-500 text-emerald-600' : 'border-slate-300 dark:border-slate-600 text-slate-400'}`}
+                        } ${isSelected ? '' : 'border-slate-300 dark:border-slate-600 text-slate-400'}`}
                       >
                         {opt.cssRadius}
                       </div>
@@ -447,9 +454,15 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setThemeDensity('comfortable')}
+                  style={themeDensity === 'comfortable' ? {
+                    borderColor: activePreset.primary,
+                    backgroundColor: activePreset.primaryLight,
+                    color: activePreset.primaryText,
+                    boxShadow: `0 0 0 2px ${activePreset.primary}33`,
+                  } : undefined}
                   className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-3 ${
                     themeDensity === 'comfortable'
-                      ? 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 ring-2 ring-emerald-500/20 shadow-xs'
+                      ? 'shadow-xs font-bold'
                       : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:border-slate-300'
                   }`}
                 >
@@ -467,9 +480,15 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setThemeDensity('compact')}
+                  style={themeDensity === 'compact' ? {
+                    borderColor: activePreset.primary,
+                    backgroundColor: activePreset.primaryLight,
+                    color: activePreset.primaryText,
+                    boxShadow: `0 0 0 2px ${activePreset.primary}33`,
+                  } : undefined}
                   className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-3 ${
                     themeDensity === 'compact'
-                      ? 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 ring-2 ring-emerald-500/20 shadow-xs'
+                      ? 'shadow-xs font-bold'
                       : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:border-slate-300'
                   }`}
                 >
@@ -507,8 +526,9 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
               <button
                 type="button"
                 onClick={togglePrivacyMode}
+                style={privacyMode ? { backgroundColor: activePreset.primary } : undefined}
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
-                  privacyMode ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700'
+                  privacyMode ? '' : 'bg-slate-300 dark:bg-slate-700'
                 }`}
               >
                 <span

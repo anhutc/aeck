@@ -293,7 +293,12 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             <button
               id="export-member-dues-btn"
               onClick={() => onOpenPrintDuesModal()}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer active:scale-95"
+              style={{
+                backgroundColor: activePreset.primaryLight,
+                color: activePreset.primaryText,
+                borderColor: activePreset.primaryBorder,
+              }}
+              className="px-3.5 py-2 rounded-xl border text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer active:scale-95 hover:opacity-90"
               title={t('members.export_dues_title', 'Xuất ảnh danh sách đóng quỹ & công nợ để chia sẻ')}
             >
               <ReceiptText className="w-4 h-4" />
@@ -361,7 +366,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
               placeholder={t('members.search_placeholder', 'Tìm theo tên, SĐT, ghi chú...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden"
             />
           </div>
 
@@ -370,7 +375,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
               id="filter-member-status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden cursor-pointer"
             >
               <option value="all">-- {t('members.filter_all_status', 'Tất cả trạng thái')} --</option>
               <option value="active">{t('members.status_active', 'Đang hoạt động')}</option>
@@ -383,7 +388,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
               id="filter-member-role"
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden cursor-pointer"
             >
               <option value="all">-- {t('members.filter_all_roles', 'Tất cả vai trò')} --</option>
               {allRoles.map((r) => (
@@ -399,7 +404,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
               id="filter-member-debt"
               value={debtFilter}
               onChange={(e) => setDebtFilter(e.target.value as any)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden cursor-pointer"
             >
               <option value="all">-- {t('members.filter_debt_status', 'Tình trạng đóng quỹ')} --</option>
               <option value="unpaid">{t('members.filter_debt_unpaid', '⚠️ Còn thiếu tiền đóng')}</option>
@@ -412,7 +417,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
               id="sort-members"
               value={memberSort}
               onChange={(e) => setMemberSort(e.target.value as any)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer font-medium"
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden cursor-pointer font-medium"
               title={t('members.sort_members_title', 'Sắp xếp danh sách thành viên')}
             >
               <option value="name_asc">{t('members.sort_name_az', '🔤 Tên (A - Z)')}</option>

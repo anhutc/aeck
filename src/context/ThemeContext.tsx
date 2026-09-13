@@ -4,7 +4,6 @@ import {
   ThemeMode,
   ThemeRadius,
   ThemeDensity,
-  THEME_PRESETS,
   findThemePreset,
   applyThemeToDocument,
 } from '../utils/theme';
@@ -31,6 +30,7 @@ interface ThemeContextType {
   setIsCustomizerOpen: (open: boolean) => void;
   resetToDefaultTheme: () => void;
   syncFromBranding: (branding?: AppBranding) => void;
+  revertToSavedTheme: (savedBranding?: AppBranding) => void;
 }
 
 const THEME_STORAGE_KEYS = {
@@ -42,33 +42,58 @@ const THEME_STORAGE_KEYS = {
   PRIVACY: 'quanlyquy_theme_privacy_v1',
 };
 
+const getInitialThemeFromBranding = (): AppBranding | null => {
+  try {
+    const saved = localStorage.getItem('quanlyquy_branding');
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+  return null;
+};
+
+const normalizeAccent = (accent?: string): string => {
+  if (!accent || accent === 'blue') return 'emerald';
+  return accent;
+};
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Theme Accent
+  const initialBranding = getInitialThemeFromBranding();
+
+  // Theme Accent - prioritize saved branding, then theme storage, then fallback
   const [themeAccent, setThemeAccentState] = useState<string>(() => {
-    return localStorage.getItem(THEME_STORAGE_KEYS.ACCENT) || 'emerald';
+    if (initialBranding?.themeAccent) {
+      return normalizeAccent(initialBranding.themeAccent);
+    }
+    const saved = localStorage.getItem(THEME_STORAGE_KEYS.ACCENT);
+    return normalizeAccent(saved || 'emerald');
   });
 
   // Custom Color Hex
   const [customColor, setCustomColorState] = useState<string>(() => {
-    return localStorage.getItem(THEME_STORAGE_KEYS.CUSTOM_COLOR) || '#059669';
+    return initialBranding?.customColor || localStorage.getItem(THEME_STORAGE_KEYS.CUSTOM_COLOR) || '#059669';
   });
 
   // Color Mode: light | dark | system
   const [themeMode, setThemeModeState] = useState<ThemeMode>(() => {
+    const fromBranding = initialBranding?.themeMode;
+    if (fromBranding && ['light', 'dark', 'system'].includes(fromBranding)) return fromBranding;
     const saved = localStorage.getItem(THEME_STORAGE_KEYS.MODE) as ThemeMode;
     return saved && ['light', 'dark', 'system'].includes(saved) ? saved : 'light';
   });
 
   // Corner Radius: modern | soft | smooth | sharp
   const [themeRadius, setThemeRadiusState] = useState<ThemeRadius>(() => {
+    const fromBranding = initialBranding?.themeRadius;
+    if (fromBranding && ['modern', 'soft', 'smooth', 'sharp'].includes(fromBranding)) return fromBranding;
     const saved = localStorage.getItem(THEME_STORAGE_KEYS.RADIUS) as ThemeRadius;
     return saved && ['modern', 'soft', 'smooth', 'sharp'].includes(saved) ? saved : 'modern';
   });
 
   // Density: comfortable | compact
   const [themeDensity, setThemeDensityState] = useState<ThemeDensity>(() => {
+    const fromBranding = initialBranding?.themeDensity;
+    if (fromBranding && ['comfortable', 'compact'].includes(fromBranding)) return fromBranding;
     const saved = localStorage.getItem(THEME_STORAGE_KEYS.DENSITY) as ThemeDensity;
     return saved && ['comfortable', 'compact'].includes(saved) ? saved : 'comfortable';
   });
@@ -160,14 +185,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPrivacyMode(false);
   }, [setThemeAccent, setCustomColor, setThemeMode, setThemeRadius, setThemeDensity, setPrivacyMode]);
 
-  // Sync from branding if cloud state updates and user hasn't explicitly customized yet
+  // Sync from branding if cloud state updates or on initial app load
   const syncFromBranding = useCallback((branding?: AppBranding) => {
     if (!branding) return;
-    if (branding.themeAccent && branding.themeAccent !== themeAccent) {
-      // Only sync if locally not set or if user wants cloud defaults
-      setThemeAccentState(branding.themeAccent);
-      localStorage.setItem(THEME_STORAGE_KEYS.ACCENT, branding.themeAccent);
-    }
+    const accent = normalizeAccent(branding.themeAccent);
+    setThemeAccentState(accent);
+    localStorage.setItem(THEME_STORAGE_KEYS.ACCENT, accent);
+
     if (branding.customColor) {
       setCustomColorState(branding.customColor);
       localStorage.setItem(THEME_STORAGE_KEYS.CUSTOM_COLOR, branding.customColor);
@@ -184,7 +208,32 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setThemeDensityState(branding.themeDensity);
       localStorage.setItem(THEME_STORAGE_KEYS.DENSITY, branding.themeDensity);
     }
-  }, [themeAccent]);
+  }, []);
+
+  // Revert all theme parameters strictly back to saved branding state
+  const revertToSavedTheme = useCallback((targetBranding?: AppBranding) => {
+    const brandingToUse = targetBranding || getInitialThemeFromBranding();
+    const accent = normalizeAccent(brandingToUse?.themeAccent);
+    const color = brandingToUse?.customColor || '#059669';
+    const mode = brandingToUse?.themeMode || 'light';
+    const radius = brandingToUse?.themeRadius || 'modern';
+    const density = brandingToUse?.themeDensity || 'comfortable';
+
+    setThemeAccentState(accent);
+    localStorage.setItem(THEME_STORAGE_KEYS.ACCENT, accent);
+
+    setCustomColorState(color);
+    localStorage.setItem(THEME_STORAGE_KEYS.CUSTOM_COLOR, color);
+
+    setThemeModeState(mode);
+    localStorage.setItem(THEME_STORAGE_KEYS.MODE, mode);
+
+    setThemeRadiusState(radius);
+    localStorage.setItem(THEME_STORAGE_KEYS.RADIUS, radius);
+
+    setThemeDensityState(density);
+    localStorage.setItem(THEME_STORAGE_KEYS.DENSITY, density);
+  }, []);
 
   const value = useMemo(() => ({
     themeAccent,
@@ -207,6 +256,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsCustomizerOpen,
     resetToDefaultTheme,
     syncFromBranding,
+    revertToSavedTheme,
   }), [
     themeAccent,
     setThemeAccent,
@@ -227,6 +277,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     isCustomizerOpen,
     resetToDefaultTheme,
     syncFromBranding,
+    revertToSavedTheme,
   ]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

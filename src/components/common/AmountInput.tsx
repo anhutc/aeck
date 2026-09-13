@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DollarSign, X, ArrowDownLeft, ArrowUpRight, Sparkles } from 'lucide-react';
 import { formatThousands, parseAmountInput, numberToVietnameseWords } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export interface AmountInputProps {
   id?: string;
@@ -40,6 +41,7 @@ export const AmountInput: React.FC<AmountInputProps> = ({
   className = '',
 }) => {
   const { t } = useTranslation();
+  const { activePreset } = useTheme();
   const numericVal = typeof value === 'number' ? value : parseAmountInput(value);
   const [displayStr, setDisplayStr] = useState<string>(() => {
     return numericVal > 0 ? formatThousands(numericVal) : '';
@@ -156,12 +158,12 @@ export const AmountInput: React.FC<AmountInputProps> = ({
       }
     : {
         border: 'border-slate-300 dark:border-slate-700',
-        focus: 'focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+        focus: 'focus:border-transparent',
         bg: 'bg-slate-50/50 dark:bg-slate-800/40',
         text: 'text-slate-900 dark:text-white',
-        icon: 'text-blue-600 dark:text-blue-400',
-        badgeBg: 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800/60',
-        badgeText: 'text-blue-800 dark:text-blue-200',
+        icon: '',
+        badgeBg: '',
+        badgeText: '',
       };
 
   const wordsText = numericVal > 0 ? numberToVietnameseWords(numericVal) : '';
@@ -177,7 +179,7 @@ export const AmountInput: React.FC<AmountInputProps> = ({
             ) : isExpense ? (
               <ArrowUpRight className="w-3.5 h-3.5 text-rose-600" />
             ) : (
-              <DollarSign className="w-3.5 h-3.5 text-blue-600" />
+              <DollarSign className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
             )}
             <span>{label}</span>
             {required && <span className="text-rose-500">*</span>}
@@ -203,6 +205,14 @@ export const AmountInput: React.FC<AmountInputProps> = ({
           value={displayStr}
           onChange={handleInputChange}
           placeholder={placeholder}
+          onFocus={!isIncome && !isExpense ? (e) => {
+            e.currentTarget.style.borderColor = activePreset.primary;
+            e.currentTarget.style.boxShadow = `0 0 0 2px ${activePreset.primary}33`;
+          } : undefined}
+          onBlur={!isIncome && !isExpense ? (e) => {
+            e.currentTarget.style.borderColor = '';
+            e.currentTarget.style.boxShadow = '';
+          } : undefined}
           className={`w-full pl-4 pr-16 py-2.5 sm:py-3 rounded-2xl border text-slate-900 dark:text-white font-black text-xl sm:text-2xl tracking-tight focus:outline-hidden transition-all shadow-xs ${themeClasses.border} ${themeClasses.focus} ${themeClasses.bg}`}
         />
 
@@ -228,7 +238,14 @@ export const AmountInput: React.FC<AmountInputProps> = ({
       {showInWords && (
         <div className="min-h-[22px] flex items-center">
           {numericVal > 0 ? (
-            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold border ${themeClasses.badgeBg} ${themeClasses.badgeText} animate-in fade-in duration-150`}>
+            <div
+              style={!isIncome && !isExpense ? {
+                backgroundColor: activePreset.primaryLight,
+                color: activePreset.primaryText,
+                borderColor: activePreset.primaryBorder,
+              } : undefined}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold border ${themeClasses.badgeBg} ${themeClasses.badgeText} animate-in fade-in duration-150`}
+            >
               <span className="opacity-75 font-normal">{t('amount_input.in_words_label', 'Bằng chữ:')}</span>
               <span className="font-bold">{wordsText}</span>
             </div>
@@ -252,7 +269,12 @@ export const AmountInput: React.FC<AmountInputProps> = ({
             type="button"
             onClick={handleMultiplyThousand}
             title={t('amount_input.add_thousand_title', 'Nhân 1.000 (thêm 3 số 0)')}
-            className="px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 text-[11px] font-bold transition-all active:scale-95 cursor-pointer shrink-0 shadow-2xs"
+            style={{
+              backgroundColor: activePreset.primaryLight,
+              color: activePreset.primaryText,
+              borderColor: activePreset.primaryBorder,
+            }}
+            className="px-2 py-1 rounded-lg border text-[11px] font-bold transition-all active:scale-95 cursor-pointer shrink-0 shadow-2xs hover:opacity-90"
           >
             {t('amount_input.add_thousand', '+000 (nghìn)')}
           </button>
@@ -312,13 +334,14 @@ export const AmountInput: React.FC<AmountInputProps> = ({
                 key={val}
                 type="button"
                 onClick={() => handleSelectPreset(val)}
+                style={isSelected && !isIncome && !isExpense ? { backgroundColor: activePreset.primary } : undefined}
                 className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
                   isSelected
                     ? isIncome
                       ? 'bg-emerald-600 text-white shadow-xs'
                       : isExpense
                       ? 'bg-rose-600 text-white shadow-xs'
-                      : 'bg-blue-600 text-white shadow-xs'
+                      : 'text-white shadow-xs'
                     : 'bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                 }`}
               >

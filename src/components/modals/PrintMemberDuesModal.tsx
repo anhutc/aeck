@@ -23,6 +23,7 @@ import { Member, ContributionCampaign, Fund, BankSettings, AppBranding } from '.
 import { formatVND, formatDate, getVietQRUrl, getMemberRoles } from '../../utils/formatters';
 import { useFeedback } from '../../context/FeedbackContext';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface PrintMemberDuesModalProps {
   isOpen: boolean;
@@ -78,6 +79,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
 }) => {
   const { showToast } = useFeedback();
   const { t } = useTranslation();
+  const { activePreset } = useTheme();
 
   // Campaign scope
   const [campaignScope, setCampaignScope] = useState<string>(defaultCampaignId);
@@ -446,7 +448,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
         {/* Header Toolbar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 gap-3 bg-slate-50/90 dark:bg-slate-900/90">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+            <div
+              style={{ backgroundColor: `${activePreset.primary}18`, color: activePreset.primary }}
+              className="p-2.5 rounded-xl shrink-0"
+            >
               <ReceiptText className="w-5 h-5" />
             </div>
             <div>
@@ -469,7 +474,8 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               id="copy-dues-image-btn"
               onClick={handleCopyImage}
               disabled={isExporting}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+              style={{ background: activePreset.gradient, boxShadow: `0 4px 14px ${activePreset.primary}35` }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl active:scale-95 text-white transition-all disabled:opacity-50 cursor-pointer hover:opacity-95"
               title={t('dues.btn_copy_image', 'Sao chép ảnh')}
             >
               {isExporting ? (
@@ -486,7 +492,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               id="download-dues-image-btn"
               onClick={handleDownloadImage}
               disabled={isExporting}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 text-slate-700 dark:text-slate-200 transition-all shadow-xs disabled:opacity-50 cursor-pointer"
               title={t('dues.btn_download_image', 'Tải ảnh PNG')}
             >
               <Download className="w-4 h-4" />
@@ -520,14 +526,14 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
             {/* Scope select */}
             <div className="flex-1 flex items-center gap-1.5 min-w-[240px]">
               <label className="font-semibold text-slate-700 dark:text-slate-300 shrink-0 flex items-center gap-1">
-                <Filter className="w-3.5 h-3.5 text-blue-500" />
+                <Filter className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                 <span>{t('dues.scope_label', 'Khoản thu:')}</span>
               </label>
               <select
                 id="dues-scope-select"
                 value={campaignScope}
                 onChange={(e) => setCampaignScope(e.target.value)}
-                className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium truncate"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-hidden font-medium truncate"
               >
                 <option value="all">{t('dues.scope_all', 'Toàn bộ các khoản (Tất cả đợt thu & Niên liễm)')}</option>
                 {campaigns.map((c) => (
@@ -544,9 +550,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               <button
                 type="button"
                 onClick={() => setFilterDebt('all')}
+                style={filterDebt === 'all' ? { color: activePreset.primary } : undefined}
                 className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
                   filterDebt === 'all'
-                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                    ? 'bg-white dark:bg-slate-900 shadow-xs'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
@@ -588,7 +595,13 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('dues.search_placeholder', 'Tìm theo tên hoặc số điện thoại...')}
-                className="w-full pl-8 pr-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full pl-8 pr-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = activePreset.primary;
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '';
+                }}
               />
             </div>
           </div>
@@ -631,7 +644,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 id="dues-status-filter-select"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-700 dark:text-slate-300 focus:outline-hidden"
               >
                 <option value="all">{t('dues.status_all', 'Tất cả')}</option>
                 <option value="active">{t('dues.status_active_only', 'Chỉ đang sinh hoạt')}</option>
@@ -645,7 +658,8 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                   type="checkbox"
                   checked={showDetails}
                   onChange={(e) => setShowDetails(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
+                  style={{ accentColor: activePreset.primary }}
+                  className="rounded w-3.5 h-3.5"
                 />
                 <span className="text-slate-700 dark:text-slate-300 font-medium">
                   {t('dues.toggle_details', 'Hiện chi tiết nợ')}
@@ -657,7 +671,8 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                   type="checkbox"
                   checked={showPhone}
                   onChange={(e) => setShowPhone(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
+                  style={{ accentColor: activePreset.primary }}
+                  className="rounded w-3.5 h-3.5"
                 />
                 <span className="text-slate-700 dark:text-slate-300">{t('dues.toggle_phone', 'Hiện SĐT')}</span>
               </label>
@@ -667,7 +682,8 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                   type="checkbox"
                   checked={showQR}
                   onChange={(e) => setShowQR(e.target.checked)}
-                  className="rounded text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5"
+                  style={{ accentColor: activePreset.primary }}
+                  className="rounded w-3.5 h-3.5"
                 />
                 <span className="text-slate-700 dark:text-slate-300">{t('dues.toggle_qr', 'Hiện VietQR')}</span>
               </label>
@@ -684,7 +700,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
             className="w-full max-w-[860px] mx-auto bg-white text-slate-900 shadow-xl rounded-2xl border border-slate-200 p-5 sm:p-7 font-sans relative"
           >
             {/* Top Brand Accent Stripe */}
-            <div className="h-2 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-600 rounded-full mb-5" />
+            <div
+              style={{ background: activePreset.gradient }}
+              className="h-2 w-full rounded-full mb-5"
+            />
 
             {/* Report Header */}
             <div className="border-b border-slate-200 pb-4 mb-4">
@@ -694,7 +713,14 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                     <span className="inline-block px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-extrabold tracking-wider uppercase">
                       {appTitle}
                     </span>
-                    <span className="inline-block px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold">
+                    <span
+                      style={{
+                        backgroundColor: activePreset.primaryLight,
+                        color: activePreset.primaryText,
+                        borderColor: activePreset.primaryBorder,
+                      }}
+                      className="inline-block px-2 py-0.5 rounded-md border text-[10px] font-bold"
+                    >
                       {campaignScope === 'all'
                         ? 'Toàn bộ các khoản thu'
                         : campaigns.find((c) => c.id === campaignScope)?.title || 'Đợt thu'}
@@ -784,7 +810,8 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setFilterDebt('all')}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl cursor-pointer shadow-sm transition-all"
+                        style={{ background: activePreset.gradient }}
+                        className="px-4 py-2 text-white text-xs font-bold rounded-xl cursor-pointer shadow-sm transition-all hover:opacity-95"
                       >
                         Xem danh sách tất cả thành viên ({summaryStats.totalMembers} người)
                       </button>
@@ -1092,7 +1119,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-800">
-                    <Building2 className="w-4 h-4 text-emerald-600" />
+                    <Building2 className="w-4 h-4" style={{ color: activePreset.primary }} />
                     <span>{t('settings.bank_title', 'Tài Khoản Ngân Hàng & VietQR')}</span>
                   </div>
 
@@ -1103,7 +1130,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                     </div>
                     <div>
                       {t('settings.account_number', 'Số tài khoản')}:{' '}
-                      <span className="font-mono font-bold text-base text-blue-700 tracking-wider">
+                      <span
+                        style={{ color: activePreset.primary }}
+                        className="font-mono font-bold text-base tracking-wider"
+                      >
                         {bankSettings.accountNumber}
                       </span>
                     </div>
@@ -1113,7 +1143,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                     </div>
                     <div className="pt-0.5">
                       {t('share.qr_instruction', 'Quét mã VietQR để nạp quỹ')}:{' '}
-                      <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      <span
+                        style={{ color: activePreset.primary, backgroundColor: `${activePreset.primary}12`, borderColor: `${activePreset.primary}30` }}
+                        className="font-mono font-bold px-2 py-0.5 rounded border"
+                      >
                         [HỌ TÊN] {prefix}
                       </span>
                     </div>
@@ -1157,7 +1190,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
         {/* Footer info tip */}
         <div className="p-3 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-col xs:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2">
           <div className="flex items-center gap-1.5">
-            <ImageIcon className="w-4 h-4 text-emerald-500 shrink-0" />
+            <ImageIcon className="w-4 h-4 shrink-0" style={{ color: activePreset.primary }} />
             <span>
               {t('dues.tip_copy_paste', 'Mẹo: Nhấn nút "Sao chép ảnh" để dán trực tiếp vào Zalo hoặc Messenger mà không cần tải về máy!')}
             </span>

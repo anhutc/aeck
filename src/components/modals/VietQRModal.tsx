@@ -3,6 +3,7 @@ import { X, QrCode, Copy, Check, Download, Share2, Building2 } from 'lucide-reac
 import { BankSettings, AppBranding } from '../../types';
 import { formatVND, getVietQRUrl } from '../../utils/formatters';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 import { AmountInput } from '../common/AmountInput';
 
 interface VietQRModalProps {
@@ -25,6 +26,7 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
   branding,
 }) => {
   const { t } = useTranslation();
+  const { activePreset } = useTheme();
   const [amount, setAmount] = useState<number | string>(defaultAmount > 0 ? defaultAmount : '');
   const [content, setContent] = useState<string>(() => {
     if (defaultContent) return defaultContent;
@@ -94,7 +96,10 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
         {/* Header - Sticky, Never Clipped */}
         <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-white dark:bg-slate-900 sticky top-0 z-20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm shrink-0">
+            <div
+              style={{ backgroundColor: activePreset.primary, boxShadow: `0 4px 12px ${activePreset.primary}33` }}
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0"
+            >
               <QrCode className="w-5 h-5" />
             </div>
             <div>
@@ -206,7 +211,8 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
             <button
               id="copy-full-share-text-btn"
               onClick={copyFullShareText}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              style={{ background: activePreset.gradient, boxShadow: `0 4px 14px ${activePreset.primary}35` }}
+              className="flex-1 py-2.5 px-4 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer hover:opacity-95 active:scale-95"
             >
               {copiedField === 'all' ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
               {copiedField === 'all' ? t('vietqr.copied_full_msg', 'Đã sao chép toàn bộ lời nhắn!') : t('vietqr.copy_full_msg', 'Sao chép tin nhắn')}
@@ -215,7 +221,8 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
             <button
               id="copy-transfer-info-btn"
               onClick={copyTransferInfo}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              style={{ background: activePreset.gradient, boxShadow: `0 4px 14px ${activePreset.primary}35` }}
+              className="flex-1 py-2.5 px-4 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer hover:opacity-95 active:scale-95"
             >
               {copiedField === 'transfer_info' ? (
                 <Check className="w-4 h-4" />

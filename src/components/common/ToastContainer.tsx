@@ -8,6 +8,7 @@ import {
   X,
 } from 'lucide-react';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -29,6 +30,7 @@ interface ToastCardProps {
 
 const ToastCard: React.FC<ToastCardProps> = ({ toast, onRemove, position }) => {
   const { t } = useTranslation();
+  const { activePreset } = useTheme();
   const duration = toast.duration || 3500;
   const [remainingTime, setRemainingTime] = useState(duration);
   const [isPaused, setIsPaused] = useState(false);
@@ -64,8 +66,17 @@ const ToastCard: React.FC<ToastCardProps> = ({ toast, onRemove, position }) => {
   };
 
   // Type-specific styling
-  let iconBadgeClass = 'bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800';
-  let progressBarClass = 'bg-blue-500';
+  const isInfo = toast.type === 'info';
+  let iconBadgeClass = 'border';
+  let iconBadgeStyle: React.CSSProperties | undefined = isInfo ? {
+    backgroundColor: activePreset.primaryLight,
+    color: activePreset.primaryText,
+    borderColor: activePreset.primaryBorder,
+  } : undefined;
+  let progressBarStyle: React.CSSProperties | undefined = {
+    backgroundColor: activePreset.primary,
+  };
+  let progressBarClass = '';
   let borderAccentClass = 'border-slate-200/90 dark:border-slate-800 shadow-slate-900/10 dark:shadow-black/50';
   let IconComponent = Info;
   let typeLabel = t('toast.type_info', 'Thông tin');
@@ -116,7 +127,10 @@ const ToastCard: React.FC<ToastCardProps> = ({ toast, onRemove, position }) => {
     >
       <div className="flex items-start gap-3 p-3.5 sm:p-4">
         {/* Icon Badge */}
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${iconBadgeClass}`}>
+        <div
+          style={iconBadgeStyle}
+          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${iconBadgeClass}`}
+        >
           <IconComponent className="w-5 h-5" />
         </div>
 
@@ -151,7 +165,7 @@ const ToastCard: React.FC<ToastCardProps> = ({ toast, onRemove, position }) => {
       <div className="h-0.5 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
         <div
           className={`h-full transition-all duration-75 ease-linear ${progressBarClass}`}
-          style={{ width: `${percentLeft}%` }}
+          style={{ width: `${percentLeft}%`, ...progressBarStyle }}
         />
       </div>
     </motion.div>

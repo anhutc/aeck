@@ -72,7 +72,7 @@ export const INITIAL_BRANDING: AppBranding = {
   appSubtitle: 'Sổ thu chi & đóng quỹ minh bạch',
   groupEmoji: '💰',
   currencySymbol: 'VNĐ',
-  themeAccent: 'blue',
+  themeAccent: 'emerald',
 
   // 2. Người đại diện & Liên hệ
   treasurerName: 'Trần Thị Mai',

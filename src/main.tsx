@@ -9,11 +9,11 @@ import { ThemeProvider } from './context/ThemeContext';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LanguageProvider>
-      <FeedbackProvider>
-        <ThemeProvider>
+      <ThemeProvider>
+        <FeedbackProvider>
           <App />
-        </ThemeProvider>
-      </FeedbackProvider>
+        </FeedbackProvider>
+      </ThemeProvider>
     </LanguageProvider>
   </StrictMode>,
 );

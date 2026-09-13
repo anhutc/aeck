@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { AppBranding, Category, Fund, Transaction, TransactionType } from '../../types';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 import { AmountInput } from '../common/AmountInput';
 import { compressBillImage } from '../../utils/imageCompressor';
 import { BillViewModal } from './BillViewModal';
@@ -45,6 +46,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   branding,
 }) => {
   const { t } = useTranslation();
+  const { activePreset } = useTheme();
   const [type, setType] = useState<TransactionType>('income');
   const [amount, setAmount] = useState<number | string>('');
   const [categoryId, setCategoryId] = useState<string>('');
@@ -307,7 +309,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             {/* 2. PHÂN LOẠI (DANH MỤC) */}
             <div>
               <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-blue-600" />
+                <Tag className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                 {t('transactions.category_label', 'Phân loại')} <span className="text-rose-500">*</span>
               </label>
               <select
@@ -315,7 +317,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 required
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:outline-hidden"
               >
                 <option value="" disabled>-- {t('transactions.select_category_prompt', 'Chọn phân loại')} {type === 'income' ? t('transactions.income_short', 'thu') : t('transactions.expense_short', 'chi')} --</option>
                 {availableCategories.map((c) => (
@@ -329,7 +331,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             {/* 3. NGÀY */}
             <div>
               <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-indigo-600" />
+                <Calendar className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                 {t('transactions.date_label', 'Ngày giao dịch')} <span className="text-rose-500">*</span>
               </label>
               <input
@@ -338,7 +340,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:outline-hidden"
               />
             </div>
 
@@ -359,7 +361,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     ? t('transactions.income_placeholder', 'VD: Thu quỹ tháng 8, Tiền thưởng dự án tài trợ quỹ...')
                     : t('transactions.expense_placeholder', 'VD: Mua trà sữa & bánh liên hoan, Mua giấy in và bút...')
                 }
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden leading-relaxed"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:outline-hidden leading-relaxed"
               />
             </div>
 
@@ -394,21 +396,17 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-2xl p-4 sm:p-5 text-center cursor-pointer transition-all ${
-                    isDragging
-                      ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 scale-[0.99]'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/80'
-                  }`}
+                  className="border-2 border-dashed rounded-2xl p-4 sm:p-5 text-center cursor-pointer transition-all border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/80"
                 >
                   {isCompressing ? (
                     <div className="py-2 flex flex-col items-center justify-center gap-2 text-slate-500">
-                      <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                      <Loader2 className="w-6 h-6 animate-spin" style={{ color: activePreset.primary }} />
                       <span className="text-xs font-semibold">{t('transactions.bill_compressing', 'Đang xử lý & tối ưu độ nét ảnh hóa đơn...')}</span>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center gap-1.5">
                       <div className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-700 shadow-xs border border-slate-200/80 dark:border-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-300">
-                        <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <Camera className="w-5 h-5" style={{ color: activePreset.primary }} />
                       </div>
                       <div className="text-xs font-bold text-slate-700 dark:text-slate-200">
                         {t('transactions.bill_upload_label', 'Đính kèm ảnh')}
@@ -453,7 +451,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       type="button"
                       onClick={() => setIsPreviewBillOpen(true)}
                       title={t('transactions.view_large_bill', 'Xem ảnh lớn')}
-                      className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                      className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-[var(--theme-primary)] hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
@@ -461,7 +459,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       title={t('transactions.change_bill_photo', 'Đổi ảnh khác')}
-                      className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                      className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-[var(--theme-primary)] hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                     >
                       <RefreshCw className="w-4 h-4" />
                     </button>

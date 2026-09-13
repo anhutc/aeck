@@ -27,6 +27,7 @@ import {
   defaultFirebaseConfig 
 } from '../../lib/firebase';
 import { useFeedback } from '../../context/FeedbackContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface CloudDataSourceModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export const CloudDataSourceModal: React.FC<CloudDataSourceModalProps> = ({
   onClose,
 }) => {
   const { showToast, showConfirm } = useFeedback();
+  const { activePreset } = useTheme();
 
   // Active guide tab: 'config_editor' | 'guide_create' | 'guide_integrate'
   const [activeTab, setActiveTab] = useState<'config_editor' | 'guide_create' | 'guide_integrate'>('config_editor');
@@ -262,7 +264,10 @@ void listenToFund() {
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/60 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20 shrink-0">
+            <div
+              style={{ backgroundColor: activePreset.primary, boxShadow: `0 4px 12px ${activePreset.primary}33` }}
+              className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-sm shrink-0"
+            >
               <Database className="w-5 h-5" />
             </div>
             <div>
@@ -273,7 +278,14 @@ void listenToFund() {
                     Dự án Tùy chỉnh (Đang kết nối)
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                  <span
+                    style={{
+                      backgroundColor: activePreset.primaryLight,
+                      color: activePreset.primaryText,
+                      borderColor: activePreset.primaryBorder,
+                    }}
+                    className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
+                  >
                     Dự án Mặc định của Hệ thống
                   </span>
                 )}
@@ -297,39 +309,54 @@ void listenToFund() {
           <button
             type="button"
             onClick={() => setActiveTab('config_editor')}
+            style={activeTab === 'config_editor' ? {
+              borderColor: activePreset.primary,
+              color: activePreset.primaryText,
+              backgroundColor: activePreset.primaryLight,
+            } : undefined}
             className={`py-2.5 px-3.5 rounded-t-xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'config_editor'
-                ? 'border-blue-600 text-blue-700 dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/60 font-bold shadow-2xs'
+                ? 'font-bold shadow-2xs'
                 : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800'
             }`}
           >
-            <Key className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <Key className="w-4 h-4" style={{ color: activeTab === 'config_editor' ? activePreset.primary : undefined }} />
             <span>Chỉnh Sửa Nguồn Dữ Liệu Máy Chủ</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('guide_create')}
+            style={activeTab === 'guide_create' ? {
+              borderColor: activePreset.primary,
+              color: activePreset.primaryText,
+              backgroundColor: activePreset.primaryLight,
+            } : undefined}
             className={`py-2.5 px-3.5 rounded-t-xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'guide_create'
-                ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/60 font-bold shadow-2xs'
+                ? 'font-bold shadow-2xs'
                 : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800'
             }`}
           >
-            <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <BookOpen className="w-4 h-4" style={{ color: activeTab === 'guide_create' ? activePreset.primary : undefined }} />
             <span>Hướng Dẫn Tạo Firebase Riêng (5 Bước)</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('guide_integrate')}
+            style={activeTab === 'guide_integrate' ? {
+              borderColor: activePreset.primary,
+              color: activePreset.primaryText,
+              backgroundColor: activePreset.primaryLight,
+            } : undefined}
             className={`py-2.5 px-3.5 rounded-t-xl border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTab === 'guide_integrate'
-                ? 'border-purple-600 text-purple-700 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/60 font-bold shadow-2xs'
+                ? 'font-bold shadow-2xs'
                 : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800'
             }`}
           >
-            <Code2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <Code2 className="w-4 h-4" style={{ color: activeTab === 'guide_integrate' ? activePreset.primary : undefined }} />
             <span>Kết Nối App Khác / Bot Zalo / Telegram</span>
           </button>
         </div>
@@ -341,13 +368,19 @@ void listenToFund() {
           {activeTab === 'config_editor' && (
             <div className="space-y-5">
               {/* Feature Introduction Banner */}
-              <div className="p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/90 dark:border-blue-800 flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <div
+                style={{
+                  backgroundColor: `${activePreset.primary}12`,
+                  borderColor: `${activePreset.primary}35`,
+                }}
+                className="p-4 rounded-2xl border flex items-start gap-3"
+              >
+                <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" style={{ color: activePreset.primary }} />
                 <div className="space-y-1">
-                  <h4 className="font-bold text-blue-950 dark:text-blue-200 text-xs sm:text-sm">
+                  <h4 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
                     Tùy chỉnh & Kết nối máy chủ Firestore khác
                   </h4>
-                  <p className="text-[11px] sm:text-xs text-blue-900/80 dark:text-blue-300/80 leading-relaxed">
+                  <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     Bạn có thể tự do thay đổi kết nối sang dự án Firebase / Firestore của riêng bạn hoặc máy chủ khác. Chỉ cần dán đoạn mã cấu hình hoặc điền thông số bên dưới rồi bấm <strong>"Lưu & Chuyển Sang Database Này"</strong>, ứng dụng sẽ lập tức lưu trữ và đồng bộ vào máy chủ mới.
                   </p>
                 </div>
@@ -357,7 +390,7 @@ void listenToFund() {
               <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-3">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <Server className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <Server className="w-4 h-4" style={{ color: activePreset.primary }} />
                     Hạ Tầng Đang Hoạt Động Hiện Tại:
                   </span>
                   {savedCustom && (
@@ -398,7 +431,7 @@ void listenToFund() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <FileCode className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <FileCode className="w-4 h-4" style={{ color: activePreset.primary }} />
                     <span>Dán nhanh mã cấu hình Firebase SDK (Tự động nhận diện):</span>
                   </label>
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Hỗ trợ JS hoặc JSON</span>
@@ -409,7 +442,7 @@ void listenToFund() {
                   value={rawSnippet}
                   onChange={(e) => handleParseSnippet(e.target.value)}
                   placeholder={`const firebaseConfig = {\n  apiKey: "AIzaSy...",\n  authDomain: "my-app.firebaseapp.com",\n  projectId: "my-custom-project",\n  storageBucket: "...",\n  messagingSenderId: "...",\n  appId: "..."\n};`}
-                  className="w-full p-3 font-mono text-xs rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 focus:outline-hidden shadow-2xs placeholder:text-slate-400"
+                  className="w-full p-3 font-mono text-xs rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden shadow-2xs placeholder:text-slate-400"
                 />
 
                 {parseError && (
@@ -436,7 +469,7 @@ void listenToFund() {
                       value={formConfig.apiKey}
                       onChange={(e) => setFormConfig({ ...formConfig, apiKey: e.target.value })}
                       placeholder="AIzaSyB..."
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden"
                     />
                   </div>
 
@@ -449,7 +482,7 @@ void listenToFund() {
                       value={formConfig.projectId}
                       onChange={(e) => setFormConfig({ ...formConfig, projectId: e.target.value })}
                       placeholder="my-fund-project-123"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden"
                     />
                   </div>
 
@@ -462,20 +495,20 @@ void listenToFund() {
                       value={formConfig.authDomain || ''}
                       onChange={(e) => setFormConfig({ ...formConfig, authDomain: e.target.value })}
                       placeholder="my-fund-project-123.firebaseapp.com"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden"
                     />
                   </div>
 
                   <div>
                     <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
-                      Database ID (mặc định là <code className="text-blue-600 dark:text-blue-400 font-bold">(default)</code>)
+                      Database ID (mặc định là <code className="font-bold" style={{ color: activePreset.primary }}>(default)</code>)
                     </label>
                     <input
                       type="text"
                       value={formConfig.firestoreDatabaseId || '(default)'}
                       onChange={(e) => setFormConfig({ ...formConfig, firestoreDatabaseId: e.target.value })}
                       placeholder="(default)"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden"
                     />
                   </div>
 
@@ -488,7 +521,7 @@ void listenToFund() {
                       value={formConfig.appId || ''}
                       onChange={(e) => setFormConfig({ ...formConfig, appId: e.target.value })}
                       placeholder="1:1234567890:web:abcdef..."
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden"
                     />
                   </div>
 
@@ -501,7 +534,7 @@ void listenToFund() {
                       value={formConfig.storageBucket || ''}
                       onChange={(e) => setFormConfig({ ...formConfig, storageBucket: e.target.value })}
                       placeholder="my-fund-project-123.appspot.com"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-[var(--theme-primary)] focus:outline-hidden"
                     />
                   </div>
                 </div>
@@ -519,7 +552,8 @@ void listenToFund() {
                 <button
                   type="button"
                   onClick={handleSaveConfig}
-                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm shadow-blue-600/25 cursor-pointer"
+                  style={{ background: activePreset.gradient, boxShadow: `0 4px 14px ${activePreset.primary}35` }}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer hover:opacity-95 active:scale-[0.98]"
                 >
                   <Check className="w-4 h-4" />
                   <span>Lưu & Chuyển Sang Database Này</span>
@@ -531,13 +565,19 @@ void listenToFund() {
           {/* TAB 2: STEP BY STEP GUIDE TO CREATE FIREBASE */}
           {activeTab === 'guide_create' && (
             <div className="space-y-4 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-              <div className="p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <div
+                style={{
+                  backgroundColor: `${activePreset.primary}12`,
+                  borderColor: `${activePreset.primary}35`,
+                }}
+                className="p-4 rounded-2xl border flex items-start gap-3"
+              >
+                <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" style={{ color: activePreset.primary }} />
                 <div>
-                  <h4 className="font-bold text-blue-950 dark:text-blue-200 text-sm">
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">
                     Tự sở hữu 100% Cơ Sở Dữ Liệu Miễn Phí Với Google Firebase
                   </h4>
-                  <p className="text-blue-900/80 dark:text-blue-300/80 mt-1">
+                  <p className="text-slate-600 dark:text-slate-300 mt-1">
                     Gói miễn phí Spark của Firebase cung cấp 1 GB lưu trữ và 50,000 lượt đọc/ngày — hoàn toàn đủ cho nhu cầu quản lý quỹ hoạt động của đội nhóm trong nhiều năm mà không mất phí.
                   </p>
                 </div>
@@ -546,7 +586,7 @@ void listenToFund() {
               {/* Step 1 */}
               <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">1</span>
+                  <span style={{ backgroundColor: activePreset.primary }} className="w-6 h-6 rounded-full text-white font-bold text-xs flex items-center justify-center">1</span>
                   <h4 className="font-bold text-slate-900 dark:text-white text-sm">Tạo Dự Án (Project) trên Firebase Console</h4>
                 </div>
                 <p className="text-slate-600 dark:text-slate-400 pl-8">
@@ -555,7 +595,8 @@ void listenToFund() {
                     href="https://console.firebase.google.com/" 
                     target="_blank" 
                     rel="noreferrer" 
-                    className="text-blue-600 dark:text-blue-400 font-semibold underline inline-flex items-center gap-0.5"
+                    style={{ color: activePreset.primary }}
+                    className="font-semibold underline inline-flex items-center gap-0.5"
                   >
                     <span>Firebase Console</span>
                     <ExternalLink className="w-3 h-3" />
@@ -567,7 +608,7 @@ void listenToFund() {
               {/* Step 2 */}
               <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">2</span>
+                  <span style={{ backgroundColor: activePreset.primary }} className="w-6 h-6 rounded-full text-white font-bold text-xs flex items-center justify-center">2</span>
                   <h4 className="font-bold text-slate-900 dark:text-white text-sm">Khởi Tạo Cloud Firestore Database</h4>
                 </div>
                 <p className="text-slate-600 dark:text-slate-400 pl-8">
@@ -579,7 +620,7 @@ void listenToFund() {
               <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">3</span>
+                    <span style={{ backgroundColor: activePreset.primary }} className="w-6 h-6 rounded-full text-white font-bold text-xs flex items-center justify-center">3</span>
                     <h4 className="font-bold text-slate-900 dark:text-white text-sm">Cài Đặt Quyền Bảo Mật (Rules)</h4>
                   </div>
                   <button
@@ -602,7 +643,7 @@ void listenToFund() {
               {/* Step 4 */}
               <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">4</span>
+                  <span style={{ backgroundColor: activePreset.primary }} className="w-6 h-6 rounded-full text-white font-bold text-xs flex items-center justify-center">4</span>
                   <h4 className="font-bold text-slate-900 dark:text-white text-sm">Đăng Ký Web App Để Lấy Mã Cấu Hình</h4>
                 </div>
                 <p className="text-slate-600 dark:text-slate-400 pl-8">
@@ -613,7 +654,7 @@ void listenToFund() {
               {/* Step 5 */}
               <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">5</span>
+                  <span style={{ backgroundColor: activePreset.primary }} className="w-6 h-6 rounded-full text-white font-bold text-xs flex items-center justify-center">5</span>
                   <h4 className="font-bold text-slate-900 dark:text-white text-sm">Dán Mã Cấu Hình Vào Ứng Dụng</h4>
                 </div>
                 <p className="text-slate-600 dark:text-slate-400 pl-8">
@@ -630,9 +671,10 @@ void listenToFund() {
                 <button
                   type="button"
                   onClick={() => setIntegrationType('bot')}
+                  style={integrationType === 'bot' ? { backgroundColor: activePreset.primary } : undefined}
                   className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     integrationType === 'bot'
-                      ? 'bg-blue-600 text-white shadow-xs'
+                      ? 'text-white shadow-xs'
                       : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
@@ -643,9 +685,10 @@ void listenToFund() {
                 <button
                   type="button"
                   onClick={() => setIntegrationType('nodejs')}
+                  style={integrationType === 'nodejs' ? { backgroundColor: activePreset.primary } : undefined}
                   className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     integrationType === 'nodejs'
-                      ? 'bg-blue-600 text-white shadow-xs'
+                      ? 'text-white shadow-xs'
                       : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
@@ -656,9 +699,10 @@ void listenToFund() {
                 <button
                   type="button"
                   onClick={() => setIntegrationType('sheets')}
+                  style={integrationType === 'sheets' ? { backgroundColor: activePreset.primary } : undefined}
                   className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     integrationType === 'sheets'
-                      ? 'bg-blue-600 text-white shadow-xs'
+                      ? 'text-white shadow-xs'
                       : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
@@ -669,9 +713,10 @@ void listenToFund() {
                 <button
                   type="button"
                   onClick={() => setIntegrationType('flutter')}
+                  style={integrationType === 'flutter' ? { backgroundColor: activePreset.primary } : undefined}
                   className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     integrationType === 'flutter'
-                      ? 'bg-blue-600 text-white shadow-xs'
+                      ? 'text-white shadow-xs'
                       : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
@@ -684,7 +729,7 @@ void listenToFund() {
               <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <Code2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <Code2 className="w-4 h-4" style={{ color: activePreset.primary }} />
                     <span>Mã Nguồn Mẫu Kết Nối:</span>
                   </span>
                   <button
