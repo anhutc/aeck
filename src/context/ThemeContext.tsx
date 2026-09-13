@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   ThemePreset,
   ThemeMode,
@@ -56,6 +56,24 @@ const getInitialThemeFromBranding = (): AppBranding | null => {
   return null;
 };
 
+const resolveDefaultThemeMode = (branding?: AppBranding | null): ThemeMode => {
+  try {
+    const savedDefault = localStorage.getItem(THEME_STORAGE_KEYS.DEFAULT_MODE) as ThemeMode;
+    if (savedDefault && ['light', 'dark', 'system'].includes(savedDefault)) {
+      return savedDefault;
+    }
+    const fromBranding = branding?.themeMode;
+    if (fromBranding && ['light', 'dark', 'system'].includes(fromBranding)) {
+      return fromBranding;
+    }
+    const savedLegacy = localStorage.getItem(THEME_STORAGE_KEYS.MODE) as ThemeMode;
+    if (savedLegacy && ['light', 'dark', 'system'].includes(savedLegacy)) {
+      return savedLegacy;
+    }
+  } catch (e) {}
+  return 'light';
+};
+
 const normalizeAccent = (accent?: string): string => {
   if (!accent || accent === 'blue') return 'emerald';
   return accent;
@@ -82,26 +100,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Default Theme Mode upon access (configured in Settings: 'light' | 'dark' | 'system')
   const [defaultThemeMode, setDefaultThemeModeState] = useState<ThemeMode>(() => {
-    const fromBranding = initialBranding?.themeMode;
-    if (fromBranding && ['light', 'dark', 'system'].includes(fromBranding)) return fromBranding;
-    const savedDefault = localStorage.getItem(THEME_STORAGE_KEYS.DEFAULT_MODE) as ThemeMode;
-    if (savedDefault && ['light', 'dark', 'system'].includes(savedDefault)) return savedDefault;
-    const savedLegacy = localStorage.getItem(THEME_STORAGE_KEYS.MODE) as ThemeMode;
-    return savedLegacy && ['light', 'dark', 'system'].includes(savedLegacy) ? savedLegacy : 'light';
+    return resolveDefaultThemeMode(initialBranding);
   });
 
   // Flag indicating whether the user manually toggled the theme in Header after accessing
+  const isHeaderThemeCustomizedRef = useRef<boolean>(false);
   const [isHeaderThemeCustomized, setIsHeaderThemeCustomized] = useState<boolean>(false);
 
   // Color Mode actively displayed in the current visit session
   // Upon initial visit/access, it strictly starts with defaultThemeMode
   const [themeMode, setThemeModeState] = useState<ThemeMode>(() => {
-    const fromBranding = initialBranding?.themeMode;
-    if (fromBranding && ['light', 'dark', 'system'].includes(fromBranding)) return fromBranding;
-    const savedDefault = localStorage.getItem(THEME_STORAGE_KEYS.DEFAULT_MODE) as ThemeMode;
-    if (savedDefault && ['light', 'dark', 'system'].includes(savedDefault)) return savedDefault;
-    const savedLegacy = localStorage.getItem(THEME_STORAGE_KEYS.MODE) as ThemeMode;
-    return savedLegacy && ['light', 'dark', 'system'].includes(savedLegacy) ? savedLegacy : 'light';
+    return resolveDefaultThemeMode(initialBranding);
   });
 
   // Corner Radius: modern | soft | smooth | sharp
@@ -167,35 +176,76 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Update default theme mode upon access (configured in Settings)
   const setDefaultThemeMode = useCallback((mode: ThemeMode) => {
+    isHeaderThemeCustomizedRef.current = false;
+    setIsHeaderThemeCustomized(false);
     setDefaultThemeModeState(mode);
-    localStorage.setItem(THEME_STORAGE_KEYS.DEFAULT_MODE, mode);
-    localStorage.setItem(THEME_STORAGE_KEYS.MODE, mode);
+    try {
+      localStorage.setItem(THEME_STORAGE_KEYS.DEFAULT_MODE, mode);
+      localStorage.setItem(THEME_STORAGE_KEYS.MODE, mode);
+    } catch (e) {}
     // Setting default also updates current preview
     setThemeModeState(mode);
-    setIsHeaderThemeCustomized(false);
+  }, []);
+
+  // Helper to directly update DOM theme attributes immediately
+  const applyDarkClassToDom = useCallback((dark: boolean) => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    if (dark) {
+      root.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
+      root.style.colorScheme = 'dark';
+    } else {
+      root.classList.remove('dark');
+      root.setAttribute('data-theme', 'light');
+      root.style.colorScheme = 'light';
+    }
   }, []);
 
   // Set active theme mode for current session
   const setThemeMode = useCallback((mode: ThemeMode) => {
+    isHeaderThemeCustomizedRef.current = true;
+    setIsHeaderThemeCustomized(true);
+
+    const isDark = mode === 'dark' || (mode === 'system' && (window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : false));
+    applyDarkClassToDom(isDark);
+
     setThemeModeState(mode);
-    localStorage.setItem(THEME_STORAGE_KEYS.MODE, mode);
-  }, []);
+    try {
+      localStorage.setItem(THEME_STORAGE_KEYS.MODE, mode);
+    } catch (e) {}
+  }, [applyDarkClassToDom]);
 
   // Quick toggle in Header after accessing (does NOT alter defaultThemeMode)
+  // Guarantees immediate response on the very first click by checking DOM state directly
   const toggleHeaderTheme = useCallback(() => {
-    setThemeModeState(prev => {
-      const isCurrentDark = prev === 'dark' || (prev === 'system' && isSystemDark);
-      const nextMode: ThemeMode = isCurrentDark ? 'light' : 'dark';
-      setIsHeaderThemeCustomized(true);
-      return nextMode;
-    });
-  }, [isSystemDark]);
+    isHeaderThemeCustomizedRef.current = true;
+    setIsHeaderThemeCustomized(true);
+
+    // Determine current visual dark state directly from DOM class or reactive state
+    const isCurrentlyDark = typeof document !== 'undefined'
+      ? document.documentElement.classList.contains('dark')
+      : (themeMode === 'dark' || (themeMode === 'system' && isSystemDark));
+
+    const nextMode: ThemeMode = isCurrentlyDark ? 'light' : 'dark';
+
+    // Directly apply DOM changes immediately to guarantee instant 1st-click visual response
+    applyDarkClassToDom(nextMode === 'dark');
+
+    setThemeModeState(nextMode);
+    try {
+      localStorage.setItem(THEME_STORAGE_KEYS.MODE, nextMode);
+    } catch (e) {}
+  }, [themeMode, isSystemDark, applyDarkClassToDom]);
 
   // Reset active theme back to the configured default upon access
   const resetToDefaultAccessTheme = useCallback(() => {
-    setThemeModeState(defaultThemeMode);
+    isHeaderThemeCustomizedRef.current = false;
     setIsHeaderThemeCustomized(false);
-  }, [defaultThemeMode]);
+    const isDark = defaultThemeMode === 'dark' || (defaultThemeMode === 'system' && isSystemDark);
+    applyDarkClassToDom(isDark);
+    setThemeModeState(defaultThemeMode);
+  }, [defaultThemeMode, isSystemDark, applyDarkClassToDom]);
 
   const setThemeRadius = useCallback((radius: ThemeRadius) => {
     setThemeRadiusState(radius);
@@ -247,15 +297,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
     if (branding.themeMode && ['light', 'dark', 'system'].includes(branding.themeMode)) {
       setDefaultThemeModeState(branding.themeMode);
-      localStorage.setItem(THEME_STORAGE_KEYS.DEFAULT_MODE, branding.themeMode);
-      localStorage.setItem(THEME_STORAGE_KEYS.MODE, branding.themeMode);
+      try {
+        localStorage.setItem(THEME_STORAGE_KEYS.DEFAULT_MODE, branding.themeMode);
+        localStorage.setItem(THEME_STORAGE_KEYS.MODE, branding.themeMode);
+      } catch (e) {}
       // Only sync active view mode if the user has NOT manually chosen a custom mode in header during this visit
-      setIsHeaderThemeCustomized(isCustomized => {
-        if (!isCustomized) {
-          setThemeModeState(branding.themeMode as ThemeMode);
-        }
-        return isCustomized;
-      });
+      if (!isHeaderThemeCustomizedRef.current) {
+        setThemeModeState(branding.themeMode as ThemeMode);
+      }
     }
     if (branding.themeRadius) {
       setThemeRadiusState(branding.themeRadius);
@@ -286,6 +335,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem(THEME_STORAGE_KEYS.DEFAULT_MODE, mode);
     localStorage.setItem(THEME_STORAGE_KEYS.MODE, mode);
     setThemeModeState(mode);
+    isHeaderThemeCustomizedRef.current = false;
     setIsHeaderThemeCustomized(false);
 
     setThemeRadiusState(radius);
