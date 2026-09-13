@@ -32,8 +32,6 @@ export const NoticeBanner: React.FC<NoticeBannerProps> = ({
     return null;
   }
 
-  const isInfo = !notice.type || notice.type === 'info';
-
   const typeConfig = {
     info: {
       style: {

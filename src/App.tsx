@@ -40,11 +40,11 @@ import { VietQRModal } from './components/modals/VietQRModal';
 import { PrintStatementModal } from './components/modals/PrintStatementModal';
 import { PrintMemberDuesModal } from './components/modals/PrintMemberDuesModal';
 import { ShareModal } from './components/modals/ShareModal';
-import { NoticeEditModal } from './components/modals/NoticeEditModal';
 import { ThemeCustomizerModal } from './components/modals/ThemeCustomizerModal';
 import { MemberPortalView } from './components/MemberPortalView';
 import { FloatingTransactionButton } from './components/common/FloatingTransactionButton';
 import { subscribeToCloudState, saveCloudState, fetchCloudStateOnce, testCloudConnection, CloudConnectionResult } from './lib/cloudStore';
+import { safeStorage } from './utils/safeStorage';
 import { useFeedback } from './context/FeedbackContext';
 import { useTheme } from './context/ThemeContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -87,8 +87,10 @@ export default function App() {
   // Clear any legacy cached tokens and handle bfcache (back-forward cache) to ensure password is required on reload
   useEffect(() => {
     try {
-      sessionStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
-      localStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        window.sessionStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
+      }
+      safeStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
     } catch {
       // Ignore storage access errors
     }
@@ -123,76 +125,110 @@ export default function App() {
 
   // Admin Password
   const [adminPassword, setAdminPassword] = useState<string>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.ADMIN_PASS);
+    const saved = safeStorage.getItem(STORAGE_KEYS.ADMIN_PASS);
     return saved || DEFAULT_ADMIN_PASSWORD;
   });
 
   // Member Password
   const [memberPassword, setMemberPassword] = useState<string>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.MEMBER_PASS);
+    const saved = safeStorage.getItem(STORAGE_KEYS.MEMBER_PASS);
     return saved || DEFAULT_MEMBER_PASSWORD;
   });
 
   // App Title / Branding Personalization State
   const [branding, setBranding] = useState<AppBranding>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.BRANDING);
-    return saved ? JSON.parse(saved) : INITIAL_BRANDING;
+    try {
+      const saved = safeStorage.getItem(STORAGE_KEYS.BRANDING);
+      return saved ? JSON.parse(saved) : INITIAL_BRANDING;
+    } catch {
+      return INITIAL_BRANDING;
+    }
   });
 
   // Navigation State
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
-  // Core Data States with LocalStorage Initialization
+  // Core Data States with SafeStorage Initialization
   const [funds, setFunds] = useState<Fund[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.FUNDS);
-    const parsed: Fund[] = saved ? deduplicateById(JSON.parse(saved)) : INITIAL_FUNDS;
-    const savedBranding = localStorage.getItem(STORAGE_KEYS.BRANDING);
-    const parsedBranding: AppBranding = savedBranding ? JSON.parse(savedBranding) : INITIAL_BRANDING;
-    const appName = parsedBranding?.appTitle?.trim() || 'AE Cây Khế';
-    return parsed.map((f, idx) => {
-      if (idx === 0 && (f.name === 'Quỹ Hoạt Động' || f.name === 'Quỹ Chung' || !f.name)) {
-        return { ...f, name: appName };
-      }
-      return f;
-    });
+    try {
+      const saved = safeStorage.getItem(STORAGE_KEYS.FUNDS);
+      const parsed: Fund[] = saved ? deduplicateById(JSON.parse(saved)) : INITIAL_FUNDS;
+      const savedBranding = safeStorage.getItem(STORAGE_KEYS.BRANDING);
+      const parsedBranding: AppBranding = savedBranding ? JSON.parse(savedBranding) : INITIAL_BRANDING;
+      const appName = parsedBranding?.appTitle?.trim() || 'AE Cây Khế';
+      return parsed.map((f, idx) => {
+        if (idx === 0 && (f.name === 'Quỹ Hoạt Động' || f.name === 'Quỹ Chung' || !f.name)) {
+          return { ...f, name: appName };
+        }
+        return f;
+      });
+    } catch {
+      return INITIAL_FUNDS;
+    }
   });
 
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-    return saved ? deduplicateById(JSON.parse(saved)) : INITIAL_TRANSACTIONS;
+    try {
+      const saved = safeStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
+      return saved ? deduplicateById(JSON.parse(saved)) : INITIAL_TRANSACTIONS;
+    } catch {
+      return INITIAL_TRANSACTIONS;
+    }
   });
 
   const [categories, setCategories] = useState<Category[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
-    return saved ? deduplicateById(JSON.parse(saved)) : INITIAL_CATEGORIES;
+    try {
+      const saved = safeStorage.getItem(STORAGE_KEYS.CATEGORIES);
+      return saved ? deduplicateById(JSON.parse(saved)) : INITIAL_CATEGORIES;
+    } catch {
+      return INITIAL_CATEGORIES;
+    }
   });
 
   const [campaigns, setCampaigns] = useState<ContributionCampaign[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.CAMPAIGNS);
-    return saved ? deduplicateById(JSON.parse(saved)) : INITIAL_CAMPAIGNS;
+    try {
+      const saved = safeStorage.getItem(STORAGE_KEYS.CAMPAIGNS);
+      return saved ? deduplicateById(JSON.parse(saved)) : INITIAL_CAMPAIGNS;
+    } catch {
+      return INITIAL_CAMPAIGNS;
+    }
   });
 
   const [members, setMembers] = useState<Member[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.MEMBERS);
-    return saved ? deduplicateById(JSON.parse(saved)) : INITIAL_MEMBERS;
+    try {
+      const saved = safeStorage.getItem(STORAGE_KEYS.MEMBERS);
+      return saved ? deduplicateById(JSON.parse(saved)) : INITIAL_MEMBERS;
+    } catch {
+      return INITIAL_MEMBERS;
+    }
   });
 
   const [bankSettings, setBankSettings] = useState<BankSettings>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.BANK);
-    return saved ? JSON.parse(saved) : INITIAL_BANK_SETTINGS;
+    try {
+      const saved = safeStorage.getItem(STORAGE_KEYS.BANK);
+      return saved ? JSON.parse(saved) : INITIAL_BANK_SETTINGS;
+    } catch {
+      return INITIAL_BANK_SETTINGS;
+    }
   });
 
   const [groupNotice, setGroupNotice] = useState<GroupNotice>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.NOTICE);
-    return saved ? JSON.parse(saved) : INITIAL_GROUP_NOTICE;
+    try {
+      const saved = safeStorage.getItem(STORAGE_KEYS.NOTICE);
+      return saved ? JSON.parse(saved) : INITIAL_GROUP_NOTICE;
+    } catch {
+      return INITIAL_GROUP_NOTICE;
+    }
   });
 
   const [viewPermissions, setViewPermissions] = useState<MemberViewPermissions>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.VIEW_PERMISSIONS);
-    return saved ? JSON.parse(saved) : INITIAL_VIEW_PERMISSIONS;
+    try {
+      const saved = safeStorage.getItem(STORAGE_KEYS.VIEW_PERMISSIONS);
+      return saved ? JSON.parse(saved) : INITIAL_VIEW_PERMISSIONS;
+    } catch {
+      return INITIAL_VIEW_PERMISSIONS;
+    }
   });
-
-  const [isNoticeEditModalOpen, setIsNoticeEditModalOpen] = useState(false);
 
   // Cloud connection & synchronization status
   const [cloudSyncStatus, setCloudSyncStatus] = useState<'connected' | 'connecting' | 'error' | 'syncing'>('connecting');
@@ -200,6 +236,7 @@ export default function App() {
   const [cloudLatency, setCloudLatency] = useState<number | null>(null);
   const isSyncingFromCloud = useRef(false);
   const hasInitializedCloud = useRef(false);
+  const lastSyncedJsonRef = useRef<string>('');
 
   // Realtime Cloud Firestore sync
   useEffect(() => {
@@ -209,69 +246,103 @@ export default function App() {
       setLastCloudSyncTime(now.toLocaleTimeString('vi-VN') + ' ' + now.toLocaleDateString('vi-VN'));
 
       if (exists && cloudData) {
-        if (cloudData.funds) {
+        let newFunds = funds;
+        let newTx = transactions;
+        let newCats = categories;
+        let newCamps = campaigns;
+        let newMembers = members;
+        let newBank = bankSettings;
+        let newNotice = groupNotice;
+        let newPerms = viewPermissions;
+        let newBrand = branding;
+        let newAdminPass = adminPassword;
+        let newMemberPass = memberPassword;
+
+        if (cloudData.funds && Array.isArray(cloudData.funds)) {
           const appName = cloudData.branding?.appTitle?.trim() || branding?.appTitle?.trim() || 'AE Cây Khế';
-          const cleanFunds = deduplicateById(cloudData.funds).map((f, idx) => {
+          newFunds = deduplicateById(cloudData.funds).map((f, idx) => {
             if (idx === 0 && (f.name === 'Quỹ Hoạt Động' || f.name === 'Quỹ Chung' || !f.name)) {
               return { ...f, name: appName };
             }
             return f;
           });
-          setFunds(cleanFunds);
-          localStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(cleanFunds));
+          setFunds(newFunds);
+          safeStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(newFunds));
         }
-        if (cloudData.transactions) {
-          const cleanTx = deduplicateById(cloudData.transactions);
-          setTransactions(cleanTx);
-          localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(cleanTx));
+        if (cloudData.transactions && Array.isArray(cloudData.transactions)) {
+          newTx = deduplicateById(cloudData.transactions);
+          setTransactions(newTx);
+          safeStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(newTx));
         }
-        if (cloudData.categories) {
-          const cleanCats = deduplicateById(cloudData.categories);
-          setCategories(cleanCats);
-          localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(cleanCats));
+        if (cloudData.categories && Array.isArray(cloudData.categories)) {
+          newCats = deduplicateById(cloudData.categories);
+          setCategories(newCats);
+          safeStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(newCats));
         }
-        if (cloudData.campaigns) {
-          const cleanCamps = deduplicateById(cloudData.campaigns);
-          setCampaigns(cleanCamps);
-          localStorage.setItem(STORAGE_KEYS.CAMPAIGNS, JSON.stringify(cleanCamps));
+        if (cloudData.campaigns && Array.isArray(cloudData.campaigns)) {
+          newCamps = deduplicateById(cloudData.campaigns);
+          setCampaigns(newCamps);
+          safeStorage.setItem(STORAGE_KEYS.CAMPAIGNS, JSON.stringify(newCamps));
         }
-        if (cloudData.members) {
-          const cleanMembers = deduplicateById(cloudData.members);
-          setMembers(cleanMembers);
-          localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(cleanMembers));
+        if (cloudData.members && Array.isArray(cloudData.members)) {
+          newMembers = deduplicateById(cloudData.members);
+          setMembers(newMembers);
+          safeStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(newMembers));
         }
         if (cloudData.bankSettings) {
-          setBankSettings(cloudData.bankSettings);
-          localStorage.setItem(STORAGE_KEYS.BANK, JSON.stringify(cloudData.bankSettings));
+          newBank = cloudData.bankSettings;
+          setBankSettings(newBank);
+          safeStorage.setItem(STORAGE_KEYS.BANK, JSON.stringify(newBank));
         }
         if (cloudData.groupNotice) {
-          setGroupNotice(cloudData.groupNotice);
-          localStorage.setItem(STORAGE_KEYS.NOTICE, JSON.stringify(cloudData.groupNotice));
+          newNotice = cloudData.groupNotice;
+          setGroupNotice(newNotice);
+          safeStorage.setItem(STORAGE_KEYS.NOTICE, JSON.stringify(newNotice));
         }
         if (cloudData.viewPermissions) {
-          setViewPermissions(cloudData.viewPermissions);
-          localStorage.setItem(STORAGE_KEYS.VIEW_PERMISSIONS, JSON.stringify(cloudData.viewPermissions));
+          newPerms = cloudData.viewPermissions;
+          setViewPermissions(newPerms);
+          safeStorage.setItem(STORAGE_KEYS.VIEW_PERMISSIONS, JSON.stringify(newPerms));
         }
         if (cloudData.branding) {
-          setBranding(cloudData.branding);
-          localStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(cloudData.branding));
-          syncFromBranding(cloudData.branding);
-          if (cloudData.branding.toastPosition) {
-            setToastPosition(cloudData.branding.toastPosition);
+          newBrand = cloudData.branding;
+          setBranding(newBrand);
+          safeStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(newBrand));
+          syncFromBranding(newBrand);
+          if (newBrand.toastPosition) {
+            setToastPosition(newBrand.toastPosition);
           }
         }
         if (cloudData.adminPassword) {
-          setAdminPassword(cloudData.adminPassword);
-          localStorage.setItem(STORAGE_KEYS.ADMIN_PASS, cloudData.adminPassword);
+          newAdminPass = cloudData.adminPassword;
+          setAdminPassword(newAdminPass);
+          safeStorage.setItem(STORAGE_KEYS.ADMIN_PASS, newAdminPass);
         }
         if (cloudData.memberPassword) {
-          setMemberPassword(cloudData.memberPassword);
-          localStorage.setItem(STORAGE_KEYS.MEMBER_PASS, cloudData.memberPassword);
+          newMemberPass = cloudData.memberPassword;
+          setMemberPassword(newMemberPass);
+          safeStorage.setItem(STORAGE_KEYS.MEMBER_PASS, newMemberPass);
         }
+
+        // Cache the exact JSON to prevent ping-pong auto-sync loop
+        lastSyncedJsonRef.current = JSON.stringify({
+          funds: newFunds,
+          transactions: newTx,
+          categories: newCats,
+          campaigns: newCamps,
+          members: newMembers,
+          bankSettings: newBank,
+          groupNotice: newNotice,
+          viewPermissions: newPerms,
+          branding: newBrand,
+          adminPassword: newAdminPass,
+          memberPassword: newMemberPass,
+        });
+
         setCloudSyncStatus('connected');
       } else if (!exists) {
         // Initial setup for first time ever run on cloud
-        saveCloudState({
+        const initialFullState = {
           funds,
           transactions,
           categories,
@@ -283,7 +354,9 @@ export default function App() {
           branding,
           adminPassword,
           memberPassword,
-        }).then(() => {
+        };
+        saveCloudState(initialFullState).then(() => {
+          lastSyncedJsonRef.current = JSON.stringify(initialFullState);
           setCloudSyncStatus('connected');
         }).catch(() => {
           setCloudSyncStatus('connected');
@@ -328,78 +401,88 @@ export default function App() {
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  // Save individual items to LocalStorage immediately for instant local persistence
+  // Save individual items to SafeStorage immediately for instant local persistence
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(funds));
+    safeStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(funds));
   }, [funds]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
+    safeStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
   }, [transactions]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
+    safeStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
   }, [categories]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CAMPAIGNS, JSON.stringify(campaigns));
+    safeStorage.setItem(STORAGE_KEYS.CAMPAIGNS, JSON.stringify(campaigns));
   }, [campaigns]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(members));
+    safeStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(members));
   }, [members]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.BANK, JSON.stringify(bankSettings));
+    safeStorage.setItem(STORAGE_KEYS.BANK, JSON.stringify(bankSettings));
   }, [bankSettings]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.NOTICE, JSON.stringify(groupNotice));
+    safeStorage.setItem(STORAGE_KEYS.NOTICE, JSON.stringify(groupNotice));
   }, [groupNotice]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.VIEW_PERMISSIONS, JSON.stringify(viewPermissions));
+    safeStorage.setItem(STORAGE_KEYS.VIEW_PERMISSIONS, JSON.stringify(viewPermissions));
   }, [viewPermissions]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(branding));
+    safeStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(branding));
   }, [branding]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.ADMIN_PASS, adminPassword);
+    safeStorage.setItem(STORAGE_KEYS.ADMIN_PASS, adminPassword);
   }, [adminPassword]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.MEMBER_PASS, memberPassword);
+    safeStorage.setItem(STORAGE_KEYS.MEMBER_PASS, memberPassword);
   }, [memberPassword]);
 
   // Consolidated Debounced Auto-Sync to Cloud Firestore (Atomic Full State)
   useEffect(() => {
     if (!hasInitializedCloud.current || isSyncingFromCloud.current) return;
 
+    const currentState = {
+      funds,
+      transactions,
+      categories,
+      campaigns,
+      members,
+      bankSettings,
+      groupNotice,
+      viewPermissions,
+      branding,
+      adminPassword,
+      memberPassword,
+    };
+    const currentStateJson = JSON.stringify(currentState);
+
+    // Skip network round-trip if data is identical to what Firestore already has
+    if (lastSyncedJsonRef.current && currentStateJson === lastSyncedJsonRef.current) {
+      setCloudSyncStatus('connected');
+      return;
+    }
+
     setCloudSyncStatus('syncing');
     const timer = setTimeout(() => {
-      saveCloudState({
-        funds,
-        transactions,
-        categories,
-        campaigns,
-        members,
-        bankSettings,
-        groupNotice,
-        viewPermissions,
-        branding,
-        adminPassword,
-        memberPassword,
-      })
+      saveCloudState(currentState)
         .then(() => {
+          lastSyncedJsonRef.current = currentStateJson;
           setCloudSyncStatus('connected');
         })
         .catch((err) => {
           console.warn('Could not sync to Firestore, fallback to local storage:', err);
           setCloudSyncStatus('error');
         });
-    }, 400);
+    }, 600);
 
     return () => clearTimeout(timer);
   }, [funds, transactions, categories, campaigns, members, bankSettings, groupNotice, viewPermissions, branding, adminPassword, memberPassword]);
@@ -415,11 +498,6 @@ export default function App() {
       updateUrlParam(true);
       showToast('Đã đăng nhập thành công quyền Thành viên!', 'info');
     }
-  };
-
-  const handleSwitchToMemberView = () => {
-    setIsMemberView(true);
-    updateUrlParam(true);
   };
 
   const handleLogout = () => {
@@ -699,66 +777,17 @@ export default function App() {
 
   // Full Export & Import JSON
   const handleExportAllData = () => {
-    // 1. Strip obsolete fundId and clean up transactions
-    const cleanTransactions = transactions.map(({ fundId: _fId, ...rest }) => rest);
-
-    // 2. Strip deprecated fields from campaigns and participant cleanups
-    const cleanCampaigns = campaigns.map(({ fundId: _fId, dueDate: _dDate, status: _st, participants, ...rest }) => ({
-      ...rest,
-      participants: (participants || []).map(p => {
-        const cleanP: any = {
-          memberId: p.memberId,
-          amountRequired: p.amountRequired,
-          amountPaid: p.amountPaid,
-        };
-        if (p.paidDate) cleanP.paidDate = p.paidDate;
-        if (p.note) cleanP.note = p.note;
-        if (p.transactionId) cleanP.transactionId = p.transactionId;
-        return cleanP;
-      }),
-    }));
-
-    // 3. Strip redundant report signatures, statement print templates, social share templates from branding
-    const {
-      statementHeaderTitle: _sht,
-      statementSubtitle: _sst,
-      statementSignatory1Title: _s1t,
-      statementSignatory1Name: _s1n,
-      statementSignatory2Title: _s2t,
-      statementSignatory2Name: _s2n,
-      statementSignatory3Title: _s3t,
-      statementSignatory3Name: _s3n,
-      statementFooterNote: _sfn,
-      statementShowSignatory1: _ss1,
-      statementShowSignatory2: _ss2,
-      statementShowSignatory3: _ss3,
-      statementShowFooterNote: _ssfn,
-      statementShowSummary: _sssum,
-      socialShareTemplate: _sstmp,
-      shareMessageGreeting: _smg,
-      shareMessageBenefit1: _smb1,
-      shareMessageBenefit2: _smb2,
-      shareMessageBenefit3: _smb3,
-      shareMessageClosing: _smc,
-      shareMessageIncludeBank: _smib,
-      shareMessageIncludeCampaigns: _smic,
-      customFooterText: _cft,
-      qrShareHeader: _qsh,
-      qrShareFooter: _qsf,
-      ...cleanBranding
-    } = (branding || {}) as any;
-
     const fullBackup = {
       version: '2.5',
       exportedAt: new Date().toISOString(),
-      transactions: cleanTransactions,
+      transactions,
       categories,
-      campaigns: cleanCampaigns,
+      campaigns,
       members,
       bankSettings,
       groupNotice,
       viewPermissions,
-      branding: cleanBranding,
+      branding,
       adminPassword,
       memberPassword,
     };
@@ -919,51 +948,51 @@ export default function App() {
                 return f;
               });
               setFunds(cleanFunds);
-              localStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(cleanFunds));
+              safeStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(cleanFunds));
             }
             if (cloudData.transactions) {
               const cleanTx = deduplicateById(cloudData.transactions);
               setTransactions(cleanTx);
-              localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(cleanTx));
+              safeStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(cleanTx));
             }
             if (cloudData.categories) {
               const cleanCats = deduplicateById(cloudData.categories);
               setCategories(cleanCats);
-              localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(cleanCats));
+              safeStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(cleanCats));
             }
             if (cloudData.campaigns) {
               const cleanCamps = deduplicateById(cloudData.campaigns);
               setCampaigns(cleanCamps);
-              localStorage.setItem(STORAGE_KEYS.CAMPAIGNS, JSON.stringify(cleanCamps));
+              safeStorage.setItem(STORAGE_KEYS.CAMPAIGNS, JSON.stringify(cleanCamps));
             }
             if (cloudData.members) {
               const cleanMembers = deduplicateById(cloudData.members);
               setMembers(cleanMembers);
-              localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(cleanMembers));
+              safeStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(cleanMembers));
             }
             if (cloudData.bankSettings) {
               setBankSettings(cloudData.bankSettings);
-              localStorage.setItem(STORAGE_KEYS.BANK, JSON.stringify(cloudData.bankSettings));
+              safeStorage.setItem(STORAGE_KEYS.BANK, JSON.stringify(cloudData.bankSettings));
             }
             if (cloudData.groupNotice) {
               setGroupNotice(cloudData.groupNotice);
-              localStorage.setItem(STORAGE_KEYS.NOTICE, JSON.stringify(cloudData.groupNotice));
+              safeStorage.setItem(STORAGE_KEYS.NOTICE, JSON.stringify(cloudData.groupNotice));
             }
             if (cloudData.viewPermissions) {
               setViewPermissions(cloudData.viewPermissions);
-              localStorage.setItem(STORAGE_KEYS.VIEW_PERMISSIONS, JSON.stringify(cloudData.viewPermissions));
+              safeStorage.setItem(STORAGE_KEYS.VIEW_PERMISSIONS, JSON.stringify(cloudData.viewPermissions));
             }
             if (cloudData.branding) {
               setBranding(cloudData.branding);
-              localStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(cloudData.branding));
+              safeStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(cloudData.branding));
             }
             if (cloudData.adminPassword) {
               setAdminPassword(cloudData.adminPassword);
-              localStorage.setItem(STORAGE_KEYS.ADMIN_PASS, cloudData.adminPassword);
+              safeStorage.setItem(STORAGE_KEYS.ADMIN_PASS, cloudData.adminPassword);
             }
             if (cloudData.memberPassword) {
               setMemberPassword(cloudData.memberPassword);
-              localStorage.setItem(STORAGE_KEYS.MEMBER_PASS, cloudData.memberPassword);
+              safeStorage.setItem(STORAGE_KEYS.MEMBER_PASS, cloudData.memberPassword);
             }
 
             const now = new Date();
@@ -996,7 +1025,7 @@ export default function App() {
 
   const handleUpdateBranding = (newBranding: AppBranding) => {
     setBranding(newBranding);
-    localStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(newBranding));
+    safeStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(newBranding));
     syncFromBranding(newBranding);
     if (newBranding?.toastPosition) {
       setToastPosition(newBranding.toastPosition);
@@ -1005,7 +1034,7 @@ export default function App() {
     setFunds(prev => {
       if (prev.length === 0) return prev;
       const updated = [{ ...prev[0], name: newAppName }, ...prev.slice(1)];
-      localStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(updated));
+      safeStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(updated));
       return updated;
     });
   };
@@ -1013,15 +1042,16 @@ export default function App() {
   // Auto-migrate any legacy fund names in local state to match appTitle
   useEffect(() => {
     const targetName = branding?.appTitle?.trim() || 'AE Cây Khế';
-    if (funds.length > 0 && funds[0].name !== targetName && (funds[0].name === 'Quỹ Hoạt Động' || funds[0].name === 'Quỹ Chung' || !funds[0].name)) {
+    const primaryFundName = funds[0]?.name;
+    if (funds.length > 0 && primaryFundName !== targetName && (primaryFundName === 'Quỹ Hoạt Động' || primaryFundName === 'Quỹ Chung' || !primaryFundName)) {
       setFunds(prev => {
         if (prev.length === 0) return prev;
         const updated = [{ ...prev[0], name: targetName }, ...prev.slice(1)];
-        localStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(updated));
+        safeStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(updated));
         return updated;
       });
     }
-  }, [branding?.appTitle, funds]);
+  }, [branding?.appTitle, funds[0]?.name]);
 
   const pendingTransactionsCount = transactions.filter(t => t.status === 'pending').length;
 
@@ -1147,7 +1177,6 @@ export default function App() {
                   bankSettings={bankSettings}
                   onUpdateBankSettings={setBankSettings}
                   categories={categories}
-                  campaigns={campaigns}
                   onAddCategory={handleAddCategory}
                   onUpdateCategory={handleUpdateCategory}
                   onDeleteCategory={handleDeleteCategory}
@@ -1177,13 +1206,6 @@ export default function App() {
       </main>
 
       {/* Global Modals */}
-      <NoticeEditModal
-        isOpen={isNoticeEditModalOpen}
-        onClose={() => setIsNoticeEditModalOpen(false)}
-        notice={groupNotice}
-        onSaveNotice={setGroupNotice}
-      />
-
       <TransactionModal
         isOpen={isTransactionModalOpen}
         onClose={() => setIsTransactionModalOpen(false)}
@@ -1246,10 +1268,6 @@ export default function App() {
       <ShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
-        isAdmin={!isMemberView}
-        bankSettings={bankSettings}
-        funds={funds}
-        activeCampaigns={campaigns.filter(c => c.status === 'active')}
         branding={branding}
       />
 

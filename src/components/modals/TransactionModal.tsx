@@ -396,7 +396,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed rounded-2xl p-4 sm:p-5 text-center cursor-pointer transition-all border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/80"
+                  className={`border-2 border-dashed rounded-2xl p-4 sm:p-5 text-center cursor-pointer transition-all ${
+                    isDragging
+                      ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20'
+                      : 'border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/80'
+                  }`}
                 >
                   {isCompressing ? (
                     <div className="py-2 flex flex-col items-center justify-center gap-2 text-slate-500">

@@ -154,18 +154,6 @@ export function formatDate(dateString: string): string {
   return `${day}/${month}/${year}`;
 }
 
-export function formatDateTime(dateString: string): string {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return dateString;
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${hours}:${minutes} ${day}/${month}/${year}`;
-}
-
 export function getVietQRUrl(
   bank: BankSettings,
   amount?: number,
@@ -203,29 +191,6 @@ export function getMemberRoles(member: { roles?: string[]; role?: string }): str
     return [member.role];
   }
   return ['Thành viên'];
-}
-
-export function getRoleBadgeClass(role: string): string {
-  switch (role) {
-    case 'Trưởng ban':
-      return 'bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800';
-    case 'Phó ban':
-      return 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800';
-    case 'Thủ quỹ':
-      return 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
-    case 'Kế toán':
-      return 'bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800';
-    case 'Hậu cần':
-      return 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800';
-    case 'Văn nghệ / Sự kiện':
-      return 'bg-pink-100 dark:bg-pink-950/80 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-800';
-    case 'Kỹ thuật':
-      return 'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800';
-    case 'Đối ngoại':
-      return 'bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800';
-    default:
-      return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
-  }
 }
 
 export async function copyToClipboard(text: string): Promise<boolean> {

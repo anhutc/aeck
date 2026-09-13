@@ -2,13 +2,14 @@ import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import defaultFirebaseConfig from '../../firebase-applet-config.json';
 import { FirebaseCustomConfig } from '../types';
+import { safeStorage } from '../utils/safeStorage';
 
 export const CUSTOM_FIREBASE_STORAGE_KEY = 'qunlqu_custom_firebase_config';
 
-// Retrieve custom config if stored in localStorage
+// Retrieve custom config if stored in safeStorage
 export function getSavedCustomFirebaseConfig(): FirebaseCustomConfig | null {
   try {
-    const raw = localStorage.getItem(CUSTOM_FIREBASE_STORAGE_KEY);
+    const raw = safeStorage.getItem(CUSTOM_FIREBASE_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (parsed && parsed.apiKey && parsed.projectId) {
@@ -31,11 +32,11 @@ export function getActiveFirebaseConfig(): { isCustom: boolean; config: any } {
 }
 
 export function saveCustomFirebaseConfig(config: FirebaseCustomConfig): void {
-  localStorage.setItem(CUSTOM_FIREBASE_STORAGE_KEY, JSON.stringify(config));
+  safeStorage.setItem(CUSTOM_FIREBASE_STORAGE_KEY, JSON.stringify(config));
 }
 
 export function removeCustomFirebaseConfig(): void {
-  localStorage.removeItem(CUSTOM_FIREBASE_STORAGE_KEY);
+  safeStorage.removeItem(CUSTOM_FIREBASE_STORAGE_KEY);
 }
 
 const activeInfo = getActiveFirebaseConfig();
@@ -55,7 +56,5 @@ export const db: Firestore = getFirestore(
   activeConfig.firestoreDatabaseId || (activeInfo.isCustom ? '(default)' : defaultFirebaseConfig.firestoreDatabaseId || '(default)')
 );
 
-export const app = appInstance;
 export { defaultFirebaseConfig };
-export default app;
 

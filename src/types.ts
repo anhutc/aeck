@@ -145,16 +145,6 @@ export interface AppBranding {
   statementShowSignatory3?: boolean;
   statementShowFooterNote?: boolean;
   statementShowSummary?: boolean;
-
-  // 6. Tin nhắn Chia sẻ Zalo / Mạng xã hội
-  shareMessageIncludeBank?: boolean;
-  shareMessageIncludeCampaigns?: boolean;
-  socialShareTemplate?: string;
-  shareMessageGreeting?: string;
-  shareMessageBenefit1?: string;
-  shareMessageBenefit2?: string;
-  shareMessageBenefit3?: string;
-  shareMessageClosing?: string;
 }
 
 export interface BankSettings {

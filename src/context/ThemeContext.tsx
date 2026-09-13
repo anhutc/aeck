@@ -8,6 +8,7 @@ import {
   applyThemeToDocument,
 } from '../utils/theme';
 import { AppBranding } from '../types';
+import { formatVND } from '../utils/formatters';
 
 interface ThemeContextType {
   themeAccent: string;
@@ -29,7 +30,7 @@ interface ThemeContextType {
   privacyMode: boolean;
   setPrivacyMode: (privacy: boolean) => void;
   togglePrivacyMode: () => void;
-  maskAmount: (amountStr: string) => string;
+  maskAmount: (amount: string | number) => string;
   activePreset: ThemePreset;
   isCustomizerOpen: boolean;
   setIsCustomizerOpen: (open: boolean) => void;
@@ -270,8 +271,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   }, []);
 
-  const maskAmount = useCallback((amountStr: string): string => {
-    if (!privacyMode) return amountStr;
+  const maskAmount = useCallback((amount: string | number): string => {
+    if (!privacyMode) {
+      return typeof amount === 'number' ? formatVND(amount) : amount;
+    }
     return '•••••••• ₫';
   }, [privacyMode]);
 

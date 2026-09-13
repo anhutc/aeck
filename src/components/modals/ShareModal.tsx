@@ -4,14 +4,13 @@ import {
   Share2,
   Copy,
   Check,
-  ShieldCheck,
   Smartphone,
   ExternalLink,
   Download,
   Send,
   MessageCircle
 } from 'lucide-react';
-import { BankSettings, ContributionCampaign, Fund, AppBranding } from '../../types';
+import { AppBranding } from '../../types';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { useFeedback } from '../../context/FeedbackContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -19,10 +18,6 @@ import { useTheme } from '../../context/ThemeContext';
 interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
-  isAdmin?: boolean;
-  bankSettings?: BankSettings;
-  funds?: Fund[];
-  activeCampaigns?: ContributionCampaign[];
   branding?: AppBranding;
 }
 

@@ -52,7 +52,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   categories,
   campaigns,
   branding,
-  isAdmin,
   onOpenPrintModal,
   onOpenQRModal,
   setActiveTab,

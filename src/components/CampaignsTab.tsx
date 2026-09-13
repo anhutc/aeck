@@ -29,9 +29,9 @@ interface CampaignsTabProps {
   funds?: Fund[];
   members: Member[];
   isAdmin?: boolean;
-  onOpenCampaignModal: (editingCamp?: ContributionCampaign) => void;
-  onDeleteCampaign: (id: string) => void;
-  onUpdateParticipantPayment: (campaignId: string, memberId: string, amountPaid: number, paidDate?: string, note?: string) => void;
+  onOpenCampaignModal?: (editingCamp?: ContributionCampaign) => void;
+  onDeleteCampaign?: (id: string) => void;
+  onUpdateParticipantPayment?: (campaignId: string, memberId: string, amountPaid: number, paidDate?: string, note?: string) => void;
   onOpenQRModal: (amount?: number, content?: string) => void;
   onOpenPrintDuesModal?: (campaignId?: string) => void;
   branding?: AppBranding;

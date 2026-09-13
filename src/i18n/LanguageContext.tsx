@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { DEFAULT_VI_DICTIONARY, ALL_DICTIONARY_KEYS, TranslationItem } from './translations';
+import { safeStorage } from '../utils/safeStorage';
 
 const STORAGE_KEYS = {
   CUSTOM_DICT: 'quanlyquy_custom_dictionary_v2',
@@ -15,6 +16,7 @@ interface LanguageContextValue {
   exportDictionary: () => string;
   importDictionary: (jsonContent: string) => boolean;
   allDictionaryKeys: TranslationItem[];
+  syncFromCloud: (cloudDict?: Record<string, string> | Record<string, Record<string, string>>) => void;
 }
 
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
@@ -33,7 +35,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
   // Custom Dictionary Overrides: { 'nav.overview': 'Sổ Tổng Quan', 'common.add': 'Thêm Mới' }
   const [activeCustomTexts, setActiveCustomTexts] = useState<Record<string, string>>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.CUSTOM_DICT);
+      const saved = safeStorage.getItem(STORAGE_KEYS.CUSTOM_DICT);
       if (!saved) return {};
       const parsed = JSON.parse(saved);
       // Handle backwards compatibility if it was nested { vi: { ... } }
@@ -46,19 +48,34 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     }
   });
 
+  const notifyChange = useCallback((updated: Record<string, string>) => {
+    safeStorage.setItem(STORAGE_KEYS.CUSTOM_DICT, JSON.stringify(updated));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('quanlyquy_custom_dict_changed', { detail: updated }));
+    }
+    if (onSaveToCloud) {
+      onSaveToCloud({ customDictionary: updated });
+    }
+  }, [onSaveToCloud]);
+
+  const syncFromCloud = useCallback((cloudDict?: Record<string, string> | Record<string, Record<string, string>>) => {
+    if (!cloudDict || typeof cloudDict !== 'object') return;
+    let normalized: Record<string, string> = {};
+    if ('vi' in cloudDict && typeof (cloudDict as Record<string, Record<string, string>>).vi === 'object') {
+      normalized = (cloudDict as Record<string, Record<string, string>>).vi;
+    } else {
+      normalized = cloudDict as Record<string, string>;
+    }
+    setActiveCustomTexts(normalized);
+    safeStorage.setItem(STORAGE_KEYS.CUSTOM_DICT, JSON.stringify(normalized));
+  }, []);
+
   // Sync with Cloud updates
   useEffect(() => {
-    if (cloudCustomDictionary && typeof cloudCustomDictionary === 'object') {
-      let normalized: Record<string, string> = {};
-      if ('vi' in cloudCustomDictionary && typeof (cloudCustomDictionary as Record<string, Record<string, string>>).vi === 'object') {
-        normalized = (cloudCustomDictionary as Record<string, Record<string, string>>).vi;
-      } else {
-        normalized = cloudCustomDictionary as Record<string, string>;
-      }
-      setActiveCustomTexts(normalized);
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_DICT, JSON.stringify(normalized));
+    if (cloudCustomDictionary) {
+      syncFromCloud(cloudCustomDictionary);
     }
-  }, [cloudCustomDictionary]);
+  }, [cloudCustomDictionary, syncFromCloud]);
 
   // Core Translation Function t(key, fallback)
   const t = useCallback((key: string, fallback?: string): string => {
@@ -84,13 +101,10 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
       } else {
         updated[key] = value;
       }
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_DICT, JSON.stringify(updated));
-      if (onSaveToCloud) {
-        onSaveToCloud({ customDictionary: updated });
-      }
+      notifyChange(updated);
       return updated;
     });
-  }, [onSaveToCloud]);
+  }, [notifyChange]);
 
   const batchUpdateCustomTexts = useCallback((updates: Record<string, string>) => {
     setActiveCustomTexts(prev => {
@@ -102,34 +116,25 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
           updated[k] = v;
         }
       });
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_DICT, JSON.stringify(updated));
-      if (onSaveToCloud) {
-        onSaveToCloud({ customDictionary: updated });
-      }
+      notifyChange(updated);
       return updated;
     });
-  }, [onSaveToCloud]);
+  }, [notifyChange]);
 
   const resetCustomText = useCallback((key: string) => {
     setActiveCustomTexts(prev => {
       if (prev[key] === undefined) return prev;
       const updated = { ...prev };
       delete updated[key];
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_DICT, JSON.stringify(updated));
-      if (onSaveToCloud) {
-        onSaveToCloud({ customDictionary: updated });
-      }
+      notifyChange(updated);
       return updated;
     });
-  }, [onSaveToCloud]);
+  }, [notifyChange]);
 
   const resetAllCustomTexts = useCallback(() => {
     setActiveCustomTexts({});
-    localStorage.setItem(STORAGE_KEYS.CUSTOM_DICT, JSON.stringify({}));
-    if (onSaveToCloud) {
-      onSaveToCloud({ customDictionary: {} });
-    }
-  }, [onSaveToCloud]);
+    notifyChange({});
+  }, [notifyChange]);
 
   const exportDictionary = useCallback((): string => {
     const exportData = {
@@ -157,10 +162,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
           ...prev,
           ...overrides,
         };
-        localStorage.setItem(STORAGE_KEYS.CUSTOM_DICT, JSON.stringify(updated));
-        if (onSaveToCloud) {
-          onSaveToCloud({ customDictionary: updated });
-        }
+        notifyChange(updated);
         return updated;
       });
       return true;
@@ -168,7 +170,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
       console.error('Error importing custom text JSON:', e);
       return false;
     }
-  }, [onSaveToCloud]);
+  }, [notifyChange]);
 
   // Dynamically merge standard dictionary keys with any custom user-added keys
   const mergedDictionaryKeys = useMemo<TranslationItem[]>(() => {
@@ -201,6 +203,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     exportDictionary,
     importDictionary,
     allDictionaryKeys: mergedDictionaryKeys,
+    syncFromCloud,
   }), [
     t,
     activeCustomTexts,
@@ -211,6 +214,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     exportDictionary,
     importDictionary,
     mergedDictionaryKeys,
+    syncFromCloud,
   ]);
 
   return (

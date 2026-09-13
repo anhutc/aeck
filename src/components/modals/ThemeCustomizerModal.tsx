@@ -11,15 +11,11 @@ import {
   Sliders,
   Eye,
   EyeOff,
-  Cloud,
-  ShieldCheck,
-  ChevronRight,
-  TrendingUp,
-  Wallet
+  Cloud
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTheme } from '../../context/ThemeContext';
-import { THEME_PRESETS, RADIUS_OPTIONS, ThemeRadius, ThemeDensity, ThemeMode } from '../../utils/theme';
+import { THEME_PRESETS, RADIUS_OPTIONS } from '../../utils/theme';
 import { AppBranding } from '../../types';
 import { useFeedback } from '../../context/FeedbackContext';
 

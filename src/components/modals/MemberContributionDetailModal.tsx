@@ -30,6 +30,7 @@ interface MemberContributionDetailModalProps {
   onOpenQRModal: (amount?: number, content?: string) => void;
   isAdmin?: boolean;
   onUpdatePayment?: (campaignId: string, memberId: string, amountPaid: number, paidDate?: string, note?: string) => void;
+  onUpdateParticipantPayment?: (campaignId: string, memberId: string, amountPaid: number, paidDate?: string, note?: string) => void;
 }
 
 export const MemberContributionDetailModal: React.FC<MemberContributionDetailModalProps> = ({
@@ -42,7 +43,9 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
   onOpenQRModal,
   isAdmin = false,
   onUpdatePayment,
+  onUpdateParticipantPayment,
 }) => {
+  const handlePaymentUpdate = onUpdateParticipantPayment || onUpdatePayment;
   const { t } = useTranslation();
   const { showConfirm, showToast } = useFeedback();
   const { activePreset, privacyMode } = useTheme();
@@ -463,7 +466,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                             )}
 
                             {/* Admin fast toggle payment */}
-                            {isAdmin && onUpdatePayment && (
+                            {isAdmin && handlePaymentUpdate && (
                               <button
                                 onClick={() => {
                                   if (item.isPaidInFull) {
@@ -474,13 +477,13 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                                       confirmText: t('members.detail_cancel_pay_confirm_btn', 'Hủy Ghi Nhận'),
                                       cancelText: t('common.cancel', 'Hủy bỏ'),
                                       onConfirm: () => {
-                                        onUpdatePayment(item.campaign.id, member.id, 0, undefined, t('campaigns.unpaid_status_label', 'Chưa nộp'));
+                                        handlePaymentUpdate(item.campaign.id, member.id, 0, undefined, t('campaigns.unpaid_status_label', 'Chưa nộp'));
                                         showToast(t('members.detail_cancel_pay_toast', 'Đã hủy trạng thái nộp tiền'), 'info');
                                       },
                                     });
                                   } else {
                                     const today = new Date().toISOString().slice(0, 10);
-                                    onUpdatePayment(item.campaign.id, member.id, item.required, today, t('campaigns.paid_full_status_label', 'Đã nộp đủ'));
+                                    handlePaymentUpdate(item.campaign.id, member.id, item.required, today, t('campaigns.paid_full_status_label', 'Đã nộp đủ'));
                                     showToast(t('members.detail_mark_paid_toast', 'Đã ghi nhận nộp đủ thành công!'), 'success');
                                   }
                                 }}

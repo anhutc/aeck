@@ -33,9 +33,6 @@ export function getCloudConfigInfo() {
   };
 }
 
-export const CLOUD_CONFIG_INFO = getCloudConfigInfo();
-
-
 export interface CloudAppState {
   funds: Fund[];
   transactions: Transaction[];

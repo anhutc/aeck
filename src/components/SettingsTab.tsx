@@ -36,26 +36,24 @@ import {
   Laptop,
   Sparkles,
   QrCode,
-  Wallet,
-  ShieldCheck,
-  Filter
+  Languages
 } from 'lucide-react';
-import { BankSettings, Category, GroupNotice, AppBranding, MemberViewPermissions, ContributionCampaign } from '../types';
+import { BankSettings, Category, GroupNotice, AppBranding, MemberViewPermissions } from '../types';
 import { VIETNAMESE_BANKS, INITIAL_BRANDING, INITIAL_VIEW_PERMISSIONS } from '../data/initialData';
 import { CloudDataSourceModal } from './settings/CloudDataSourceModal';
+import { TextCustomizerSection } from './settings/TextCustomizerSection';
 import { getSavedCustomFirebaseConfig } from '../lib/firebase';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback, ToastPosition } from '../context/FeedbackContext';
 import { useTheme } from '../context/ThemeContext';
-import { THEME_PRESETS, RADIUS_OPTIONS, ThemeRadius, ThemeDensity, ThemeMode } from '../utils/theme';
+import { THEME_PRESETS, RADIUS_OPTIONS, ThemeDensity, ThemeMode } from '../utils/theme';
 
-export type SettingSubTab = 'branding' | 'notice' | 'permissions' | 'security' | 'bank' | 'categories' | 'backup' | 'all';
+export type SettingSubTab = 'branding' | 'notice' | 'permissions' | 'security' | 'bank' | 'categories' | 'backup' | 'language' | 'all';
 
 interface SettingsTabProps {
   bankSettings: BankSettings;
   onUpdateBankSettings: (settings: BankSettings) => void;
   categories: Category[];
-  campaigns?: ContributionCampaign[];
   onAddCategory: (category: Omit<Category, 'id'>) => void;
   onUpdateCategory?: (category: Category) => void;
   onDeleteCategory: (id: string) => void;
@@ -83,7 +81,7 @@ const SETTING_NAV_ITEMS: Array<{
   id: SettingSubTab;
   label: string;
   sublabel: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   iconColor: string;
   activeColor: string;
 }> = [
@@ -93,6 +91,7 @@ const SETTING_NAV_ITEMS: Array<{
   { id: 'security', label: 'Bảo Mật & Mật Khẩu', sublabel: 'Mật khẩu Admin & Thành viên', icon: KeyRound, iconColor: 'text-amber-500', activeColor: 'border-amber-600 text-amber-700 bg-amber-50' },
   { id: 'bank', label: 'Tài Khoản & VietQR', sublabel: 'STK ngân hàng nhận tiền', icon: Building2, iconColor: 'text-teal-500', activeColor: 'border-teal-600 text-teal-700 bg-teal-50' },
   { id: 'categories', label: 'Danh Mục Thu Chi', sublabel: 'Phân loại thu & chi', icon: Tag, iconColor: 'text-rose-500', activeColor: 'border-rose-600 text-rose-700 bg-rose-50' },
+  { id: 'language', label: 'Tùy Chỉnh Câu Chữ', sublabel: 'Toàn bộ từ ngữ & từ điển ứng dụng', icon: Languages, iconColor: 'text-sky-500', activeColor: 'border-sky-600 text-sky-700 bg-sky-50' },
   { id: 'backup', label: 'Sao Lưu & Đồng Bộ', sublabel: 'Cloud Firestore & JSON', icon: Cloud, iconColor: 'text-blue-500', activeColor: 'border-blue-600 text-blue-700 bg-blue-50' },
   { id: 'all', label: 'Tất Cả Cài Đặt', sublabel: 'Xem toàn bộ', icon: Sliders, iconColor: 'text-slate-500', activeColor: 'border-slate-800 text-slate-900 bg-slate-100' },
 ];
@@ -101,7 +100,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   bankSettings,
   onUpdateBankSettings,
   categories,
-  campaigns = [],
   onAddCategory,
   onUpdateCategory,
   onDeleteCategory,
@@ -156,7 +154,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [treasurerPhone, setTreasurerPhone] = useState(branding.treasurerPhone || '0988.888.888');
   const [transferSyntaxPrefix, setTransferSyntaxPrefix] = useState(branding.transferSyntaxPrefix || 'NOP QUY');
   const [groupEmoji, setGroupEmoji] = useState(branding.groupEmoji || '💼');
-  const [brandingSaved, setBrandingSaved] = useState(false);
 
   // Sync branding when props change from Cloud Firestore
   useEffect(() => {
@@ -176,8 +173,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     setThemeAccent,
     customColor,
     setCustomColor,
-    themeMode,
-    setThemeMode,
     defaultThemeMode,
     setDefaultThemeMode,
     themeRadius,
@@ -216,7 +211,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   }, [branding?.toastPosition, toastPosition]);
 
   const [customHexInput, setCustomHexInput] = useState(customColor);
-  const [isThemeCloudSyncing, setIsThemeCloudSyncing] = useState(false);
   const [isSavedRecently, setIsSavedRecently] = useState(false);
 
   // Bank form state
@@ -224,7 +218,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [accountNumber, setAccountNumber] = useState(bankSettings.accountNumber || '');
   const [accountName, setAccountName] = useState(bankSettings.accountName || '');
   const [qrTemplate, setQrTemplate] = useState(bankSettings.qrTemplate || 'compact');
-  const [bankSaved, setBankSaved] = useState(false);
 
   // Sync bank settings when props change from Cloud Firestore
   useEffect(() => {
@@ -242,7 +235,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [noticeContent, setNoticeContent] = useState(groupNotice?.content || '');
   const [noticeType, setNoticeType] = useState<'info' | 'warning' | 'success'>(groupNotice?.type || 'info');
   const [noticeUpdatedAt, setNoticeUpdatedAt] = useState(groupNotice?.updatedAt || '2026-08-28');
-  const [noticeSaved, setNoticeSaved] = useState(false);
 
   // Sync group notice when props change from Cloud Firestore
   useEffect(() => {
@@ -321,7 +313,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
   // Member View Permissions state
   const [perms, setPerms] = useState<MemberViewPermissions>(viewPermissions || INITIAL_VIEW_PERMISSIONS);
-  const [permsSaved, setPermsSaved] = useState(false);
 
   useEffect(() => {
     if (viewPermissions) {
@@ -493,17 +484,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
     showToast('Đã lưu và đồng bộ toàn bộ cài đặt thành công!', 'success', 'Cài Đặt Hệ Thống');
     setIsSavedRecently(true);
-    setBrandingSaved(true);
-    setBankSaved(true);
-    setNoticeSaved(true);
-    setPermsSaved(true);
 
     setTimeout(() => {
       setIsSavedRecently(false);
-      setBrandingSaved(false);
-      setBankSaved(false);
-      setNoticeSaved(false);
-      setPermsSaved(false);
     }, 2500);
   };
 
@@ -803,50 +786,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             </p>
           </div>
         </div>
-
-        {/* Desktop / Tablet Header Action Buttons */}
-        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-          {hasUnsavedChanges && (
-            <button
-              type="button"
-              onClick={handleDiscardAll}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 cursor-pointer"
-              title="Hủy bỏ mọi thay đổi chưa lưu"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Hủy bỏ</span>
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => handleSaveAllSettings()}
-            disabled={!hasUnsavedChanges && !isSavedRecently}
-            style={hasUnsavedChanges ? {
-              backgroundColor: activePreset.primary,
-              boxShadow: `0 4px 14px ${activePreset.primary}40`,
-            } : undefined}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs ${
-              hasUnsavedChanges
-                ? 'hover:brightness-110 active:scale-[0.98] text-white cursor-pointer'
-                : isSavedRecently
-                ? 'bg-emerald-600 text-white cursor-default'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800 cursor-not-allowed'
-            }`}
-          >
-            {isSavedRecently ? (
-              <>
-                <Check className="w-4 h-4" />
-                <span>Đã lưu thành công</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                <span>{hasUnsavedChanges ? `Lưu cài đặt (${dirtyCount})` : 'Lưu cài đặt'}</span>
-              </>
-            )}
-          </button>
-        </div>
       </div>
 
       {/* Mobile Horizontal Category Tabs Bar (Clean scrollable pills, non-sticky) */}
@@ -971,59 +910,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     <p className="text-xs text-slate-500">Đổi tên nhóm, khẩu hiệu và tiêu đề trang thành viên</p>
                   </div>
                 </div>
-                {isBrandingDirty && (
-                  <button
-                    type="button"
-                    onClick={handleResetBranding}
-                    className="text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline cursor-pointer"
-                    title="Khôi phục lại tên ban đầu"
-                  >
-                    Khôi phục
-                  </button>
-                )}
               </div>
-
-              {/* Quick Presets */}
-                  <div className="space-y-1.5 pt-1">
-                    <span className="text-[11px] font-semibold text-slate-500 block">Mẫu tên & cấu hình gợi ý nhanh:</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleApplyBrandingPreset('class')}
-                        className="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer"
-                      >
-                        🏫 Quỹ Lớp Học
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyBrandingPreset('company')}
-                        className="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer"
-                      >
-                        💼 Quỹ Team / Công Ty
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyBrandingPreset('club')}
-                        className="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer"
-                      >
-                        ⚽ CLB Thể Thao
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyBrandingPreset('family')}
-                        className="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer"
-                      >
-                        🏡 Quỹ Gia Đình
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyBrandingPreset('travel')}
-                        className="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer"
-                      >
-                        ✈️ Du Lịch / Tour
-                      </button>
-                    </div>
-                  </div>
 
                   <form onSubmit={handleSaveBranding} className="space-y-3.5 pt-1">
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -1823,53 +1710,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <p className="text-xs text-slate-500">Quy chế hoạt động cố định hiển thị ở đầu trang</p>
                     </div>
                   </div>
-                  {isNoticeDirty && (
-                    <button
-                      type="button"
-                      onClick={handleResetNotice}
-                      className="text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline cursor-pointer"
-                      title="Khôi phục lại nội quy ban đầu"
-                    >
-                      Khôi phục
-                    </button>
-                  )}
-                </div>
-
-                {/* Quick Presets for Notice */}
-                <div className="space-y-1.5 pt-1">
-                  <span className="text-[11px] font-semibold text-slate-500 block">Mẫu nội quy & quy chế gợi ý nhanh:</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setNoticeTitle('Nội Quy & Quy Chế Quỹ Lớp');
-                        setNoticeContent('1. Đóng quỹ đúng thời hạn thông báo đầu tháng.\n2. Mọi khoản thu chi trên 500k phải được biểu quyết.\n3. Sao kê tự động cập nhật và công khai minh bạch 24/7.');
-                      }}
-                      className="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer"
-                    >
-                      🏫 Mẫu Quỹ Lớp
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setNoticeTitle('Quy Chế Hoạt Động Quỹ Team');
-                        setNoticeContent('1. Quỹ dùng cho liên hoan, sinh nhật thành viên và hoạt động teambuilding.\n2. Tiền chi phải có hóa đơn/hình ảnh minh chứng đi kèm.\n3. Số dư quỹ được bảo toàn trên tài khoản quản lý.');
-                      }}
-                      className="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer"
-                    >
-                      💼 Mẫu Quỹ Team / Cty
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setNoticeTitle('Quy Định Quỹ Câu Lạc Bộ');
-                        setNoticeContent('1. Hội phí sinh hoạt đóng định kỳ vào tuần đầu mỗi tháng.\n2. Quỹ chi trả tiền sân bãi, nước uống và giải thi đấu.\n3. Thành viên được quyền xem và kiểm tra sao kê bất kỳ lúc nào.');
-                      }}
-                      className="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer"
-                    >
-                      ⚽ Mẫu CLB Thể Thao
-                    </button>
-                  </div>
                 </div>
 
                 <form onSubmit={handleSaveNotice} className="space-y-3.5 pt-1">
@@ -2008,15 +1848,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1.5 text-xs">
-                      {isPermsDirty && (
-                        <button
-                          type="button"
-                          onClick={handleResetPerms}
-                          className="text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline cursor-pointer mr-1"
-                        >
-                          Khôi phục
-                        </button>
-                      )}
                       <button
                         type="button"
                         onClick={() => handleToggleAllPerms(true)}
@@ -2622,7 +2453,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         title="Sao chép mật khẩu gửi cho thành viên trong nhóm"
                       >
                         <Copy className="w-3.5 h-3.5" />
-                        <span>Sao chép gửi nhóm</span>
+                        <span>Sao chép</span>
                       </button>
                     </div>
                   </div>
