@@ -416,12 +416,12 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                             title={t('campaigns.copy_options_tooltip', 'Sao chép danh sách, báo cáo hoặc cú pháp chuyển khoản')}
                             className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                               copiedKey?.startsWith(camp.id)
-                                ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300'
+                                ? 'border-theme-primary bg-theme-light text-theme-primary'
                                 : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 hover:border-slate-400'
                             }`}
                           >
                             {copiedKey?.startsWith(camp.id) ? (
-                              <Check className="w-3.5 h-3.5 text-emerald-600 animate-in zoom-in-50" />
+                              <Check className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                             ) : (
                               <Copy className="w-3.5 h-3.5 text-slate-500" />
                             )}
@@ -442,11 +442,11 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                     setActiveCopyMenuId(null);
                                     onOpenPrintDuesModal(camp.id);
                                   }}
-                                  className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-2 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 pb-1.5"
+                                  className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-theme-light hover:text-theme-primary flex items-center gap-2 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 pb-1.5"
                                 >
-                                  <ReceiptText className="w-3.5 h-3.5 text-emerald-600" />
+                                  <ReceiptText className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                                   <div>
-                                    <div className="font-semibold text-emerald-700 dark:text-emerald-400">{t('campaigns.export_single_campaign_img', 'Xuất ảnh đóng quỹ đợt này')}</div>
+                                    <div className="font-semibold text-slate-800 dark:text-slate-100">{t('campaigns.export_single_campaign_img', 'Xuất ảnh đóng quỹ đợt này')}</div>
                                     <div className="text-[10px] text-slate-400">{t('campaigns.export_single_campaign_img_desc', 'Tạo ảnh danh sách & mã QR VietQR')}</div>
                                   </div>
                                 </button>
@@ -493,12 +493,12 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                           title={t('campaigns.copy_transfer_syntax_tooltip', 'Sao chép cú pháp nội dung chuyển khoản')}
                           className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                             copiedKey === camp.id + '_syntax'
-                              ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300'
+                              ? 'border-theme-primary bg-theme-light text-theme-primary'
                               : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 hover:border-slate-400'
                           }`}
                         >
                           {copiedKey === camp.id + '_syntax' ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-600 animate-in zoom-in-50" />
+                            <Check className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                           ) : (
                             <Copy className="w-3.5 h-3.5 text-slate-500" />
                           )}
@@ -601,10 +601,11 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                         </button>
                         <button
                           onClick={() => setFilterStatuses(prev => ({ ...prev, [camp.id]: 'paid' }))}
+                          style={currentFilter === 'paid' ? { backgroundColor: activePreset.primary } : undefined}
                           className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                             currentFilter === 'paid'
-                              ? 'bg-emerald-600 text-white shadow-xs'
-                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-700'
+                              ? 'text-white shadow-xs'
+                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                           }`}
                         >
                           {t('campaigns.filter_paid', 'Đã nộp đủ')} ({paidMembers.length})
@@ -750,7 +751,8 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                       <button
                                         onClick={() => handleOpenPayModal(camp, p.memberId)}
                                         title={t('campaigns.paid_edit_hint', 'Đã nộp (Nhấn để chỉnh sửa ngày/số tiền hoặc hủy)')}
-                                        className="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-xs text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
+                                        style={{ backgroundColor: activePreset.primary }}
+                                        className="px-2.5 py-1.5 rounded-lg text-white hover:opacity-90 hover:shadow-xs text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
                                       >
                                         <Check className="w-3.5 h-3.5" />
                                         <span>{t('campaigns.status_paid', 'Đã nộp')}</span>
@@ -770,8 +772,8 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                 ) : (
                                   /* Member Read-Only Mode */
                                   isPaid ? (
-                                    <span className="px-2.5 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold flex items-center gap-1 border border-emerald-200 dark:border-emerald-800">
-                                      <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                    <span className="px-2.5 py-1.5 rounded-lg bg-theme-light text-theme-primary text-[11px] font-bold flex items-center gap-1 border border-theme-light">
+                                      <Check className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                                       <span>{t('campaigns.status_paid', 'Đã nộp')}</span>
                                     </span>
                                   ) : (

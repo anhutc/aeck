@@ -13,8 +13,20 @@
     <script>
       (function() {
         try {
-          var mode = localStorage.getItem('quanlyquy_theme_mode_v1') || 'light';
-          var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var defaultMode = localStorage.getItem('quanlyquy_default_theme_mode_v2');
+          if (!defaultMode) {
+            var savedBranding = localStorage.getItem('quanlyquy_branding_v2') || localStorage.getItem('quanlyquy_branding');
+            if (savedBranding) {
+              var parsed = JSON.parse(savedBranding);
+              if (parsed && (parsed.themeMode || parsed.defaultThemeMode)) {
+                defaultMode = parsed.themeMode || parsed.defaultThemeMode;
+              }
+            }
+          }
+          if (!defaultMode) {
+            defaultMode = localStorage.getItem('quanlyquy_theme_mode_v1') || 'light';
+          }
+          var isDark = defaultMode === 'dark' || (defaultMode === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
           if (isDark) {
             document.documentElement.classList.add('dark');
             document.documentElement.style.colorScheme = 'dark';

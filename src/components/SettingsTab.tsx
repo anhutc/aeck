@@ -45,7 +45,7 @@ import { VIETNAMESE_BANKS, INITIAL_BRANDING, INITIAL_VIEW_PERMISSIONS } from '..
 import { CloudDataSourceModal } from './settings/CloudDataSourceModal';
 import { getSavedCustomFirebaseConfig } from '../lib/firebase';
 import { useTranslation } from '../i18n/LanguageContext';
-import { useFeedback } from '../context/FeedbackContext';
+import { useFeedback, ToastPosition } from '../context/FeedbackContext';
 import { useTheme } from '../context/ThemeContext';
 import { THEME_PRESETS, RADIUS_OPTIONS, ThemeRadius, ThemeDensity, ThemeMode } from '../utils/theme';
 
@@ -178,6 +178,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     setCustomColor,
     themeMode,
     setThemeMode,
+    defaultThemeMode,
+    setDefaultThemeMode,
     themeRadius,
     setThemeRadius,
     themeDensity,
@@ -187,6 +189,31 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     resetToDefaultTheme,
     revertToSavedTheme,
   } = useTheme();
+
+  // Selected default theme mode for access, configured in Settings
+  const [selectedDefaultTheme, setSelectedDefaultTheme] = useState<ThemeMode>(() => {
+    return branding?.themeMode || defaultThemeMode || 'light';
+  });
+
+  // Sync selectedDefaultTheme when branding updates
+  useEffect(() => {
+    if (branding?.themeMode) {
+      setSelectedDefaultTheme(branding.themeMode);
+    }
+  }, [branding?.themeMode]);
+
+  // Toast Position state - stored in draft state until user clicks Save
+  const savedToastPosition = (branding?.toastPosition || toastPosition || 'top-center') as ToastPosition;
+  const [draftToastPosition, setDraftToastPosition] = useState<ToastPosition>(savedToastPosition);
+
+  // Sync draftToastPosition when props change
+  useEffect(() => {
+    if (branding?.toastPosition) {
+      setDraftToastPosition(branding.toastPosition);
+    } else if (toastPosition) {
+      setDraftToastPosition(toastPosition);
+    }
+  }, [branding?.toastPosition, toastPosition]);
 
   const [customHexInput, setCustomHexInput] = useState(customColor);
   const [isThemeCloudSyncing, setIsThemeCloudSyncing] = useState(false);
@@ -357,7 +384,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const isThemeDirty =
     themeAccent !== savedAccent ||
     (themeAccent === 'custom' && customColor !== savedCustomColor) ||
-    themeMode !== savedThemeMode ||
+    selectedDefaultTheme !== savedThemeMode ||
     themeRadius !== savedThemeRadius ||
     themeDensity !== savedThemeDensity;
 
@@ -396,13 +423,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     Boolean(perms.allowPublicPrint) !== Boolean(viewPermissions?.allowPublicPrint ?? true) ||
     Boolean(perms.allowQuickQR) !== Boolean(viewPermissions?.allowQuickQR ?? true);
 
-  const hasUnsavedChanges = isBrandingDirty || isThemeDirty || isBankDirty || isNoticeDirty || isPermsDirty;
-  const dirtyCount = [isBrandingDirty, isThemeDirty, isBankDirty, isNoticeDirty, isPermsDirty].filter(Boolean).length;
+  const isToastPositionDirty = draftToastPosition !== savedToastPosition;
+
+  const hasUnsavedChanges = isBrandingDirty || isThemeDirty || isBankDirty || isNoticeDirty || isPermsDirty || isToastPositionDirty;
+  const dirtyCount = [isBrandingDirty, isThemeDirty, isBankDirty, isNoticeDirty, isPermsDirty, isToastPositionDirty].filter(Boolean).length;
 
   const getTabDirty = (tabId: SettingSubTab): boolean => {
     switch (tabId) {
       case 'branding':
-        return isBrandingDirty || isThemeDirty;
+        return isBrandingDirty || isThemeDirty || isToastPositionDirty;
       case 'notice':
         return isNoticeDirty;
       case 'permissions':
@@ -432,11 +461,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       groupEmoji: groupEmoji.trim() || '💼',
       themeAccent,
       customColor: themeAccent === 'custom' ? customColor : undefined,
-      themeMode,
+      themeMode: selectedDefaultTheme,
       themeRadius,
       themeDensity,
+      toastPosition: draftToastPosition,
     };
     onUpdateBranding(updatedBranding);
+    setToastPosition(draftToastPosition);
 
     // 2. Save Bank Settings
     const bankObj = VIETNAMESE_BANKS.find(b => b.id === bankId);
@@ -486,9 +517,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setTreasurerPhone(branding.treasurerPhone || '0988.888.888');
       setTransferSyntaxPrefix(branding.transferSyntaxPrefix || 'NOP QUY');
       setGroupEmoji(branding.groupEmoji || '💼');
+      setSelectedDefaultTheme(branding.themeMode || 'light');
+      setDraftToastPosition((branding.toastPosition || 'top-center') as ToastPosition);
 
       // Revert theme preview back to saved branding configuration
       revertToSavedTheme(branding);
+    } else {
+      setDraftToastPosition(savedToastPosition);
     }
 
     // Revert Bank
@@ -532,8 +567,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setTreasurerPhone(branding.treasurerPhone || '0988.888.888');
       setTransferSyntaxPrefix(branding.transferSyntaxPrefix || 'NOP QUY');
       setGroupEmoji(branding.groupEmoji || '💼');
+      setSelectedDefaultTheme(branding.themeMode || 'light');
+      setDraftToastPosition((branding.toastPosition || 'top-center') as ToastPosition);
       revertToSavedTheme(branding);
       showToast('Đã hủy thay đổi nhận diện & giao diện!', 'info');
+    } else {
+      setDraftToastPosition(savedToastPosition);
     }
   };
 
@@ -724,7 +763,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   };
 
   return (
-    <div id="settings-tab-content" className={`space-y-5 sm:space-y-6 ${hasUnsavedChanges ? 'pb-28 sm:pb-24' : 'pb-12'}`}>
+    <div id="settings-tab-content" className={`space-y-5 sm:space-y-6 ${hasUnsavedChanges ? 'pb-36 sm:pb-28' : 'pb-24 sm:pb-16'}`}>
       {/* Header Info Banner & Master Status (Natural static flow, never collides with Navbar) */}
       <div className="relative bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all">
         <div className="flex items-center gap-3.5 min-w-0">
@@ -1299,35 +1338,53 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     </div>
                   </div>
 
-                  {/* 2. Theme Mode (Light / Dark / System) */}
+                  {/* 2. Theme Mode Default upon Access */}
                   <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sun className="w-3.5 h-3.5 text-slate-500" />
-                      <span>2. Chế Độ Hiển Thị (Theme Mode)</span>
-                    </label>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                      <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                        <Sun className="w-3.5 h-3.5 text-amber-500" />
+                        <span>2. Giao Diện Mặc Định Khi Truy Cập</span>
+                      </label>
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200/80 dark:border-emerald-800/80 shrink-0 w-fit">
+                        Mặc định khi truy cập
+                      </span>
+                    </div>
 
-                    <div className="grid grid-cols-3 gap-2">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Thiết lập chế độ hiển thị mặc định (Sáng / Tối / Tự động) khi người dùng bắt đầu truy cập ứng dụng. Sau khi truy cập, người dùng có thể đổi nhanh sáng/tối trên thanh Header mà không làm thay đổi thiết lập mặc định này.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                       {[
-                        { id: 'light' as ThemeMode, name: 'Sáng (Light)', icon: Sun, desc: 'Nền trắng sáng chuẩn mực' },
-                        { id: 'dark' as ThemeMode, name: 'Tối (Dark)', icon: Moon, desc: 'Slate thẫm êm dịu bảo vệ mắt' },
-                        { id: 'system' as ThemeMode, name: 'Hệ thống (Auto)', icon: Laptop, desc: 'Tự động theo thiết bị' },
+                        { id: 'light' as ThemeMode, name: 'Sáng (Light)', icon: Sun, desc: 'Mặc định nền trắng sáng khi mở app' },
+                        { id: 'dark' as ThemeMode, name: 'Tối (Dark)', icon: Moon, desc: 'Mặc định nền tối bảo vệ mắt khi mở app' },
+                        { id: 'system' as ThemeMode, name: 'Hệ thống (Auto)', icon: Laptop, desc: 'Mặc định tự động theo thiết bị người dùng' },
                       ].map((item) => {
-                        const isSelected = themeMode === item.id;
+                        const isSelected = selectedDefaultTheme === item.id;
                         const Icon = item.icon;
                         return (
                           <button
                             key={item.id}
                             type="button"
-                            onClick={() => setThemeMode(item.id)}
-                            className={`p-3 rounded-xl border text-center transition-all cursor-pointer ${
+                            onClick={() => {
+                              setSelectedDefaultTheme(item.id);
+                              setDefaultThemeMode(item.id);
+                            }}
+                            className={`p-3 rounded-xl border text-center transition-all cursor-pointer relative ${
                               isSelected
-                                ? 'border-2 shadow-sm ring-1 bg-white dark:bg-slate-800'
+                                ? 'border-2 shadow-xs ring-1 bg-white dark:bg-slate-800 font-bold'
                                 : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                             }`}
                             style={{
                               borderColor: isSelected ? activePreset.primary : undefined,
                             }}
                           >
+                            {isSelected && (
+                              <span 
+                                style={{ backgroundColor: activePreset.primary }}
+                                className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full"
+                              />
+                            )}
                             <div className="flex flex-col items-center gap-1.5">
                               <Icon
                                 className="w-5 h-5"
@@ -1336,7 +1393,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                               <span className="font-bold text-xs text-slate-800 dark:text-slate-200 block">
                                 {item.name}
                               </span>
-                              <span className="text-[10px] text-slate-500 hidden sm:block">
+                              <span className="text-[10px] text-slate-500 block">
                                 {item.desc}
                               </span>
                             </div>
@@ -1440,50 +1497,100 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               {/* 1.1 TOAST NOTIFICATION POSITION CARD */}
               {(activeSubTab === 'branding' || activeSubTab === 'all') && (
                 <div id="settings-toast" className="scroll-mt-28 sm:scroll-mt-24 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      style={{
-                        backgroundColor: activePreset.primary,
-                        boxShadow: `0 2px 10px ${activePreset.primary}35`,
-                      }}
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0"
-                    >
-                      <Bell className="w-5 h-5" />
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-3">
+                      <div
+                        style={{
+                          backgroundColor: activePreset.primary,
+                          boxShadow: `0 2px 10px ${activePreset.primary}35`,
+                        }}
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0"
+                      >
+                        <Bell className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>Vị trí hiển thị Thông báo (Toast Notification)</span>
+                          {isToastPositionDirty && (
+                            <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded-md border border-amber-200 dark:border-amber-800">
+                              Chưa lưu
+                            </span>
+                          )}
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          Tùy chỉnh góc xuất hiện của thông báo phản hồi thao tác. Thay đổi sẽ áp dụng sau khi bấm Lưu.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                        Vị trí hiển thị Thông báo (Toast Notification)
-                      </h3>
-                      <p className="text-xs text-slate-500">Tối ưu hóa vị trí và giao diện thông báo phản hồi thao tác trên ứng dụng</p>
-                    </div>
+
+                    {isToastPositionDirty && (
+                      <button
+                        type="button"
+                        onClick={() => setDraftToastPosition(savedToastPosition)}
+                        className="text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline cursor-pointer"
+                      >
+                        Khôi phục ban đầu
+                      </button>
+                    )}
                   </div>
 
                   <div className="space-y-2.5 pt-1">
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Chọn vị trí hiển thị ưu tiên:
-                    </label>
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      <span>Chọn vị trí hiển thị mong muốn:</span>
+                      {isToastPositionDirty && (
+                        <span className="text-[11px] text-amber-600 dark:text-amber-400 font-normal">
+                          Đã chọn vị trí mới • Bấm &quot;Lưu ngay&quot; để áp dụng
+                        </span>
+                      )}
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {/* Option 1: Top Center (Default & Recommended) */}
+                      {/* Option 1: Top Center */}
                       <button
                         type="button"
-                        onClick={() => {
-                          setToastPosition('top-center');
-                          showToast('Đã chuyển vị trí thông báo sang: Trên - Chính Giữa', 'success', 'Vị Trí Thông Báo');
-                        }}
-                        className={`text-left p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                          toastPosition === 'top-center'
-                            ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 ring-2 ring-emerald-500/20'
+                        onClick={() => setDraftToastPosition('top-center')}
+                        style={
+                          draftToastPosition === 'top-center'
+                            ? {
+                                borderColor: activePreset.primary,
+                                backgroundColor: `${activePreset.primary}0d`,
+                                boxShadow: `0 0 0 2px ${activePreset.primary}25`,
+                              }
+                            : undefined
+                        }
+                        className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                          draftToastPosition === 'top-center'
+                            ? 'text-slate-900 dark:text-white'
                             : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900/60 text-slate-800 dark:text-slate-200'
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
                           <span className="text-xs font-bold flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                            <span
+                              style={draftToastPosition === 'top-center' ? { backgroundColor: activePreset.primary } : undefined}
+                              className={`w-2.5 h-2.5 rounded-full inline-block ${draftToastPosition === 'top-center' ? '' : 'bg-slate-300 dark:bg-slate-600'}`}
+                            />
                             🎯 Trên - Chính Giữa
                           </span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold">
-                            Mặc định tối ưu
-                          </span>
+                          {draftToastPosition === 'top-center' ? (
+                            <span
+                              style={{
+                                backgroundColor: isToastPositionDirty ? '#fef3c7' : `${activePreset.primary}18`,
+                                color: isToastPositionDirty ? '#b45309' : activePreset.primary,
+                              }}
+                              className="text-[10px] px-1.5 py-0.5 rounded-md font-bold"
+                            >
+                              {isToastPositionDirty ? 'Chờ lưu' : 'Đang áp dụng'}
+                            </span>
+                          ) : savedToastPosition === 'top-center' ? (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium">
+                              Đang dùng
+                            </span>
+                          ) : (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium">
+                              Mặc định tối ưu
+                            </span>
+                          )}
                         </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
                           Cân đối trực diện, không che các nút góc phải (Theme, Ngôn ngữ, Menu, Nút X đóng cửa sổ).
@@ -1493,21 +1600,45 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       {/* Option 2: Top Right */}
                       <button
                         type="button"
-                        onClick={() => {
-                          setToastPosition('top-right');
-                          showToast('Đã chuyển vị trí thông báo sang: Trên - Góc Phải', 'info', 'Vị Trí Thông Báo');
-                        }}
-                        className={`text-left p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                          toastPosition === 'top-right'
-                            ? 'border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 text-blue-950 dark:text-blue-100 ring-2 ring-blue-500/20'
+                        onClick={() => setDraftToastPosition('top-right')}
+                        style={
+                          draftToastPosition === 'top-right'
+                            ? {
+                                borderColor: activePreset.primary,
+                                backgroundColor: `${activePreset.primary}0d`,
+                                boxShadow: `0 0 0 2px ${activePreset.primary}25`,
+                              }
+                            : undefined
+                        }
+                        className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                          draftToastPosition === 'top-right'
+                            ? 'text-slate-900 dark:text-white'
                             : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900/60 text-slate-800 dark:text-slate-200'
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
                           <span className="text-xs font-bold flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
+                            <span
+                              style={draftToastPosition === 'top-right' ? { backgroundColor: activePreset.primary } : undefined}
+                              className={`w-2.5 h-2.5 rounded-full inline-block ${draftToastPosition === 'top-right' ? '' : 'bg-slate-300 dark:bg-slate-600'}`}
+                            />
                             ↗️ Trên - Góc Phải
                           </span>
+                          {draftToastPosition === 'top-right' ? (
+                            <span
+                              style={{
+                                backgroundColor: isToastPositionDirty ? '#fef3c7' : `${activePreset.primary}18`,
+                                color: isToastPositionDirty ? '#b45309' : activePreset.primary,
+                              }}
+                              className="text-[10px] px-1.5 py-0.5 rounded-md font-bold"
+                            >
+                              {isToastPositionDirty ? 'Chờ lưu' : 'Đang áp dụng'}
+                            </span>
+                          ) : savedToastPosition === 'top-right' ? (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium">
+                              Đang dùng
+                            </span>
+                          ) : null}
                         </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
                           Góc trên bên phải màn hình theo kiểu website truyền thống.
@@ -1517,24 +1648,49 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       {/* Option 3: Bottom Center */}
                       <button
                         type="button"
-                        onClick={() => {
-                          setToastPosition('bottom-center');
-                          showToast('Đã chuyển vị trí thông báo sang: Dưới - Chính Giữa', 'success', 'Vị Trí Thông Báo');
-                        }}
-                        className={`text-left p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                          toastPosition === 'bottom-center'
-                            ? 'border-purple-500 bg-purple-50/70 dark:bg-purple-950/40 text-purple-950 dark:text-purple-100 ring-2 ring-purple-500/20'
+                        onClick={() => setDraftToastPosition('bottom-center')}
+                        style={
+                          draftToastPosition === 'bottom-center'
+                            ? {
+                                borderColor: activePreset.primary,
+                                backgroundColor: `${activePreset.primary}0d`,
+                                boxShadow: `0 0 0 2px ${activePreset.primary}25`,
+                              }
+                            : undefined
+                        }
+                        className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                          draftToastPosition === 'bottom-center'
+                            ? 'text-slate-900 dark:text-white'
                             : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900/60 text-slate-800 dark:text-slate-200'
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
                           <span className="text-xs font-bold flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />
+                            <span
+                              style={draftToastPosition === 'bottom-center' ? { backgroundColor: activePreset.primary } : undefined}
+                              className={`w-2.5 h-2.5 rounded-full inline-block ${draftToastPosition === 'bottom-center' ? '' : 'bg-slate-300 dark:bg-slate-600'}`}
+                            />
                             ⬇️ Dưới - Chính Giữa
                           </span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-medium">
-                            Di động tiện lợi
-                          </span>
+                          {draftToastPosition === 'bottom-center' ? (
+                            <span
+                              style={{
+                                backgroundColor: isToastPositionDirty ? '#fef3c7' : `${activePreset.primary}18`,
+                                color: isToastPositionDirty ? '#b45309' : activePreset.primary,
+                              }}
+                              className="text-[10px] px-1.5 py-0.5 rounded-md font-bold"
+                            >
+                              {isToastPositionDirty ? 'Chờ lưu' : 'Đang áp dụng'}
+                            </span>
+                          ) : savedToastPosition === 'bottom-center' ? (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium">
+                              Đang dùng
+                            </span>
+                          ) : (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium">
+                              Di động tiện lợi
+                            </span>
+                          )}
                         </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
                           Phù hợp khi dùng điện thoại, nằm ngay tầm mắt và dễ dàng quan sát.
@@ -1544,21 +1700,45 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       {/* Option 4: Bottom Right */}
                       <button
                         type="button"
-                        onClick={() => {
-                          setToastPosition('bottom-right');
-                          showToast('Đã chuyển vị trí thông báo sang: Dưới - Góc Phải', 'info', 'Vị Trí Thông Báo');
-                        }}
-                        className={`text-left p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                          toastPosition === 'bottom-right'
-                            ? 'border-indigo-500 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-100 ring-2 ring-indigo-500/20'
+                        onClick={() => setDraftToastPosition('bottom-right')}
+                        style={
+                          draftToastPosition === 'bottom-right'
+                            ? {
+                                borderColor: activePreset.primary,
+                                backgroundColor: `${activePreset.primary}0d`,
+                                boxShadow: `0 0 0 2px ${activePreset.primary}25`,
+                              }
+                            : undefined
+                        }
+                        className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                          draftToastPosition === 'bottom-right'
+                            ? 'text-slate-900 dark:text-white'
                             : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900/60 text-slate-800 dark:text-slate-200'
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
                           <span className="text-xs font-bold flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-indigo-500 inline-block" />
+                            <span
+                              style={draftToastPosition === 'bottom-right' ? { backgroundColor: activePreset.primary } : undefined}
+                              className={`w-2.5 h-2.5 rounded-full inline-block ${draftToastPosition === 'bottom-right' ? '' : 'bg-slate-300 dark:bg-slate-600'}`}
+                            />
                             ↘️ Dưới - Góc Phải
                           </span>
+                          {draftToastPosition === 'bottom-right' ? (
+                            <span
+                              style={{
+                                backgroundColor: isToastPositionDirty ? '#fef3c7' : `${activePreset.primary}18`,
+                                color: isToastPositionDirty ? '#b45309' : activePreset.primary,
+                              }}
+                              className="text-[10px] px-1.5 py-0.5 rounded-md font-bold"
+                            >
+                              {isToastPositionDirty ? 'Chờ lưu' : 'Đang áp dụng'}
+                            </span>
+                          ) : savedToastPosition === 'bottom-right' ? (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium">
+                              Đang dùng
+                            </span>
+                          ) : null}
                         </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
                           Góc dưới bên phải màn hình theo phong cách dashboard phần mềm.
@@ -1568,9 +1748,16 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
                     {/* Interactive Test Buttons */}
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <span className="text-[11px] font-semibold text-slate-500 block mb-2">
-                        Bấm thử nghiệm thông báo tại vị trí đã chọn:
-                      </span>
+                      <div className="flex items-center justify-between flex-wrap gap-1.5 mb-2">
+                        <span className="text-[11px] font-semibold text-slate-500">
+                          Bấm thử nghiệm thông báo tại vị trí hiện tại:
+                        </span>
+                        {isToastPositionDirty && (
+                          <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                            Vị trí mới sẽ có hiệu lực ngay sau khi bấm &quot;Lưu ngay&quot;
+                          </span>
+                        )}
+                      </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
@@ -1697,13 +1884,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         placeholder="VD: Nội quy hoạt động quỹ..."
                         value={noticeTitle}
                         onChange={(e) => setNoticeTitle(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-(--theme-primary) focus:outline-hidden"
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                        <Calendar className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
                         <span>Ngày áp dụng / Cập nhật</span>
                       </label>
                       <input
@@ -1711,7 +1898,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         required
                         value={noticeUpdatedAt}
                         onChange={(e) => setNoticeUpdatedAt(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-(--theme-primary) focus:outline-hidden"
                       />
                     </div>
                   </div>
@@ -1726,31 +1913,60 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       placeholder="Nhập từng điều khoản quy định hoạt động, mức đóng góp, nguyên tắc thu chi minh bạch..."
                       value={noticeContent}
                       onChange={(e) => setNoticeContent(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden leading-relaxed"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-(--theme-primary) focus:outline-hidden leading-relaxed"
                     />
                   </div>
 
                   {/* Live Preview Box for Notice */}
-                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2">
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
                         Xem trước bảng quy chế (Live Preview)
                       </span>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+                      <span
+                        style={{
+                          backgroundColor: activePreset.primary,
+                          color: '#ffffff',
+                          boxShadow: `0 2px 8px ${activePreset.primary}30`,
+                        }}
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-md"
+                      >
                         Hiển thị trang chủ
                       </span>
                     </div>
-                    <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/80 space-y-1.5">
+                    <div
+                      style={{
+                        background: `linear-gradient(135deg, ${activePreset.primary}12 0%, ${activePreset.primary}05 100%)`,
+                        borderColor: `${activePreset.primary}35`,
+                      }}
+                      className="p-4 rounded-xl border space-y-2 shadow-2xs"
+                    >
                       <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <h4 className="font-bold text-xs text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
-                          <ScrollText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                          <span>{noticeTitle || 'Nội quy hoạt động quỹ'}</span>
-                        </h4>
-                        <span className="text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
-                          Áp dụng: {noticeUpdatedAt || 'Hôm nay'}
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            style={{
+                              backgroundColor: activePreset.primary,
+                              boxShadow: `0 2px 8px ${activePreset.primary}35`,
+                            }}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-white shrink-0"
+                          >
+                            <ScrollText className="w-3.5 h-3.5 text-white" />
+                          </div>
+                          <h4
+                            style={{ color: activePreset.primary }}
+                            className="font-bold text-xs sm:text-sm tracking-tight"
+                          >
+                            {noticeTitle || 'Nội quy & Quy định hoạt động'}
+                          </h4>
+                        </div>
+                        <span
+                          style={{ color: activePreset.primary }}
+                          className="text-[10px] font-semibold opacity-90"
+                        >
+                          Áp dụng từ: {noticeUpdatedAt || 'Hôm nay'}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
+                      <p className="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed sm:pl-9.5">
                         {noticeContent || 'Nội dung quy định hoạt động quỹ...'}
                       </p>
                     </div>
@@ -1804,7 +2020,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <button
                         type="button"
                         onClick={() => handleToggleAllPerms(true)}
-                        className="px-2.5 py-1 rounded-lg border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/50 font-medium text-[11px] transition-colors cursor-pointer"
+                        style={{
+                          backgroundColor: activePreset.primary,
+                          boxShadow: `0 2px 8px ${activePreset.primary}35`,
+                        }}
+                        className="px-3 py-1 rounded-lg text-white font-bold text-[11px] transition-all cursor-pointer hover:brightness-110 active:scale-95 shadow-2xs flex items-center gap-1"
                       >
                         Bật tất cả
                       </button>
@@ -1831,7 +2051,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         } hover:opacity-90 hover:shadow-xs`}
                       >
                         <div className="flex items-center gap-3 pr-2">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                          <div
+                            style={perms.showNotice ? {
+                              backgroundColor: `${activePreset.primary}18`,
+                              color: activePreset.primary,
+                            } : undefined}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              perms.showNotice ? '' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                            }`}
+                          >
                             <ScrollText className="w-4 h-4" />
                           </div>
                           <div>
@@ -1840,9 +2068,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                 1. Bảng Thông Báo / Nội Quy Hoạt Động
                               </span>
                               <span
+                                style={perms.showNotice ? {
+                                  backgroundColor: activePreset.primary,
+                                  boxShadow: `0 1px 6px ${activePreset.primary}35`,
+                                } : undefined}
                                 className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
                                   perms.showNotice
-                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                    ? 'text-white'
                                     : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
                                 }`}
                               >
@@ -1861,7 +2093,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             onChange={() => {}}
                             className="sr-only peer"
                           />
-                          <div className="w-9 h-5 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-[var(--theme-primary)]"></div>
+                          <div
+                            style={perms.showNotice ? { backgroundColor: activePreset.primary } : undefined}
+                            className={`w-9 h-5 rounded-full peer peer-focus:outline-hidden peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 ${
+                              perms.showNotice ? '' : 'bg-slate-200 dark:bg-slate-700'
+                            }`}
+                          ></div>
                         </label>
                       </div>
 
@@ -1876,7 +2113,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         } hover:opacity-90 hover:shadow-xs`}
                       >
                         <div className="flex items-center gap-3 pr-2">
-                          <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                          <div
+                            style={perms.showCampaigns ? {
+                              backgroundColor: `${activePreset.primary}18`,
+                              color: activePreset.primary,
+                            } : undefined}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              perms.showCampaigns ? '' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                            }`}
+                          >
                             <Target className="w-4 h-4" />
                           </div>
                           <div>
@@ -1885,9 +2130,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                 2. Đợt Đóng Quỹ Đang Diễn Ra
                               </span>
                               <span
+                                style={perms.showCampaigns ? {
+                                  backgroundColor: activePreset.primary,
+                                  boxShadow: `0 1px 6px ${activePreset.primary}35`,
+                                } : undefined}
                                 className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
                                   perms.showCampaigns
-                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                    ? 'text-white'
                                     : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
                                 }`}
                               >
@@ -1906,7 +2155,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             onChange={() => {}}
                             className="sr-only peer"
                           />
-                          <div className="w-9 h-5 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-[var(--theme-primary)]"></div>
+                          <div
+                            style={perms.showCampaigns ? { backgroundColor: activePreset.primary } : undefined}
+                            className={`w-9 h-5 rounded-full peer peer-focus:outline-hidden peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 ${
+                              perms.showCampaigns ? '' : 'bg-slate-200 dark:bg-slate-700'
+                            }`}
+                          ></div>
                         </label>
                       </div>
 
@@ -1921,7 +2175,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         } hover:opacity-90 hover:shadow-xs`}
                       >
                         <div className="flex items-center gap-3 pr-2">
-                          <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                          <div
+                            style={perms.showExpenseStructure ? {
+                              backgroundColor: `${activePreset.primary}18`,
+                              color: activePreset.primary,
+                            } : undefined}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              perms.showExpenseStructure ? '' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                            }`}
+                          >
                             <PieIcon className="w-4 h-4" />
                           </div>
                           <div>
@@ -1930,9 +2192,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                 3. Biểu Đồ Trực Quan Hóa Thu Chi
                               </span>
                               <span
+                                style={perms.showExpenseStructure ? {
+                                  backgroundColor: activePreset.primary,
+                                  boxShadow: `0 1px 6px ${activePreset.primary}35`,
+                                } : undefined}
                                 className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
                                   perms.showExpenseStructure
-                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                    ? 'text-white'
                                     : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
                                 }`}
                               >
@@ -1951,7 +2217,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             onChange={() => {}}
                             className="sr-only peer"
                           />
-                          <div className="w-9 h-5 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-[var(--theme-primary)]"></div>
+                          <div
+                            style={perms.showExpenseStructure ? { backgroundColor: activePreset.primary } : undefined}
+                            className={`w-9 h-5 rounded-full peer peer-focus:outline-hidden peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 ${
+                              perms.showExpenseStructure ? '' : 'bg-slate-200 dark:bg-slate-700'
+                            }`}
+                          ></div>
                         </label>
                       </div>
 
@@ -1967,8 +2238,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       >
                         <div className="flex items-center gap-3 pr-2">
                           <div
-                            style={{ backgroundColor: `${activePreset.primary}18`, color: activePreset.primary }}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                            style={perms.showFullLedger ? {
+                              backgroundColor: `${activePreset.primary}18`,
+                              color: activePreset.primary,
+                            } : undefined}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              perms.showFullLedger ? '' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                            }`}
                           >
                             <Tag className="w-4 h-4" />
                           </div>
@@ -1978,9 +2254,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                 4. Sổ Chi Tiết Toàn Bộ Giao Dịch
                               </span>
                               <span
+                                style={perms.showFullLedger ? {
+                                  backgroundColor: activePreset.primary,
+                                  boxShadow: `0 1px 6px ${activePreset.primary}35`,
+                                } : undefined}
                                 className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
                                   perms.showFullLedger
-                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                    ? 'text-white'
                                     : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
                                 }`}
                               >
@@ -1999,7 +2279,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             onChange={() => {}}
                             className="sr-only peer"
                           />
-                          <div className="w-9 h-5 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-[var(--theme-primary)]"></div>
+                          <div
+                            style={perms.showFullLedger ? { backgroundColor: activePreset.primary } : undefined}
+                            className={`w-9 h-5 rounded-full peer peer-focus:outline-hidden peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 ${
+                              perms.showFullLedger ? '' : 'bg-slate-200 dark:bg-slate-700'
+                            }`}
+                          ></div>
                         </label>
                       </div>
 
@@ -2014,7 +2299,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         } hover:opacity-90 hover:shadow-xs`}
                       >
                         <div className="flex items-center gap-3 pr-2">
-                          <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                          <div
+                            style={perms.allowPublicPrint ? {
+                              backgroundColor: `${activePreset.primary}18`,
+                              color: activePreset.primary,
+                            } : undefined}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              perms.allowPublicPrint ? '' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                            }`}
+                          >
                             <Download className="w-4 h-4" />
                           </div>
                           <div>
@@ -2023,9 +2316,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                 5. Nút In & Xuất Báo Cáo Sao Kê
                               </span>
                               <span
+                                style={perms.allowPublicPrint ? {
+                                  backgroundColor: activePreset.primary,
+                                  boxShadow: `0 1px 6px ${activePreset.primary}35`,
+                                } : undefined}
                                 className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
                                   perms.allowPublicPrint
-                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                    ? 'text-white'
                                     : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
                                 }`}
                               >
@@ -2044,7 +2341,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             onChange={() => {}}
                             className="sr-only peer"
                           />
-                          <div className="w-9 h-5 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-[var(--theme-primary)]"></div>
+                          <div
+                            style={perms.allowPublicPrint ? { backgroundColor: activePreset.primary } : undefined}
+                            className={`w-9 h-5 rounded-full peer peer-focus:outline-hidden peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 ${
+                              perms.allowPublicPrint ? '' : 'bg-slate-200 dark:bg-slate-700'
+                            }`}
+                          ></div>
                         </label>
                       </div>
 
@@ -2059,7 +2361,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         } hover:opacity-90 hover:shadow-xs`}
                       >
                         <div className="flex items-center gap-3 pr-2">
-                          <div className="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                          <div
+                            style={perms.allowQuickQR ? {
+                              backgroundColor: `${activePreset.primary}18`,
+                              color: activePreset.primary,
+                            } : undefined}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              perms.allowQuickQR ? '' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                            }`}
+                          >
                             <Building2 className="w-4 h-4" />
                           </div>
                           <div>
@@ -2068,9 +2378,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                 6. Nút Quét Mã VietQR Chuyển Khoản
                               </span>
                               <span
+                                style={perms.allowQuickQR ? {
+                                  backgroundColor: activePreset.primary,
+                                  boxShadow: `0 1px 6px ${activePreset.primary}35`,
+                                } : undefined}
                                 className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
                                   perms.allowQuickQR
-                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                    ? 'text-white'
                                     : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
                                 }`}
                               >
@@ -2089,7 +2403,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             onChange={() => {}}
                             className="sr-only peer"
                           />
-                          <div className="w-9 h-5 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-[var(--theme-primary)]"></div>
+                          <div
+                            style={perms.allowQuickQR ? { backgroundColor: activePreset.primary } : undefined}
+                            className={`w-9 h-5 rounded-full peer peer-focus:outline-hidden peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 ${
+                              perms.allowQuickQR ? '' : 'bg-slate-200 dark:bg-slate-700'
+                            }`}
+                          ></div>
                         </label>
                       </div>
                     </div>
@@ -2448,7 +2767,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       placeholder="VD: 0988888888"
                       value={accountNumber}
                       onChange={(e) => setAccountNumber(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-xs focus:ring-2 focus:ring-teal-500 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-xs focus:ring-2 focus:ring-(--theme-primary) focus:outline-hidden"
                     />
                   </div>
 
@@ -2462,44 +2781,62 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       placeholder="VD: NGUYEN VAN A"
                       value={accountName}
                       onChange={(e) => setAccountName(e.target.value.toUpperCase())}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white uppercase text-xs focus:ring-2 focus:ring-teal-500 focus:outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white uppercase text-xs focus:ring-2 focus:ring-(--theme-primary) focus:outline-hidden"
                     />
                   </div>
 
                   {/* Live Preview VietQR Card */}
-                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2">
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
                         Xem trước thẻ thụ hưởng (Live Preview)
                       </span>
-                      <span className="text-[10px] text-teal-600 dark:text-teal-400 font-semibold bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-full">
+                      <span
+                        style={{
+                          backgroundColor: activePreset.primary,
+                          color: '#ffffff',
+                          boxShadow: `0 2px 8px ${activePreset.primary}30`,
+                        }}
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-md"
+                      >
                         Chuẩn VietQR
                       </span>
                     </div>
-                    <div className="p-4 rounded-xl bg-gradient-to-br from-teal-800 to-slate-900 text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div
+                      style={{
+                        background: `linear-gradient(135deg, ${activePreset.primary} 0%, ${activePreset.primaryHover || activePreset.primary} 100%)`,
+                        boxShadow: `0 6px 20px ${activePreset.primary}40`,
+                      }}
+                      className="p-4 sm:p-5 rounded-2xl text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    >
+                      {/* Decorative background glow */}
+                      <div
+                        className="absolute -right-10 -bottom-10 w-36 h-36 rounded-full blur-2xl opacity-30 pointer-events-none"
+                        style={{ backgroundColor: '#ffffff' }}
+                      />
                       <div className="space-y-2 z-10">
                         <div className="flex items-center gap-2">
-                          <Building2 className="w-4 h-4 text-teal-300" />
-                          <span className="text-xs font-bold uppercase tracking-wide text-teal-200">
+                          <Building2 className="w-4 h-4 text-white/90" />
+                          <span className="text-xs font-bold uppercase tracking-wide text-white">
                             {VIETNAMESE_BANKS.find(b => b.id === bankId)?.name || bankId}
                           </span>
                         </div>
                         <div className="pt-1">
-                          <span className="text-[10px] text-teal-200/70 block uppercase font-semibold">Số tài khoản</span>
-                          <span className="font-mono text-base sm:text-lg font-black tracking-wider text-white">
+                          <span className="text-[10px] text-white/75 block uppercase font-semibold">Số tài khoản</span>
+                          <span className="font-mono text-base sm:text-lg font-black tracking-wider text-white drop-shadow-xs">
                             {accountNumber || 'Chưa nhập số tài khoản'}
                           </span>
                         </div>
                         <div>
-                          <span className="text-[10px] text-teal-200/70 block uppercase font-semibold">Chủ tài khoản</span>
-                          <span className="font-bold text-xs sm:text-sm tracking-wide text-teal-100 uppercase">
+                          <span className="text-[10px] text-white/75 block uppercase font-semibold">Chủ tài khoản</span>
+                          <span className="font-bold text-xs sm:text-sm tracking-wide text-white uppercase drop-shadow-xs">
                             {accountName || 'CHƯA NHẬP TÊN CHỦ TÀI KHOẢN'}
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15 shrink-0 self-start sm:self-auto">
-                        <QrCode className="w-10 h-10 text-teal-200" />
-                        <div className="text-[10px] text-teal-100 leading-tight font-medium">
+                      <div className="flex items-center gap-2.5 bg-white/15 backdrop-blur-md p-2.5 rounded-xl border border-white/20 shrink-0 self-start sm:self-auto z-10 shadow-xs">
+                        <QrCode className="w-9 h-9 sm:w-10 sm:h-10 text-white" />
+                        <div className="text-[10px] text-white leading-tight font-semibold">
                           Mã QR nộp quỹ<br />tự động sinh<br />chuẩn Napas247
                         </div>
                       </div>
@@ -3053,12 +3390,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
         {/* Floating Sticky Save/Discard Bar when there are unsaved edits */}
         {hasUnsavedChanges && (
-          <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-slate-900 dark:text-white px-4 sm:px-5 py-3 rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-2xl dark:shadow-black/60 border border-slate-200/90 dark:border-slate-800 flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
-            <div className="flex items-center gap-2.5 min-w-0">
+          <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] md:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-slate-900 dark:text-white px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-2xl dark:shadow-black/60 border border-slate-200/90 dark:border-slate-800 flex items-center justify-between gap-2.5 sm:gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0 animate-pulse" />
               <div className="min-w-0">
-                <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                  Có {dirtyCount} mục thay đổi chưa lưu
+                <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                  <span className="sm:hidden">{dirtyCount} thay đổi chưa lưu</span>
+                  <span className="hidden sm:inline">Có {dirtyCount} mục thay đổi chưa lưu</span>
                 </p>
                 <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 overflow-x-auto no-scrollbar pt-0.5">
                   {isBrandingDirty && <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">Nhận diện</span>}
@@ -3070,11 +3408,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <button
                 type="button"
                 onClick={handleDiscardAll}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer"
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer"
               >
                 Hủy bỏ
               </button>
@@ -3085,7 +3423,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   backgroundColor: activePreset.primary,
                   boxShadow: `0 4px 14px ${activePreset.primary}40`,
                 }}
-                className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl hover:brightness-110 active:scale-[0.98] text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl hover:brightness-110 active:scale-[0.98] text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>Lưu ngay</span>

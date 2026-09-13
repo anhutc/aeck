@@ -111,6 +111,7 @@ export interface AppBranding {
   themeMode?: 'light' | 'dark' | 'system';
   themeRadius?: 'modern' | 'soft' | 'smooth' | 'sharp';
   themeDensity?: 'comfortable' | 'compact';
+  toastPosition?: 'top-center' | 'top-right' | 'top-left' | 'bottom-center' | 'bottom-right';
 
   // 2. Người đại diện & Liên hệ
   treasurerName?: string;

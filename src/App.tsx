@@ -76,7 +76,7 @@ function deduplicateById<T extends { id: string }>(items: T[]): T[] {
 }
 
 export default function App() {
-  const { showToast, showConfirm } = useFeedback();
+  const { showToast, showConfirm, setToastPosition } = useFeedback();
   const { isCustomizerOpen, setIsCustomizerOpen, syncFromBranding, revertToSavedTheme } = useTheme();
 
   // User Authentication State (dual-password: 'member' or 'admin')
@@ -256,6 +256,9 @@ export default function App() {
           setBranding(cloudData.branding);
           localStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(cloudData.branding));
           syncFromBranding(cloudData.branding);
+          if (cloudData.branding.toastPosition) {
+            setToastPosition(cloudData.branding.toastPosition);
+          }
         }
         if (cloudData.adminPassword) {
           setAdminPassword(cloudData.adminPassword);
@@ -995,6 +998,9 @@ export default function App() {
     setBranding(newBranding);
     localStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(newBranding));
     syncFromBranding(newBranding);
+    if (newBranding?.toastPosition) {
+      setToastPosition(newBranding.toastPosition);
+    }
     const newAppName = newBranding?.appTitle?.trim() || 'AE Cây Khế';
     setFunds(prev => {
       if (prev.length === 0) return prev;
@@ -1259,6 +1265,7 @@ export default function App() {
       <FloatingTransactionButton
         onOpenTransactionModal={(type) => handleOpenTransactionModal(type)}
         isMemberView={isMemberView}
+        activeTab={activeTab}
       />
     </div>
   );

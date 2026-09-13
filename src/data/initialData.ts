@@ -73,6 +73,7 @@ export const INITIAL_BRANDING: AppBranding = {
   groupEmoji: '💰',
   currencySymbol: 'VNĐ',
   themeAccent: 'emerald',
+  toastPosition: 'top-center',
 
   // 2. Người đại diện & Liên hệ
   treasurerName: 'Trần Thị Mai',

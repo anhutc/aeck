@@ -179,10 +179,11 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPaidDate(todayStr)}
+                  style={paidDate === todayStr ? { backgroundColor: activePreset.primary, borderColor: activePreset.primary } : undefined}
                   className={`px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer ${
                     paidDate === todayStr
-                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                      : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'
+                      ? 'text-white shadow-xs'
+                      : 'bg-theme-light text-theme-primary border-theme-light hover:opacity-90'
                   }`}
                 >
                   {t('campaigns.pay_today_btn', '📅 Hôm nay')} ({todayStr})
@@ -223,7 +224,7 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder={t('campaigns.pay_note_placeholder', 'VD: Chuyển khoản Vietcombank, Nộp tiền mặt...')}
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 ring-theme-primary focus:outline-hidden"
               />
             </div>
           </div>

@@ -59,12 +59,17 @@ export const Navbar: React.FC<NavbarProps> = ({
     togglePrivacyMode,
     maskAmount,
     isDarkMode,
-    setThemeMode,
+    defaultThemeMode,
+    toggleHeaderTheme,
+    isHeaderThemeCustomized,
   } = useTheme();
 
   const handleToggleTheme = () => {
-    setThemeMode(isDarkMode ? 'light' : 'dark');
+    toggleHeaderTheme();
   };
+
+  const defaultModeLabel =
+    defaultThemeMode === 'dark' ? 'Tối' : defaultThemeMode === 'system' ? 'Theo thiết bị' : 'Sáng';
   
   // States
   const [isTreasurerModalOpen, setIsTreasurerModalOpen] = useState(false);
@@ -122,7 +127,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* 1. TOP HEADER (PERFECTLY BALANCED & HARMONIOUS LAYOUT) */}
       {/* ========================================================================= */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-all shadow-2xs w-full">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 w-full">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 w-full">
           
           {/* DESKTOP (xl+) VIEW: Perfectly balanced 3-column Grid (1fr - auto - 1fr) */}
           <div className="hidden xl:grid xl:grid-cols-[1fr_auto_1fr] items-center h-16 w-full gap-4">
@@ -257,16 +262,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>Chia sẻ</span>
               </button>
 
-              {/* Theme Mode Quick Toggle (Sun / Moon) */}
+              {/* Theme Mode Quick Toggle (Sun / Moon) - Tùy chọn sau khi truy cập */}
               <button
                 type="button"
                 id="desktop-header-theme-toggle-btn"
                 onClick={handleToggleTheme}
-                title={isDarkMode ? "Chuyển sang giao diện Sáng" : "Chuyển sang giao diện Tối"}
-                className="w-8 h-8 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 hover:text-slate-900 dark:hover:text-amber-300 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
-                aria-label="Đổi giao diện Tối/Sáng"
+                title={
+                  isDarkMode
+                    ? `Tùy chọn sau khi truy cập: Đang xem nền Tối • Bấm đổi sang nền Sáng (Mặc định khi truy cập: ${defaultModeLabel})`
+                    : `Tùy chọn sau khi truy cập: Đang xem nền Sáng • Bấm đổi sang nền Tối (Mặc định khi truy cập: ${defaultModeLabel})`
+                }
+                className="relative w-8 h-8 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 hover:text-slate-900 dark:hover:text-amber-300 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
+                aria-label="Tùy chọn giao diện sau khi truy cập"
               >
                 {isDarkMode ? <Sun className="w-4 h-4 text-amber-400 fill-amber-400/20" /> : <Moon className="w-4 h-4 text-slate-600" />}
+                {isHeaderThemeCustomized && (
+                  <span
+                    title={`Đang dùng giao diện tùy chọn phiên hiện tại (Khác mặc định: ${defaultModeLabel})`}
+                    className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500 ring-1.5 ring-white dark:ring-slate-900"
+                  />
+                )}
               </button>
 
               {/* Direct Desktop Logout Button */}
@@ -286,12 +301,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* TABLET & MOBILE (< xl) VIEW */}
-          <div className="flex xl:hidden items-center justify-between h-14 md:h-16 gap-2 w-full min-w-0">
+          <div className="flex xl:hidden items-center justify-between h-14 md:h-16 gap-1.5 sm:gap-2 w-full min-w-0">
             
             {/* Left: Brand Identity */}
-            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
               <div
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-white shrink-0 text-base sm:text-lg transition-all duration-300"
+                className="w-7.5 h-7.5 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-white shrink-0 text-sm sm:text-lg transition-all duration-300"
                 style={{ background: activePreset.gradient, boxShadow: `0 4px 12px ${activePreset.primary}33` }}
               >
                 {branding?.groupEmoji ? (
@@ -304,7 +319,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="flex items-center gap-1.5 min-w-0">
                 <span 
                   title={displayTitle}
-                  className="font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-tight truncate max-w-[110px] sm:max-w-[150px]"
+                  className="font-black text-xs xs:text-sm sm:text-base text-slate-900 dark:text-white tracking-tight truncate max-w-[80px] xs:max-w-[115px] sm:max-w-[150px]"
                 >
                   {displayTitle}
                 </span>
@@ -379,16 +394,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>Chia sẻ</span>
               </button>
 
-              {/* Theme Mode Quick Toggle (Sun / Moon) */}
+              {/* Theme Mode Quick Toggle (Sun / Moon) - Tùy chọn sau khi truy cập */}
               <button
                 type="button"
                 id="medium-header-theme-toggle-btn"
                 onClick={handleToggleTheme}
-                title={isDarkMode ? "Chuyển sang giao diện Sáng" : "Chuyển sang giao diện Tối"}
-                className="w-8 h-8 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 hover:text-slate-900 dark:hover:text-amber-300 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
-                aria-label="Đổi giao diện Tối/Sáng"
+                title={
+                  isDarkMode
+                    ? `Tùy chọn sau khi truy cập: Đang xem nền Tối • Bấm đổi sang nền Sáng (Mặc định khi truy cập: ${defaultModeLabel})`
+                    : `Tùy chọn sau khi truy cập: Đang xem nền Sáng • Bấm đổi sang nền Tối (Mặc định khi truy cập: ${defaultModeLabel})`
+                }
+                className="relative w-8 h-8 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 hover:text-slate-900 dark:hover:text-amber-300 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
+                aria-label="Tùy chọn giao diện sau khi truy cập"
               >
                 {isDarkMode ? <Sun className="w-4 h-4 text-amber-400 fill-amber-400/20" /> : <Moon className="w-4 h-4 text-slate-600" />}
+                {isHeaderThemeCustomized && (
+                  <span
+                    title={`Đang dùng giao diện tùy chọn phiên hiện tại (Khác mặc định: ${defaultModeLabel})`}
+                    className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500 ring-1.5 ring-white dark:ring-slate-900"
+                  />
+                )}
               </button>
 
               {/* Direct Desktop Logout Button */}
@@ -407,16 +432,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             {/* MOBILE COMPACT TOP CONTROLS (< md) */}
-            <div className="flex md:hidden items-center gap-1 sm:gap-1.5 shrink-0">
+            <div className="flex md:hidden items-center gap-1 shrink-0">
               
               {/* Mobile Compact Balance Badge */}
               <div 
                 onClick={() => setIsTreasurerModalOpen(true)}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-[11px] xs:text-xs font-mono font-bold cursor-pointer active:scale-95 transition-all shadow-2xs shrink-0 select-none"
+                className="flex items-center gap-1 px-1.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-[11px] font-mono font-bold cursor-pointer active:scale-95 transition-all shadow-2xs shrink-0 select-none"
                 title="Bấm xem thông tin chủ quỹ"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <span>{privacyMode ? '••••••••' : `${formatNumberCompact(totalBalance)} ₫`}</span>
+                <span>{privacyMode ? '••••••' : `${formatNumberCompact(totalBalance)} ₫`}</span>
               </div>
 
               {/* VietQR Quick Trigger */}
@@ -425,10 +450,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="mobile-top-vietqr-btn"
                 onClick={onOpenQRModal}
                 title="Tạo mã VietQR đóng quỹ"
-                className="w-8 h-8 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
+                style={{
+                  backgroundColor: isDarkMode ? `${activePreset.primary}22` : activePreset.primaryLight,
+                  borderColor: isDarkMode ? `${activePreset.primary}45` : activePreset.primaryBorder,
+                  color: isDarkMode ? '#ffffff' : activePreset.primaryText,
+                }}
+                className="w-8 h-8 rounded-xl border active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
                 aria-label="VietQR"
               >
-                <QrCode className="w-3.5 h-3.5" />
+                <QrCode className="w-4 h-4" style={{ color: activePreset.primary }} />
               </button>
 
               {/* Share Portal Button */}
@@ -438,26 +468,30 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={onOpenShareModal}
                 title="Chia sẻ link sổ quỹ"
                 style={{
-                  backgroundColor: `${activePreset.primary}12`,
-                  borderColor: `${activePreset.primary}30`,
-                  color: activePreset.primary,
+                  backgroundColor: isDarkMode ? `${activePreset.primary}22` : activePreset.primaryLight,
+                  borderColor: isDarkMode ? `${activePreset.primary}45` : activePreset.primaryBorder,
+                  color: isDarkMode ? '#ffffff' : activePreset.primaryText,
                 }}
                 className="w-8 h-8 rounded-xl border active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0 hover:opacity-85"
                 aria-label="Chia sẻ"
               >
-                <Share2 className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
+                <Share2 className="w-4 h-4" style={{ color: activePreset.primary }} />
               </button>
 
-              {/* Mobile Theme Toggle Button */}
+              {/* Mobile Theme Toggle Button - Tùy chọn sau khi truy cập */}
               <button
                 type="button"
                 id="mobile-top-theme-btn"
                 onClick={handleToggleTheme}
-                title={isDarkMode ? "Chuyển sang giao diện Sáng" : "Chuyển sang giao diện Tối"}
-                className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-amber-400 border border-slate-200 dark:border-slate-700 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
-                aria-label="Đổi giao diện Tối/Sáng"
+                title={
+                  isDarkMode
+                    ? `Tùy chọn: Chuyển sang Sáng (Mặc định: ${defaultModeLabel})`
+                    : `Tùy chọn: Chuyển sang Tối (Mặc định: ${defaultModeLabel})`
+                }
+                className="relative w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-amber-400 border border-slate-200 dark:border-slate-700 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs shrink-0"
+                aria-label="Tùy chọn giao diện"
               >
-                {isDarkMode ? <Sun className="w-3.5 h-3.5 fill-amber-400/20" /> : <Moon className="w-3.5 h-3.5" />}
+                {isDarkMode ? <Sun className="w-4 h-4 fill-amber-400/20" /> : <Moon className="w-4 h-4" />}
               </button>
 
               {/* Mobile Quick Logout Button */}
@@ -467,10 +501,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   id="mobile-quick-logout-btn"
                   onClick={onLogout}
                   title={isMemberView ? "Đăng xuất Thành viên" : "Đăng xuất Quản trị"}
-                  className="w-8 h-8 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 active:scale-95 transition-all flex items-center justify-center cursor-pointer shrink-0 shadow-2xs"
+                  className="w-8 h-8 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 active:scale-95 transition-all flex items-center justify-center cursor-pointer shrink-0 shadow-2xs"
                   aria-label="Đăng xuất"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <LogOut className="w-4 h-4" />
                 </button>
               )}
 
@@ -517,7 +551,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* ========================================================================= */}
       {/* 2. MOBILE BOTTOM NAVIGATION DOCK (NATIVE APP FEEL - OPTIMIZED BUTTONS) */}
       {/* ========================================================================= */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/90 dark:border-slate-800 shadow-xl px-2 py-1.5 flex items-center justify-around select-none">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/90 dark:border-slate-800 shadow-xl px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around select-none">
         
         {!isMemberView ? (
           /* Admin Mobile Dock - 5 balanced primary tabs (20% width each) */
@@ -529,9 +563,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('overview')}
               style={{
                 color: activeTab === 'overview' ? activePreset.primary : undefined,
-                backgroundColor: activeTab === 'overview' ? activePreset.primaryLight : undefined,
+                backgroundColor: activeTab === 'overview' ? (isDarkMode ? `${activePreset.primary}25` : activePreset.primaryLight) : undefined,
               }}
-              className={`flex-1 flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition-all duration-150 active:scale-90 cursor-pointer ${
+              className={`flex-1 flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl transition-all duration-150 active:scale-90 cursor-pointer ${
                 activeTab === 'overview' 
                   ? 'font-bold shadow-2xs' 
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -548,9 +582,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('transactions')}
               style={{
                 color: activeTab === 'transactions' ? activePreset.primary : undefined,
-                backgroundColor: activeTab === 'transactions' ? activePreset.primaryLight : undefined,
+                backgroundColor: activeTab === 'transactions' ? (isDarkMode ? `${activePreset.primary}25` : activePreset.primaryLight) : undefined,
               }}
-              className={`flex-1 flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition-all duration-150 active:scale-90 relative cursor-pointer ${
+              className={`flex-1 flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl transition-all duration-150 active:scale-90 relative cursor-pointer ${
                 activeTab === 'transactions' 
                   ? 'font-bold shadow-2xs' 
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -572,9 +606,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('campaigns')}
               style={{
                 color: activeTab === 'campaigns' ? activePreset.primary : undefined,
-                backgroundColor: activeTab === 'campaigns' ? activePreset.primaryLight : undefined,
+                backgroundColor: activeTab === 'campaigns' ? (isDarkMode ? `${activePreset.primary}25` : activePreset.primaryLight) : undefined,
               }}
-              className={`flex-1 flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition-all duration-150 active:scale-90 relative cursor-pointer ${
+              className={`flex-1 flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl transition-all duration-150 active:scale-90 relative cursor-pointer ${
                 activeTab === 'campaigns' 
                   ? 'font-bold shadow-2xs' 
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -601,9 +635,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('members')}
               style={{
                 color: activeTab === 'members' ? activePreset.primary : undefined,
-                backgroundColor: activeTab === 'members' ? activePreset.primaryLight : undefined,
+                backgroundColor: activeTab === 'members' ? (isDarkMode ? `${activePreset.primary}25` : activePreset.primaryLight) : undefined,
               }}
-              className={`flex-1 flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition-all duration-150 active:scale-90 cursor-pointer ${
+              className={`flex-1 flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl transition-all duration-150 active:scale-90 cursor-pointer ${
                 activeTab === 'members' 
                   ? 'font-bold shadow-2xs' 
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -620,9 +654,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('settings')}
               style={{
                 color: activeTab === 'settings' ? activePreset.primary : undefined,
-                backgroundColor: activeTab === 'settings' ? activePreset.primaryLight : undefined,
+                backgroundColor: activeTab === 'settings' ? (isDarkMode ? `${activePreset.primary}25` : activePreset.primaryLight) : undefined,
               }}
-              className={`flex-1 flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition-all duration-150 active:scale-90 cursor-pointer ${
+              className={`flex-1 flex flex-col items-center justify-center py-1.5 px-0.5 rounded-xl transition-all duration-150 active:scale-90 cursor-pointer ${
                 activeTab === 'settings' 
                   ? 'font-bold shadow-2xs' 
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -642,7 +676,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('overview')}
               style={{
                 color: activeTab === 'overview' ? activePreset.primary : undefined,
-                backgroundColor: activeTab === 'overview' ? activePreset.primaryLight : undefined,
+                backgroundColor: activeTab === 'overview' ? (isDarkMode ? `${activePreset.primary}25` : activePreset.primaryLight) : undefined,
               }}
               className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all duration-150 active:scale-90 cursor-pointer ${
                 activeTab === 'overview' 
@@ -661,7 +695,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('transactions')}
               style={{
                 color: activeTab === 'transactions' ? activePreset.primary : undefined,
-                backgroundColor: activeTab === 'transactions' ? activePreset.primaryLight : undefined,
+                backgroundColor: activeTab === 'transactions' ? (isDarkMode ? `${activePreset.primary}25` : activePreset.primaryLight) : undefined,
               }}
               className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all duration-150 active:scale-90 cursor-pointer ${
                 activeTab === 'transactions' 
@@ -680,7 +714,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('campaigns')}
               style={{
                 color: activeTab === 'campaigns' ? activePreset.primary : undefined,
-                backgroundColor: activeTab === 'campaigns' ? activePreset.primaryLight : undefined,
+                backgroundColor: activeTab === 'campaigns' ? (isDarkMode ? `${activePreset.primary}25` : activePreset.primaryLight) : undefined,
               }}
               className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all duration-150 active:scale-90 relative cursor-pointer ${
                 activeTab === 'campaigns' 
@@ -709,7 +743,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('members')}
               style={{
                 color: activeTab === 'members' ? activePreset.primary : undefined,
-                backgroundColor: activeTab === 'members' ? activePreset.primaryLight : undefined,
+                backgroundColor: activeTab === 'members' ? (isDarkMode ? `${activePreset.primary}25` : activePreset.primaryLight) : undefined,
               }}
               className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all duration-150 active:scale-90 cursor-pointer ${
                 activeTab === 'members' 

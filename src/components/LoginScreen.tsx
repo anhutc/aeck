@@ -226,18 +226,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               }}
               className="text-[10px] font-semibold px-2 py-0.5 rounded-full border"
             >
-              {t('login.representative_badge', 'Đại diện')}
+              {ownerName}
             </span>
           </div>
 
           <div className="space-y-2 text-xs">
-            {/* Owner Name & Role */}
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 dark:text-slate-400 text-[11px]">{t('login.name_label', 'Tên:')}</span>
-              <div className="text-right">
-                <span className="font-bold text-slate-900 dark:text-white block">{ownerName}</span>
-              </div>
-            </div>
 
             {/* Phone Number */}
             {ownerPhone && (

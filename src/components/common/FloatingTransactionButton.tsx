@@ -7,16 +7,18 @@ import { useTheme } from '../../context/ThemeContext';
 interface FloatingTransactionButtonProps {
   onOpenTransactionModal: (type?: TransactionType) => void;
   isMemberView?: boolean;
+  activeTab?: string;
 }
 
 export const FloatingTransactionButton: React.FC<FloatingTransactionButtonProps> = ({
   onOpenTransactionModal,
   isMemberView = false,
+  activeTab,
 }) => {
   const { t } = useTranslation();
   const { activePreset } = useTheme();
-  // If member view (read-only), do not render transaction creation button
-  if (isMemberView) {
+  // If member view (read-only) or on settings tab, do not render transaction creation button
+  if (isMemberView || activeTab === 'settings') {
     return null;
   }
 

@@ -82,9 +82,15 @@ const ToastCard: React.FC<ToastCardProps> = ({ toast, onRemove, position }) => {
   let typeLabel = t('toast.type_info', 'Thông tin');
 
   if (toast.type === 'success') {
-    iconBadgeClass = 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800';
-    progressBarClass = 'bg-emerald-500';
-    borderAccentClass = 'border-emerald-200/90 dark:border-emerald-800/80 shadow-emerald-500/5';
+    iconBadgeClass = 'border shadow-2xs';
+    iconBadgeStyle = {
+      backgroundColor: activePreset.primaryLight,
+      color: activePreset.primaryText,
+      borderColor: activePreset.primaryBorder,
+    };
+    progressBarClass = '';
+    progressBarStyle = { backgroundColor: activePreset.primary };
+    borderAccentClass = 'border-slate-200/90 dark:border-slate-800 shadow-slate-900/10 dark:shadow-black/50';
     IconComponent = CheckCircle2;
     typeLabel = t('toast.type_success', 'Thành công');
   } else if (toast.type === 'error') {
@@ -199,10 +205,10 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
       containerClasses += ' top-4 sm:top-5 left-3 sm:left-6 flex flex-col items-start gap-2.5 max-w-[94vw] sm:max-w-sm';
       break;
     case 'bottom-center':
-      containerClasses += ' bottom-5 sm:bottom-6 left-1/2 -translate-x-1/2 flex flex-col-reverse items-center gap-2.5';
+      containerClasses += ' bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 flex flex-col-reverse items-center gap-2.5';
       break;
     case 'bottom-right':
-      containerClasses += ' bottom-5 sm:bottom-6 right-3 sm:right-6 flex flex-col-reverse items-end gap-2.5 max-w-[94vw] sm:max-w-sm';
+      containerClasses += ' bottom-20 md:bottom-6 right-3 sm:right-6 flex flex-col-reverse items-end gap-2.5 max-w-[94vw] sm:max-w-sm';
       break;
     default:
       containerClasses += ' top-4 sm:top-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2.5';

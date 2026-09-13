@@ -576,13 +576,14 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               <button
                 type="button"
                 onClick={() => setFilterDebt('paid_only')}
+                style={filterDebt === 'paid_only' ? { color: activePreset.primary } : undefined}
                 className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   filterDebt === 'paid_only'
-                    ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                    ? 'bg-white dark:bg-slate-900 shadow-xs'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: activePreset.primary }} />
                 <span>{t('dues.filter_paid', 'Đã xong')} ({summaryStats.paidFullCount})</span>
               </button>
             </div>
@@ -710,14 +711,21 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="inline-block px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-extrabold tracking-wider uppercase">
+                    <span
+                      style={{
+                        backgroundColor: activePreset.primary,
+                        color: '#ffffff',
+                        boxShadow: `0 2px 8px ${activePreset.primary}35`,
+                      }}
+                      className="inline-block px-2.5 py-0.5 rounded-md text-[11px] font-black tracking-wider uppercase"
+                    >
                       {appTitle}
                     </span>
                     <span
                       style={{
-                        backgroundColor: activePreset.primaryLight,
-                        color: activePreset.primaryText,
-                        borderColor: activePreset.primaryBorder,
+                        backgroundColor: `${activePreset.primary}15`,
+                        color: activePreset.primary,
+                        borderColor: `${activePreset.primary}40`,
                       }}
                       className="inline-block px-2 py-0.5 rounded-md border text-[10px] font-bold"
                     >
@@ -760,14 +768,26 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                 </div>
               </div>
 
-              <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-2.5 text-center">
-                <div className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider flex items-center justify-center gap-1">
+              <div
+                style={{
+                  backgroundColor: activePreset.primaryLight,
+                  borderColor: activePreset.primaryBorder,
+                }}
+                className="border rounded-xl p-2.5 text-center"
+              >
+                <div
+                  style={{ color: activePreset.primaryText }}
+                  className="text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1"
+                >
                   <CheckCircle2 className="w-3 h-3" />
                   <span>{t('dues.stat_paid', 'Đã hoàn thành')}</span>
                 </div>
-                <div className="text-lg font-black text-emerald-700 mt-0.5">
+                <div
+                  style={{ color: activePreset.primaryText }}
+                  className="text-lg font-black mt-0.5"
+                >
                   {summaryStats.paidFullCount}{' '}
-                  <span className="text-xs font-normal text-emerald-600">{t('common.person', 'người')}</span>
+                  <span className="text-xs font-normal opacity-80">{t('common.person', 'người')}</span>
                 </div>
               </div>
 
@@ -797,7 +817,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
               <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200 my-4">
                 {filterDebt === 'unpaid_only' && summaryStats.unpaidCount === 0 ? (
                   <div className="space-y-2">
-                    <div className="inline-flex p-3 rounded-full bg-emerald-100 text-emerald-600 mb-1">
+                    <div
+                      style={{ backgroundColor: activePreset.primaryLight, color: activePreset.primary }}
+                      className="inline-flex p-3 rounded-full mb-1"
+                    >
                       <Sparkles className="w-6 h-6" />
                     </div>
                     <h3 className="text-base font-bold text-slate-800">
@@ -912,8 +935,15 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                               {t('dues.status_exempt', 'Miễn đóng quỹ')}
                             </span>
                           ) : row.isPaidInFull ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <span
+                              style={{
+                                backgroundColor: activePreset.primaryLight,
+                                color: activePreset.primaryText,
+                                borderColor: activePreset.primaryBorder,
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold border"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color: activePreset.primary }} />
                               <span>{t('dues.status_paid_full', 'Đã hoàn thành')}</span>
                             </span>
                           ) : row.hasDebt ? (
@@ -989,8 +1019,9 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                     className={`border rounded-xl p-3.5 flex flex-col justify-between transition-all h-fit ${
                       row.hasDebt
                         ? 'bg-rose-50/50 border-rose-200 shadow-2xs'
-                        : 'bg-emerald-50/40 border-emerald-200 shadow-2xs'
+                        : 'shadow-2xs'
                     }`}
+                    style={!row.hasDebt ? { backgroundColor: `${activePreset.primary}0a`, borderColor: `${activePreset.primary}33` } : undefined}
                   >
                     {/* Card Header */}
                     <div>
@@ -1020,8 +1051,15 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                               {t('dues.status_exempt', 'Miễn đóng quỹ')}
                             </span>
                           ) : row.isPaidInFull ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" />
+                            <span
+                              style={{
+                                backgroundColor: activePreset.primaryLight,
+                                color: activePreset.primaryText,
+                                borderColor: activePreset.primaryBorder,
+                              }}
+                              className="px-2 py-0.5 rounded text-[10px] font-bold border flex items-center gap-1"
+                            >
+                              <CheckCircle2 className="w-3 h-3" style={{ color: activePreset.primary }} />
                               <span>{t('dues.status_paid_full', 'Đã hoàn thành')}</span>
                             </span>
                           ) : (
@@ -1049,13 +1087,14 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                           <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                             <div
                               className={`h-full rounded-full ${
-                                row.isPaidInFull ? 'bg-emerald-500' : 'bg-rose-500'
+                                row.isPaidInFull ? '' : 'bg-rose-500'
                               }`}
                               style={{
                                 width: `${Math.min(
                                   100,
                                   Math.round((row.totalPaid / row.totalRequired) * 100)
                                 )}%`,
+                                backgroundColor: row.isPaidInFull ? activePreset.primary : undefined,
                               }}
                             />
                           </div>

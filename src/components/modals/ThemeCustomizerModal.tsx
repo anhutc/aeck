@@ -45,6 +45,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
     setCustomColor,
     themeMode,
     setThemeMode,
+    setDefaultThemeMode,
     themeRadius,
     setThemeRadius,
     themeDensity,
@@ -78,6 +79,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
     }
 
     setIsCloudSaving(true);
+    setDefaultThemeMode(themeMode);
     onUpdateBranding({
       ...branding,
       themeAccent,

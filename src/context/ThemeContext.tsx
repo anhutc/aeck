@@ -16,6 +16,11 @@ interface ThemeContextType {
   setCustomColor: (color: string) => void;
   themeMode: ThemeMode;
   setThemeMode: (mode: ThemeMode) => void;
+  defaultThemeMode: ThemeMode;
+  setDefaultThemeMode: (mode: ThemeMode) => void;
+  isHeaderThemeCustomized: boolean;
+  toggleHeaderTheme: () => void;
+  resetToDefaultAccessTheme: () => void;
   isDarkMode: boolean;
   themeRadius: ThemeRadius;
   setThemeRadius: (radius: ThemeRadius) => void;
@@ -36,6 +41,7 @@ interface ThemeContextType {
 const THEME_STORAGE_KEYS = {
   ACCENT: 'quanlyquy_theme_accent_v1',
   CUSTOM_COLOR: 'quanlyquy_theme_custom_color_v1',
+  DEFAULT_MODE: 'quanlyquy_default_theme_mode_v2',
   MODE: 'quanlyquy_theme_mode_v1',
   RADIUS: 'quanlyquy_theme_radius_v1',
   DENSITY: 'quanlyquy_theme_density_v1',
@@ -44,7 +50,7 @@ const THEME_STORAGE_KEYS = {
 
 const getInitialThemeFromBranding = (): AppBranding | null => {
   try {
-    const saved = localStorage.getItem('quanlyquy_branding');
+    const saved = localStorage.getItem('quanlyquy_branding_v2') || localStorage.getItem('quanlyquy_branding');
     if (saved) return JSON.parse(saved);
   } catch (e) {}
   return null;
@@ -74,12 +80,28 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return initialBranding?.customColor || localStorage.getItem(THEME_STORAGE_KEYS.CUSTOM_COLOR) || '#059669';
   });
 
-  // Color Mode: light | dark | system
+  // Default Theme Mode upon access (configured in Settings: 'light' | 'dark' | 'system')
+  const [defaultThemeMode, setDefaultThemeModeState] = useState<ThemeMode>(() => {
+    const fromBranding = initialBranding?.themeMode;
+    if (fromBranding && ['light', 'dark', 'system'].includes(fromBranding)) return fromBranding;
+    const savedDefault = localStorage.getItem(THEME_STORAGE_KEYS.DEFAULT_MODE) as ThemeMode;
+    if (savedDefault && ['light', 'dark', 'system'].includes(savedDefault)) return savedDefault;
+    const savedLegacy = localStorage.getItem(THEME_STORAGE_KEYS.MODE) as ThemeMode;
+    return savedLegacy && ['light', 'dark', 'system'].includes(savedLegacy) ? savedLegacy : 'light';
+  });
+
+  // Flag indicating whether the user manually toggled the theme in Header after accessing
+  const [isHeaderThemeCustomized, setIsHeaderThemeCustomized] = useState<boolean>(false);
+
+  // Color Mode actively displayed in the current visit session
+  // Upon initial visit/access, it strictly starts with defaultThemeMode
   const [themeMode, setThemeModeState] = useState<ThemeMode>(() => {
     const fromBranding = initialBranding?.themeMode;
     if (fromBranding && ['light', 'dark', 'system'].includes(fromBranding)) return fromBranding;
-    const saved = localStorage.getItem(THEME_STORAGE_KEYS.MODE) as ThemeMode;
-    return saved && ['light', 'dark', 'system'].includes(saved) ? saved : 'light';
+    const savedDefault = localStorage.getItem(THEME_STORAGE_KEYS.DEFAULT_MODE) as ThemeMode;
+    if (savedDefault && ['light', 'dark', 'system'].includes(savedDefault)) return savedDefault;
+    const savedLegacy = localStorage.getItem(THEME_STORAGE_KEYS.MODE) as ThemeMode;
+    return savedLegacy && ['light', 'dark', 'system'].includes(savedLegacy) ? savedLegacy : 'light';
   });
 
   // Corner Radius: modern | soft | smooth | sharp
@@ -143,10 +165,37 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem(THEME_STORAGE_KEYS.CUSTOM_COLOR, hex);
   }, []);
 
+  // Update default theme mode upon access (configured in Settings)
+  const setDefaultThemeMode = useCallback((mode: ThemeMode) => {
+    setDefaultThemeModeState(mode);
+    localStorage.setItem(THEME_STORAGE_KEYS.DEFAULT_MODE, mode);
+    localStorage.setItem(THEME_STORAGE_KEYS.MODE, mode);
+    // Setting default also updates current preview
+    setThemeModeState(mode);
+    setIsHeaderThemeCustomized(false);
+  }, []);
+
+  // Set active theme mode for current session
   const setThemeMode = useCallback((mode: ThemeMode) => {
     setThemeModeState(mode);
     localStorage.setItem(THEME_STORAGE_KEYS.MODE, mode);
   }, []);
+
+  // Quick toggle in Header after accessing (does NOT alter defaultThemeMode)
+  const toggleHeaderTheme = useCallback(() => {
+    setThemeModeState(prev => {
+      const isCurrentDark = prev === 'dark' || (prev === 'system' && isSystemDark);
+      const nextMode: ThemeMode = isCurrentDark ? 'light' : 'dark';
+      setIsHeaderThemeCustomized(true);
+      return nextMode;
+    });
+  }, [isSystemDark]);
+
+  // Reset active theme back to the configured default upon access
+  const resetToDefaultAccessTheme = useCallback(() => {
+    setThemeModeState(defaultThemeMode);
+    setIsHeaderThemeCustomized(false);
+  }, [defaultThemeMode]);
 
   const setThemeRadius = useCallback((radius: ThemeRadius) => {
     setThemeRadiusState(radius);
@@ -179,11 +228,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const resetToDefaultTheme = useCallback(() => {
     setThemeAccent('emerald');
     setCustomColor('#059669');
-    setThemeMode('light');
+    setDefaultThemeMode('light');
     setThemeRadius('modern');
     setThemeDensity('comfortable');
     setPrivacyMode(false);
-  }, [setThemeAccent, setCustomColor, setThemeMode, setThemeRadius, setThemeDensity, setPrivacyMode]);
+  }, [setThemeAccent, setCustomColor, setDefaultThemeMode, setThemeRadius, setThemeDensity, setPrivacyMode]);
 
   // Sync from branding if cloud state updates or on initial app load
   const syncFromBranding = useCallback((branding?: AppBranding) => {
@@ -196,9 +245,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCustomColorState(branding.customColor);
       localStorage.setItem(THEME_STORAGE_KEYS.CUSTOM_COLOR, branding.customColor);
     }
-    if (branding.themeMode) {
-      setThemeModeState(branding.themeMode);
+    if (branding.themeMode && ['light', 'dark', 'system'].includes(branding.themeMode)) {
+      setDefaultThemeModeState(branding.themeMode);
+      localStorage.setItem(THEME_STORAGE_KEYS.DEFAULT_MODE, branding.themeMode);
       localStorage.setItem(THEME_STORAGE_KEYS.MODE, branding.themeMode);
+      // Only sync active view mode if the user has NOT manually chosen a custom mode in header during this visit
+      setIsHeaderThemeCustomized(isCustomized => {
+        if (!isCustomized) {
+          setThemeModeState(branding.themeMode as ThemeMode);
+        }
+        return isCustomized;
+      });
     }
     if (branding.themeRadius) {
       setThemeRadiusState(branding.themeRadius);
@@ -225,8 +282,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCustomColorState(color);
     localStorage.setItem(THEME_STORAGE_KEYS.CUSTOM_COLOR, color);
 
-    setThemeModeState(mode);
+    setDefaultThemeModeState(mode);
+    localStorage.setItem(THEME_STORAGE_KEYS.DEFAULT_MODE, mode);
     localStorage.setItem(THEME_STORAGE_KEYS.MODE, mode);
+    setThemeModeState(mode);
+    setIsHeaderThemeCustomized(false);
 
     setThemeRadiusState(radius);
     localStorage.setItem(THEME_STORAGE_KEYS.RADIUS, radius);
@@ -242,6 +302,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCustomColor,
     themeMode,
     setThemeMode,
+    defaultThemeMode,
+    setDefaultThemeMode,
+    isHeaderThemeCustomized,
+    toggleHeaderTheme,
+    resetToDefaultAccessTheme,
     isDarkMode,
     themeRadius,
     setThemeRadius,
@@ -264,6 +329,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCustomColor,
     themeMode,
     setThemeMode,
+    defaultThemeMode,
+    setDefaultThemeMode,
+    isHeaderThemeCustomized,
+    toggleHeaderTheme,
+    resetToDefaultAccessTheme,
     isDarkMode,
     themeRadius,
     setThemeRadius,

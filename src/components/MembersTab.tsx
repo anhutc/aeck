@@ -115,7 +115,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
         paidDate: member.yearlyPaidDate,
         statusText: isPaidFull ? t('members.yearly_paid_full', 'Đã đóng trọn năm') : t('members.yearly_not_full', 'Chưa nộp đủ theo năm'),
         badgeColor: isPaidFull
-          ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200'
+          ? 'bg-theme-light text-theme-primary border-theme-light'
           : 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200',
       };
     }
@@ -157,7 +157,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
       badgeColor = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700';
     } else if (unpaidCampaignsCount === 0) {
       statusText = `${t('members.paid_full_campaigns_prefix', 'Đã nộp đủ')} (${paidCampaignsCount}/${totalAssigned} ${t('members.campaigns_unit', 'đợt')})`;
-      badgeColor = 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200';
+      badgeColor = 'bg-theme-light text-theme-primary border-theme-light';
     } else {
       statusText = `${t('members.unpaid_campaigns_prefix', 'Chưa nộp')} ${unpaidCampaignsCount}/${totalAssigned} ${t('members.campaigns_unit', 'đợt')}`;
       badgeColor = 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border-rose-200';
@@ -329,9 +329,9 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             <span className="text-slate-500 block">{t('members.kpi_total', 'Tổng thành viên:')}</span>
             <span className="font-bold text-slate-900 dark:text-white text-sm">{members.length} {t('common.members_unit', 'người')}</span>
           </div>
-          <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/20 rounded-xl border border-emerald-200/60 dark:border-emerald-900/60">
-            <span className="text-emerald-700 dark:text-emerald-300 block">{t('members.status_active', 'Đang hoạt động:')}</span>
-            <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{activeCount} {t('common.members_unit', 'người')}</span>
+          <div className="p-3 bg-theme-light rounded-xl border border-theme-light">
+            <span className="text-theme-primary block">{t('members.status_active', 'Đang hoạt động:')}</span>
+            <span className="font-bold text-theme-primary text-sm">{activeCount} {t('common.members_unit', 'người')}</span>
           </div>
           <div
             onClick={() => {
@@ -484,7 +484,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                               {t('members.status_inactive', 'Đã nghỉ')}
                             </span>
                           ) : (
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title={t('members.status_active', 'Đang hoạt động')} />
+                            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: activePreset.primary }} title={t('members.status_active', 'Đang hoạt động')} />
                           )}
                         </div>
 
@@ -505,7 +505,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                               className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5 rounded transition-colors cursor-pointer"
                             >
                               {isCopied ? (
-                                <Check className="w-3 h-3 text-emerald-500" />
+                                <Check className="w-3 h-3" style={{ color: activePreset.primary }} />
                               ) : (
                                 <Copy className="w-3 h-3 opacity-60 hover:opacity-100" />
                               )}
@@ -635,13 +635,16 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                       <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-300 ${
-                            stats.progressPercent === 100
-                              ? 'bg-emerald-500'
-                              : stats.progressPercent >= 50
+                            stats.progressPercent >= 50 && stats.progressPercent < 100
                               ? 'bg-amber-500'
-                              : 'bg-rose-500'
+                              : stats.progressPercent < 50
+                              ? 'bg-rose-500'
+                              : ''
                           }`}
-                          style={{ width: `${stats.progressPercent}%` }}
+                          style={{
+                            width: `${stats.progressPercent}%`,
+                            backgroundColor: stats.progressPercent === 100 ? activePreset.primary : undefined,
+                          }}
                         />
                       </div>
 
