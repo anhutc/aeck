@@ -468,7 +468,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                     <Sliders className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold block">Thoáng Đãng (Comfortable)</span>
+                    <span className="text-xs font-bold block">Thoáng Đãng (Tiêu chuẩn)</span>
                     <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug block">
                       Khoảng cách rộng rãi, trực quan, dễ đọc trên mọi thiết bị
                     </span>
@@ -494,7 +494,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                     <Sliders className="w-4 h-4 rotate-90" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold block">Tinh Gọn (Compact High-Density)</span>
+                    <span className="text-xs font-bold block">Tinh Gọn (Mật độ cao)</span>
                     <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug block">
                       Thu nhỏ khoảng cách, hiển thị nhiều dữ liệu và dòng giao dịch cùng lúc
                     </span>

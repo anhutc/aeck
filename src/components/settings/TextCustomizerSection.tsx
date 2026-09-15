@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useLayoutEffect, useEffect } from 'react';
 import { 
   Languages, 
   Search, 
@@ -10,10 +10,13 @@ import {
   X, 
   Copy, 
   Sparkles,
-  Filter,
-  Plus,
   ArrowUpDown,
-  BookOpen
+  BookOpen,
+  SlidersHorizontal,
+  Wallet,
+  ArrowRight,
+  HelpCircle,
+  Undo2
 } from 'lucide-react';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -31,6 +34,7 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
     t, 
     activeCustomTexts, 
     updateCustomText, 
+    batchUpdateCustomTexts,
     resetCustomText, 
     resetAllCustomTexts,
     exportDictionary,
@@ -45,15 +49,13 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'customized' | 'default'>('all');
-  
-  // Editing State
+  const [sortBy, setSortBy] = useState<'default' | 'custom_first' | 'key_asc' | 'az'>('default');
+
+  // Editing State & Scroll Preservation
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
-
-  // Add custom key modal state
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newKey, setNewKey] = useState('');
-  const [newValue, setNewValue] = useState('');
+  const [retainedKey, setRetainedKey] = useState<string | null>(null);
+  const scrollLockRef = useRef<{ scrollY: number; domId: string; key: string } | null>(null);
 
   // Import JSON Modal
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -67,7 +69,7 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
   // Copy feedback
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  // Calculate unique categories
+  // Calculate unique categories with counts
   const categories = useMemo(() => {
     const map = new Map<string, { id: string; name: string; count: number }>();
     
@@ -85,17 +87,26 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
     return Array.from(map.values()).sort((a, b) => b.count - a.count);
   }, [allDictionaryKeys]);
 
-  // Filtered List
+  // Filtered & Sorted List
+  const defaultKeyMap = useMemo(() => {
+    return new Map(allDictionaryKeys.map(k => [k.key, k.defaultValue]));
+  }, [allDictionaryKeys]);
+
   const filteredItems = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
 
-    return allDictionaryKeys.filter(item => {
-      const isCustom = Boolean(activeCustomTexts[item.key] !== undefined && activeCustomTexts[item.key].trim() !== '');
-      const currentText = isCustom ? activeCustomTexts[item.key] : item.defaultValue;
+    const filtered = allDictionaryKeys.filter(item => {
+      const customVal = activeCustomTexts[item.key];
+      const isCustom = Boolean(
+        customVal !== undefined &&
+        customVal.trim() !== '' &&
+        customVal.trim() !== (item.defaultValue || '').trim()
+      );
+      const currentText = isCustom ? customVal : item.defaultValue;
 
       // Status filter
-      if (statusFilter === 'customized' && !isCustom) return false;
-      if (statusFilter === 'default' && isCustom) return false;
+      if (statusFilter === 'customized' && !isCustom && item.key !== retainedKey) return false;
+      if (statusFilter === 'default' && isCustom && item.key !== retainedKey) return false;
 
       // Category filter
       if (selectedCategory !== 'all' && item.category !== selectedCategory) {
@@ -113,10 +124,38 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
         (item.categoryName && item.categoryName.toLowerCase().includes(q))
       );
     });
-  }, [allDictionaryKeys, searchTerm, selectedCategory, statusFilter, activeCustomTexts]);
+
+    // Sorting
+    return filtered.sort((a, b) => {
+      const aVal = activeCustomTexts[a.key];
+      const bVal = activeCustomTexts[b.key];
+      const aCustom = Boolean(aVal !== undefined && aVal.trim() !== '' && aVal.trim() !== (a.defaultValue || '').trim());
+      const bCustom = Boolean(bVal !== undefined && bVal.trim() !== '' && bVal.trim() !== (b.defaultValue || '').trim());
+
+      if (sortBy === 'custom_first') {
+        if (aCustom && !bCustom) return -1;
+        if (!aCustom && bCustom) return 1;
+      } else if (sortBy === 'key_asc') {
+        return a.key.localeCompare(b.key);
+      } else if (sortBy === 'az') {
+        const valA = aCustom ? aVal : a.defaultValue;
+        const valB = bCustom ? bVal : b.defaultValue;
+        return valA.localeCompare(valB, 'vi');
+      }
+      return 0;
+    });
+  }, [allDictionaryKeys, searchTerm, selectedCategory, statusFilter, sortBy, activeCustomTexts, retainedKey]);
 
   // Paginated Items
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+
+  // Auto-adjust page if current page exceeds total pages
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
   const pagedItems = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     return filteredItems.slice(start, start + pageSize);
@@ -124,33 +163,116 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
 
   // Stats
   const totalCount = allDictionaryKeys.length;
-  const customizedCount = Object.keys(activeCustomTexts).length;
+  const customizedCount = useMemo(() => {
+    return Object.entries(activeCustomTexts).filter(([k, v]) => {
+      if (!v || v.trim() === '') return false;
+      const def = defaultKeyMap.get(k);
+      return def === undefined || v.trim() !== def.trim();
+    }).length;
+  }, [activeCustomTexts, defaultKeyMap]);
 
+  // Handlers
   const handleStartEdit = (item: TranslationItem) => {
     setEditingKey(item.key);
     setEditValue(activeCustomTexts[item.key] !== undefined ? activeCustomTexts[item.key] : item.defaultValue);
   };
 
   const handleSaveEdit = (key: string) => {
-    updateCustomText(key, editValue);
+    const item = allDictionaryKeys.find(k => k.key === key);
+    const defaultVal = item?.defaultValue || '';
+    const trimmedVal = editValue.trim();
+
+    const currentScrollY = window.scrollY || document.documentElement.scrollTop;
+    const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const domId = `dict-item-${safeKey}`;
+
+    scrollLockRef.current = {
+      scrollY: currentScrollY,
+      domId,
+      key,
+    };
+
+    // Explicitly blur before unmounting input to avoid browser resetting focus to body/top
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
+    setRetainedKey(key);
+
+    // If text was set to empty or default, restore to default!
+    if (trimmedVal === '' || trimmedVal === defaultVal.trim()) {
+      resetCustomText(key);
+      showToast(`Đã đưa từ ngữ "${key}" về mặc định!`, 'info');
+    } else {
+      updateCustomText(key, editValue);
+      showToast(t('common.saved_success', 'Đã lưu thay đổi từ ngữ!'), 'success');
+    }
+
     setEditingKey(null);
+    setEditValue('');
     onNotifyDirty?.();
-    showToast(t('common.saved_success', 'Đã lưu thay đổi từ ngữ!'), 'success');
   };
 
   const handleCancelEdit = () => {
+    if (editingKey) {
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop;
+      const safeKey = editingKey.replace(/[^a-zA-Z0-9_-]/g, '_');
+      scrollLockRef.current = {
+        scrollY: currentScrollY,
+        domId: `dict-item-${safeKey}`,
+        key: editingKey,
+      };
+    }
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     setEditingKey(null);
     setEditValue('');
   };
 
   const handleResetSingle = (item: TranslationItem) => {
+    const currentScrollY = window.scrollY || document.documentElement.scrollTop;
+    const safeKey = item.key.replace(/[^a-zA-Z0-9_-]/g, '_');
+    scrollLockRef.current = {
+      scrollY: currentScrollY,
+      domId: `dict-item-${safeKey}`,
+      key: item.key,
+    };
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    setRetainedKey(item.key);
     resetCustomText(item.key);
     if (editingKey === item.key) {
       setEditingKey(null);
+      setEditValue('');
     }
     onNotifyDirty?.();
-    showToast(`Đã khôi phục từ ngữ "${item.key}" về mặc định!`, 'info');
+    showToast(`Đã khôi phục từ ngữ "${item.key}" về mặc định!`, 'success');
   };
+
+  // Keep scroll position strictly preserved after editing or resetting an item
+  useLayoutEffect(() => {
+    if (scrollLockRef.current) {
+      const { scrollY, domId } = scrollLockRef.current;
+      scrollLockRef.current = null;
+
+      // 1. Instantly lock/restore the window scroll position before paint
+      window.scrollTo({ top: scrollY, behavior: 'instant' });
+
+      // 2. In next animation frame, ensure it stays locked and re-focus the edit button safely
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: scrollY, behavior: 'instant' });
+        const el = document.getElementById(domId);
+        if (el) {
+          const editBtn = el.querySelector<HTMLButtonElement>('[data-edit-btn="true"]');
+          if (editBtn) {
+            editBtn.focus({ preventScroll: true });
+          }
+        }
+      });
+    }
+  }, [editingKey, activeCustomTexts]);
 
   const handleResetAll = () => {
     showConfirm({
@@ -158,9 +280,12 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
       message: 'Toàn bộ từ ngữ, nhãn nút bấm và tiêu đề bạn đã tùy biến sẽ được đưa về văn bản gốc ban đầu của ứng dụng. Bạn có chắc chắn muốn khôi phục?',
       confirmText: 'Đồng Ý Khôi Phục',
       cancelText: 'Hủy Bỏ',
+      type: 'warning',
       onConfirm: () => {
         resetAllCustomTexts();
         setEditingKey(null);
+        setEditValue('');
+        setRetainedKey(null);
         onNotifyDirty?.();
         showToast('Đã khôi phục toàn bộ từ ngữ về mặc định!', 'success');
       },
@@ -224,48 +349,33 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
     e.target.value = '';
   };
 
-  const handleAddNewKey = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedKey = newKey.trim();
-    const trimmedVal = newValue.trim();
-
-    if (!trimmedKey || !trimmedVal) {
-      showToast('Vui lòng điền đầy đủ mã từ khóa và nội dung hiển thị!', 'error');
-      return;
-    }
-
-    updateCustomText(trimmedKey, trimmedVal);
-    setIsAddModalOpen(false);
-    setNewKey('');
-    setNewValue('');
-    onNotifyDirty?.();
-    showToast(`Đã thêm từ khóa mới "${trimmedKey}" thành công!`, 'success');
-  };
-
   return (
     <div id="settings-text-editor" className="scroll-mt-28 sm:scroll-mt-24 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-5">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
-        <div className="flex items-start gap-3">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-start gap-3.5">
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm"
+            className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-md"
             style={{
               backgroundColor: activePreset.primary,
-              boxShadow: `0 2px 10px ${activePreset.primary}35`,
+              boxShadow: `0 4px 14px ${activePreset.primary}35`,
             }}
           >
             <Languages className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center gap-2">
-              <span>{t('text_editor.banner_title', 'Tùy Chỉnh Toàn Bộ Câu Chữ & Thuật Ngữ Giao Diện')}</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+                {t('text_editor.banner_title', 'Tùy Chỉnh Toàn Bộ Câu Chữ & Thuật Ngữ Giao Diện')}
+              </h3>
               {customizedCount > 0 && (
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-                  {customizedCount} đã sửa
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-800 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-amber-600" />
+                  <span>{customizedCount} từ ngữ đã sửa</span>
                 </span>
               )}
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
               {t('text_editor.banner_desc', 'Dễ dàng sửa trực tiếp mọi câu chữ, tiêu đề, nhãn nút bấm, thông báo và thuật ngữ trên toàn bộ ứng dụng theo ý bạn.')}
             </p>
           </div>
@@ -273,16 +383,18 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
 
         {/* Global Actions Toolbar */}
         <div className="flex items-center flex-wrap gap-2">
+          {/* Export JSON */}
           <button
             type="button"
             onClick={handleExportJson}
-            title="Tải tệp JSON từ điển về máy"
-            className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Tải tệp JSON toàn bộ từ điển (tất cả từ ngữ mặc định và đã chỉnh sửa) về máy để xem, sửa ngoài máy hoặc sao lưu"
+            className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>{t('text_editor.export_btn', 'Xuất JSON')}</span>
+            <Download className="w-3.5 h-3.5 text-blue-500" />
+            <span>Xuất JSON</span>
           </button>
 
+          {/* Import JSON */}
           <input
             ref={fileInputRef}
             type="file"
@@ -290,32 +402,17 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
             onChange={handleFileUpload}
             className="hidden"
           />
-
           <button
             type="button"
-            onClick={() => fileInputRef.current?.click()}
-            title="Tải tệp JSON từ máy tính lên"
-            className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            onClick={() => setIsImportModalOpen(true)}
+            title="Nhập tệp từ điển JSON đã sửa bên ngoài để cập nhật toàn bộ vào ứng dụng"
+            className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Upload className="w-3.5 h-3.5" />
-            <span>{t('text_editor.import_btn', 'Nhập JSON')}</span>
+            <Upload className="w-3.5 h-3.5 text-teal-500" />
+            <span>Nhập JSON</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            title="Thêm từ khóa tùy chỉnh mới"
-            style={{
-              backgroundColor: `${activePreset.primary}12`,
-              color: activePreset.primary,
-              borderColor: `${activePreset.primary}30`,
-            }}
-            className="px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all hover:opacity-85 cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Thêm từ khóa</span>
-          </button>
-
+          {/* Reset All */}
           {customizedCount > 0 && (
             <button
               type="button"
@@ -324,7 +421,7 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
               className="px-2.5 py-1.5 rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>{t('text_editor.reset_all_btn', 'Khôi phục gốc')}</span>
+              <span>Khôi phục gốc ({customizedCount})</span>
             </button>
           )}
         </div>
@@ -364,20 +461,41 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
+                setRetainedKey(null);
                 setCurrentPage(1);
               }}
-              placeholder={t('text_editor.search_placeholder', 'Gõ từ tiếng Việt, tên nút bấm hoặc mã từ khóa cần sửa (VD: Tổng số dư, Nộp tiền, VietQR)...')}
+              placeholder={t('text_editor.search_placeholder', 'Gõ từ tiếng Việt, tên nút bấm hoặc mã từ khóa cần sửa (VD: Tổng số dư, Nộp tiền, VietQR, nav.overview)...')}
               className="w-full pl-9.5 pr-8 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-hidden placeholder:text-slate-400"
             />
             {searchTerm && (
               <button
                 type="button"
-                onClick={() => setSearchTerm('')}
+                onClick={() => {
+                  setSearchTerm('');
+                  setRetainedKey(null);
+                }}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
+          </div>
+
+          {/* Sort By Dropdown */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value as any);
+                setRetainedKey(null);
+              }}
+              className="px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold focus:outline-hidden cursor-pointer"
+            >
+              <option value="default">{t('text_editor.sort_default', 'Thứ tự danh mục (Mặc định)')}</option>
+              <option value="az">{t('text_editor.sort_az', 'Theo chữ A - Z')}</option>
+              <option value="key_asc">{t('text_editor.sort_key', 'Theo mã từ khóa')}</option>
+              <option value="custom_first">{t('text_editor.sort_custom_first', 'Đã tùy biến lên đầu')}</option>
+            </select>
           </div>
 
           {/* Status Tabs */}
@@ -386,6 +504,7 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
               type="button"
               onClick={() => {
                 setStatusFilter('all');
+                setRetainedKey(null);
                 setCurrentPage(1);
               }}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
@@ -400,6 +519,7 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
               type="button"
               onClick={() => {
                 setStatusFilter('customized');
+                setRetainedKey(null);
                 setCurrentPage(1);
               }}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
@@ -414,6 +534,7 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
               type="button"
               onClick={() => {
                 setStatusFilter('default');
+                setRetainedKey(null);
                 setCurrentPage(1);
               }}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
@@ -433,6 +554,7 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
             type="button"
             onClick={() => {
               setSelectedCategory('all');
+              setRetainedKey(null);
               setCurrentPage(1);
             }}
             className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
@@ -449,6 +571,7 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
               type="button"
               onClick={() => {
                 setSelectedCategory(cat.id);
+                setRetainedKey(null);
                 setCurrentPage(1);
               }}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
@@ -490,13 +613,19 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
           </div>
         ) : (
           pagedItems.map((item) => {
-            const isCustom = Boolean(activeCustomTexts[item.key] !== undefined && activeCustomTexts[item.key].trim() !== '');
-            const currentDisplay = isCustom ? activeCustomTexts[item.key] : item.defaultValue;
+            const customVal = activeCustomTexts[item.key];
+            const isCustom = Boolean(
+              customVal !== undefined &&
+              customVal.trim() !== '' &&
+              customVal.trim() !== (item.defaultValue || '').trim()
+            );
+            const currentDisplay = isCustom ? customVal : item.defaultValue;
             const isEditing = editingKey === item.key;
 
             return (
               <div
                 key={item.key}
+                id={`dict-item-${item.key.replace(/[^a-zA-Z0-9_-]/g, '_')}`}
                 className={`p-3.5 rounded-xl border transition-all ${
                   isCustom
                     ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-200/80 dark:border-amber-900/50'
@@ -562,6 +691,9 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
                             rows={3}
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Escape') handleCancelEdit();
+                            }}
                             className="w-full p-2.5 text-xs font-medium rounded-xl border border-emerald-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-hidden ring-2 ring-emerald-500/20"
                             placeholder="Nhập nội dung mới..."
                             autoFocus
@@ -571,18 +703,22 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
                             type="text"
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveEdit(item.key);
+                              if (e.key === 'Escape') handleCancelEdit();
+                            }}
                             className="w-full px-3 py-2 text-xs font-medium rounded-xl border border-emerald-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-hidden ring-2 ring-emerald-500/20"
                             placeholder="Nhập nội dung mới..."
                             autoFocus
                           />
                         )}
 
-                        <div className="flex items-center gap-2 pt-1">
+                        <div className="flex items-center gap-2 pt-1 flex-wrap">
                           <button
                             type="button"
                             onClick={() => handleSaveEdit(item.key)}
                             style={{ backgroundColor: activePreset.primary }}
-                            className="px-3 py-1.5 rounded-lg text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs hover:opacity-90 cursor-pointer"
+                            className="px-3.5 py-1.5 rounded-lg text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs hover:opacity-90 cursor-pointer"
                           >
                             <Check className="w-3.5 h-3.5" />
                             <span>{t('text_editor.btn_save', 'Lưu thay đổi')}</span>
@@ -594,10 +730,21 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
                           >
                             {t('text_editor.btn_cancel', 'Hủy')}
                           </button>
+                          {isCustom && (
+                            <button
+                              type="button"
+                              onClick={() => handleResetSingle(item)}
+                              className="px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                              title="Khôi phục từ ngữ này ngay về mặc định ban đầu"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Khôi phục về gốc</span>
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => setEditValue(item.defaultValue)}
-                            className="text-xs text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 underline ml-auto"
+                            className="text-xs text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 underline ml-auto cursor-pointer"
                           >
                             Điền lại văn bản gốc
                           </button>
@@ -617,6 +764,8 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
                     <div className="flex items-center gap-1.5 shrink-0 pt-1 sm:pt-0">
                       <button
                         type="button"
+                        data-edit-btn="true"
+                        id={`btn-edit-${item.key.replace(/[^a-zA-Z0-9_-]/g, '_')}`}
                         onClick={() => handleStartEdit(item)}
                         style={{
                           backgroundColor: `${activePreset.primary}12`,
@@ -633,9 +782,10 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
                           type="button"
                           onClick={() => handleResetSingle(item)}
                           title={t('text_editor.btn_reset_item', 'Khôi phục về văn bản gốc mặc định')}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-lg text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-900/60 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Khôi phục</span>
                         </button>
                       )}
                     </div>
@@ -695,82 +845,14 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
         </div>
       )}
 
-      {/* Modal: Add New Custom Key */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 w-full max-w-md shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                <Plus className="w-4 h-4 text-emerald-500" />
-                <span>Thêm Từ Khóa Tùy Biến Mới</span>
-              </h4>
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddNewKey} className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Mã từ khóa (Key - VD: custom.welcome_note, app.header_slogan):
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={newKey}
-                  onChange={(e) => setNewKey(e.target.value)}
-                  placeholder="VD: custom.my_button_label"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Nội dung hiển thị (Văn bản tiếng Việt):
-                </label>
-                <textarea
-                  required
-                  rows={3}
-                  value={newValue}
-                  onChange={(e) => setNewValue(e.target.value)}
-                  placeholder="Nhập nội dung bạn muốn hiển thị..."
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  style={{ backgroundColor: activePreset.primary }}
-                  className="px-4 py-1.5 rounded-xl text-white text-xs font-bold hover:opacity-90 cursor-pointer shadow-sm"
-                >
-                  Thêm Từ Khóa
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* Modal: Import JSON */}
       {isImportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 w-full max-w-lg shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                <Upload className="w-4 h-4 text-emerald-500" />
-                <span>{t('text_editor.import_title', 'Nhập Từ Điển Tùy Chỉnh (JSON)')}</span>
+                <Upload className="w-4 h-4 text-teal-500" />
+                <span>Nhập Tệp Từ Điển (JSON)</span>
               </h4>
               <button
                 type="button"
@@ -781,17 +863,47 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
               </button>
             </div>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              {t('text_editor.import_desc', 'Dán nội dung tệp JSON từ điển đã xuất trước đó để khôi phục hoặc sao chép sang thiết bị khác:')}
-            </p>
+            <div className="p-3 rounded-xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200/70 dark:border-teal-900/40 text-xs text-teal-800 dark:text-teal-300 leading-relaxed space-y-1">
+              <p className="font-semibold">💡 Hướng dẫn chỉnh sửa bên ngoài:</p>
+              <p>
+                1. Bấm nút <b>Xuất JSON</b> ở thanh công cụ để tải về tệp chứa toàn bộ từ ngữ của ứng dụng.
+              </p>
+              <p>
+                2. Mở tệp bằng Notepad, VS Code hoặc công cụ soạn thảo bất kỳ và thay đổi nội dung các câu chữ mong muốn.
+              </p>
+              <p>
+                3. Tải tệp lên tại đây hoặc dán nội dung vào ô bên dưới, hệ thống sẽ tự động đối chiếu và cập nhật tức thì.
+              </p>
+            </div>
 
-            <textarea
-              rows={8}
-              value={importJsonText}
-              onChange={(e) => setImportJsonText(e.target.value)}
-              placeholder={'{\n  "overrides": {\n    "nav.overview": "Sổ Tổng Quan",\n    "common.add": "Thêm Mới"\n  }\n}'}
-              className="w-full p-3 font-mono text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
-            />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Cách 1: Chọn tệp từ máy tính
+                </label>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Upload className="w-3.5 h-3.5 text-teal-500" />
+                  <span>Chọn tệp .json</span>
+                </button>
+              </div>
+
+              <div className="pt-2">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Cách 2: Hoặc dán trực tiếp nội dung JSON vào đây:
+                </label>
+                <textarea
+                  rows={6}
+                  value={importJsonText}
+                  onChange={(e) => setImportJsonText(e.target.value)}
+                  placeholder={'{\n  "dictionary": {\n    "nav.overview": "Trang chủ",\n    "funds.title": "Quỹ Tiền"... \n  }\n}'}
+                  className="w-full p-3 font-mono text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-hidden"
+                />
+              </div>
+            </div>
 
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
               <button
@@ -799,7 +911,7 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
                 onClick={() => setIsImportModalOpen(false)}
                 className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
-                {t('common.cancel', 'Hủy')}
+                Hủy
               </button>
               <button
                 type="button"
@@ -807,7 +919,7 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
                 style={{ backgroundColor: activePreset.primary }}
                 className="px-4 py-1.5 rounded-xl text-white text-xs font-bold hover:opacity-90 cursor-pointer shadow-sm"
               >
-                {t('text_editor.import_submit', 'Áp dụng từ điển')}
+                Áp dụng từ điển
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   BankSettings,
   Category,
@@ -47,6 +47,7 @@ import { subscribeToCloudState, saveCloudState, fetchCloudStateOnce, testCloudCo
 import { safeStorage } from './utils/safeStorage';
 import { useFeedback } from './context/FeedbackContext';
 import { useTheme } from './context/ThemeContext';
+import { useTranslation, flattenDictionary } from './i18n/LanguageContext';
 import { motion, AnimatePresence } from 'motion/react';
 
 const STORAGE_KEYS = {
@@ -76,6 +77,7 @@ function deduplicateById<T extends { id: string }>(items: T[]): T[] {
 }
 
 export default function App() {
+  const { t, activeCustomTexts, syncFromCloud } = useTranslation();
   const { showToast, showConfirm, setToastPosition } = useFeedback();
   const { isCustomizerOpen, setIsCustomizerOpen, syncFromBranding, revertToSavedTheme } = useTheme();
 
@@ -104,24 +106,13 @@ export default function App() {
 
     window.addEventListener('pageshow', handlePageShow);
 
-    // Clean legacy or accidental ?view=member from browser address bar
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      if (url.searchParams.get('view') === 'member') {
-        url.searchParams.delete('view');
-        const searchStr = url.searchParams.toString();
-        const cleanUrl = searchStr ? `${url.pathname}?${searchStr}` : url.pathname;
-        window.history.replaceState({}, '', cleanUrl);
-      }
-    }
-
     return () => {
       window.removeEventListener('pageshow', handlePageShow);
     };
   }, []);
 
-  // Default to Member View on initial load or if role is member
-  const [isMemberView, setIsMemberView] = useState<boolean>(true);
+  // Member View is active when logged in as member
+  const isMemberView = currentUserRole === 'member';
 
   // Admin Password
   const [adminPassword, setAdminPassword] = useState<string>(() => {
@@ -238,6 +229,18 @@ export default function App() {
   const hasInitializedCloud = useRef(false);
   const lastSyncedJsonRef = useRef<string>('');
 
+  // Always retrieves the freshest custom dictionary from storage or state (prevents stale closure issues)
+  const getLatestCustomDictionary = useCallback((): Record<string, string> => {
+    try {
+      const saved = safeStorage.getItem('quanlyquy_custom_dictionary_v2');
+      if (saved !== null && saved !== undefined) {
+        const parsed = JSON.parse(saved);
+        return flattenDictionary(parsed);
+      }
+    } catch {}
+    return activeCustomTexts || {};
+  }, [activeCustomTexts]);
+
   // Realtime Cloud Firestore sync
   useEffect(() => {
     const unsubscribe = subscribeToCloudState((cloudData, exists) => {
@@ -261,7 +264,8 @@ export default function App() {
         if (cloudData.funds && Array.isArray(cloudData.funds)) {
           const appName = cloudData.branding?.appTitle?.trim() || branding?.appTitle?.trim() || 'AE Cây Khế';
           newFunds = deduplicateById(cloudData.funds).map((f, idx) => {
-            if (idx === 0 && (f.name === 'Quỹ Hoạt Động' || f.name === 'Quỹ Chung' || !f.name)) {
+            // Always ensure the primary fund reflects the customized appTitle
+            if (idx === 0) {
               return { ...f, name: appName };
             }
             return f;
@@ -312,6 +316,9 @@ export default function App() {
           if (newBrand.toastPosition) {
             setToastPosition(newBrand.toastPosition);
           }
+          if (newBrand.appTitle && typeof document !== 'undefined') {
+            document.title = `${newBrand.appTitle.trim()} - Quản Lý Quỹ Minh Bạch`;
+          }
         }
         if (cloudData.adminPassword) {
           newAdminPass = cloudData.adminPassword;
@@ -323,7 +330,11 @@ export default function App() {
           setMemberPassword(newMemberPass);
           safeStorage.setItem(STORAGE_KEYS.MEMBER_PASS, newMemberPass);
         }
+        if (cloudData.customDictionary !== undefined && cloudData.customDictionary !== null) {
+          syncFromCloud(cloudData.customDictionary);
+        }
 
+        const freshDict = getLatestCustomDictionary();
         // Cache the exact JSON to prevent ping-pong auto-sync loop
         lastSyncedJsonRef.current = JSON.stringify({
           funds: newFunds,
@@ -337,6 +348,9 @@ export default function App() {
           branding: newBrand,
           adminPassword: newAdminPass,
           memberPassword: newMemberPass,
+          customDictionary: (cloudData.customDictionary !== undefined && cloudData.customDictionary !== null)
+            ? flattenDictionary(cloudData.customDictionary)
+            : freshDict,
         });
 
         setCloudSyncStatus('connected');
@@ -354,6 +368,7 @@ export default function App() {
           branding,
           adminPassword,
           memberPassword,
+          customDictionary: getLatestCustomDictionary(),
         };
         saveCloudState(initialFullState).then(() => {
           lastSyncedJsonRef.current = JSON.stringify(initialFullState);
@@ -450,6 +465,7 @@ export default function App() {
   useEffect(() => {
     if (!hasInitializedCloud.current || isSyncingFromCloud.current) return;
 
+    const latestDict = getLatestCustomDictionary();
     const currentState = {
       funds,
       transactions,
@@ -462,6 +478,7 @@ export default function App() {
       branding,
       adminPassword,
       memberPassword,
+      customDictionary: latestDict,
     };
     const currentStateJson = JSON.stringify(currentState);
 
@@ -485,17 +502,13 @@ export default function App() {
     }, 600);
 
     return () => clearTimeout(timer);
-  }, [funds, transactions, categories, campaigns, members, bankSettings, groupNotice, viewPermissions, branding, adminPassword, memberPassword]);
+  }, [funds, transactions, categories, campaigns, members, bankSettings, groupNotice, viewPermissions, branding, adminPassword, memberPassword, activeCustomTexts, getLatestCustomDictionary]);
 
   const handleAdminAuthSuccess = (role: AuthRole = 'admin') => {
     setCurrentUserRole(role);
     if (role === 'admin') {
-      setIsMemberView(false);
-      updateUrlParam(false);
       showToast('Đã đăng nhập thành công quyền Quản trị viên!', 'success');
     } else {
-      setIsMemberView(true);
-      updateUrlParam(true);
       showToast('Đã đăng nhập thành công quyền Thành viên!', 'info');
     }
   };
@@ -513,24 +526,9 @@ export default function App() {
         sessionStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
         localStorage.removeItem(STORAGE_KEYS.AUTH_ROLE);
         revertToSavedTheme(branding);
-        setIsMemberView(true);
         showToast('Đã đăng xuất!', 'info');
       },
     });
-  };
-
-  const updateUrlParam = (memberMode: boolean) => {
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      if (memberMode) {
-        url.searchParams.delete('view');
-      } else {
-        url.searchParams.set('view', 'admin');
-      }
-      const searchStr = url.searchParams.toString();
-      const newUrl = searchStr ? `${url.pathname}?${searchStr}` : url.pathname;
-      window.history.replaceState({}, '', newUrl);
-    }
   };
 
   // Recalculate fund balance whenever a transaction is modified
@@ -790,6 +788,7 @@ export default function App() {
       branding,
       adminPassword,
       memberPassword,
+      customDictionary: activeCustomTexts,
     };
 
     const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: 'application/json' });
@@ -818,6 +817,7 @@ export default function App() {
       if (data.viewPermissions) setViewPermissions(data.viewPermissions);
       if (data.adminPassword) setAdminPassword(data.adminPassword);
       if (data.memberPassword) setMemberPassword(data.memberPassword);
+      if (data.customDictionary) syncFromCloud(data.customDictionary);
 
       if (data.transactions) {
         const normalizedTx: Transaction[] = data.transactions.map((t: any) => ({
@@ -904,6 +904,7 @@ export default function App() {
   const handleForceSyncToCloud = async () => {
     try {
       setCloudSyncStatus('syncing');
+      const latestDict = getLatestCustomDictionary();
       await saveCloudState({
         funds,
         transactions,
@@ -916,6 +917,7 @@ export default function App() {
         branding,
         adminPassword,
         memberPassword,
+        customDictionary: latestDict,
       });
       const now = new Date();
       setLastCloudSyncTime(now.toLocaleTimeString('vi-VN') + ' ' + now.toLocaleDateString('vi-VN'));
@@ -942,7 +944,7 @@ export default function App() {
             if (cloudData.funds) {
               const appName = cloudData.branding?.appTitle?.trim() || branding?.appTitle?.trim() || 'AE Cây Khế';
               const cleanFunds = deduplicateById(cloudData.funds).map((f, idx) => {
-                if (idx === 0 && (f.name === 'Quỹ Hoạt Động' || f.name === 'Quỹ Chung' || !f.name)) {
+                if (idx === 0) {
                   return { ...f, name: appName };
                 }
                 return f;
@@ -985,6 +987,9 @@ export default function App() {
             if (cloudData.branding) {
               setBranding(cloudData.branding);
               safeStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(cloudData.branding));
+              if (cloudData.branding.appTitle && typeof document !== 'undefined') {
+                document.title = `${cloudData.branding.appTitle.trim()} - Quản Lý Quỹ Minh Bạch`;
+              }
             }
             if (cloudData.adminPassword) {
               setAdminPassword(cloudData.adminPassword);
@@ -993,6 +998,9 @@ export default function App() {
             if (cloudData.memberPassword) {
               setMemberPassword(cloudData.memberPassword);
               safeStorage.setItem(STORAGE_KEYS.MEMBER_PASS, cloudData.memberPassword);
+            }
+            if (cloudData.customDictionary) {
+              syncFromCloud(cloudData.customDictionary);
             }
 
             const now = new Date();
@@ -1037,13 +1045,16 @@ export default function App() {
       safeStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(updated));
       return updated;
     });
+    if (typeof document !== 'undefined') {
+      document.title = `${newAppName} - Quản Lý Quỹ Minh Bạch`;
+    }
   };
 
-  // Auto-migrate any legacy fund names in local state to match appTitle
+  // Ensure the primary fund name stays synchronized with appTitle
   useEffect(() => {
     const targetName = branding?.appTitle?.trim() || 'AE Cây Khế';
     const primaryFundName = funds[0]?.name;
-    if (funds.length > 0 && primaryFundName !== targetName && (primaryFundName === 'Quỹ Hoạt Động' || primaryFundName === 'Quỹ Chung' || !primaryFundName)) {
+    if (funds.length > 0 && primaryFundName !== targetName) {
       setFunds(prev => {
         if (prev.length === 0) return prev;
         const updated = [{ ...prev[0], name: targetName }, ...prev.slice(1)];
@@ -1051,7 +1062,10 @@ export default function App() {
         return updated;
       });
     }
-  }, [branding?.appTitle, funds[0]?.name]);
+    if (typeof document !== 'undefined' && targetName) {
+      document.title = `${targetName} - Quản Lý Quỹ Minh Bạch`;
+    }
+  }, [branding?.appTitle, funds]);
 
   const pendingTransactionsCount = transactions.filter(t => t.status === 'pending').length;
 

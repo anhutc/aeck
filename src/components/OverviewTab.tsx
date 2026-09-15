@@ -66,7 +66,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     return `${prefix}${formatVND(amount)}`;
   };
 
-  const appFundName = branding?.appTitle?.trim() || 'AE Cây Khế';
+  const appFundName = funds[0]?.name || branding?.appTitle?.trim() || t('funds.default_fund_name', 'AE Cây Khế');
   const fund = funds[0] || {
     id: 'fund_general',
     name: appFundName,

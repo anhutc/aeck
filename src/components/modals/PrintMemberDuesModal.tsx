@@ -730,8 +730,8 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                       className="inline-block px-2 py-0.5 rounded-md border text-[10px] font-bold"
                     >
                       {campaignScope === 'all'
-                        ? 'Toàn bộ các khoản thu'
-                        : campaigns.find((c) => c.id === campaignScope)?.title || 'Đợt thu'}
+                        ? t('dues.scope_all_short', 'Toàn bộ các khoản thu')
+                        : campaigns.find((c) => c.id === campaignScope)?.title || t('dues.scope_campaign_single', 'Đợt thu')}
                     </span>
                   </div>
                   <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug">
@@ -824,10 +824,10 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                       <Sparkles className="w-6 h-6" />
                     </div>
                     <h3 className="text-base font-bold text-slate-800">
-                      Tuyệt vời! Tất cả thành viên đã hoàn thành nộp quỹ
+                      {t('dues.empty_all_completed_title', 'Tuyệt vời! Tất cả thành viên đã hoàn thành nộp quỹ')}
                     </h3>
                     <p className="text-xs text-slate-500 max-w-md mx-auto">
-                      Hiện tại không có thành viên nào nợ quỹ trong phạm vi này. Toàn bộ các khoản thu đã được đóng đầy đủ 100%.
+                      {t('dues.empty_all_completed_desc', 'Hiện tại không có thành viên nào nợ quỹ trong phạm vi này. Toàn bộ các khoản thu đã được đóng đầy đủ 100%.')}
                     </p>
                     <div className="pt-2">
                       <button
@@ -836,17 +836,17 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                         style={{ background: activePreset.gradient }}
                         className="px-4 py-2 text-white text-xs font-bold rounded-xl cursor-pointer shadow-sm transition-all hover:opacity-95"
                       >
-                        Xem danh sách tất cả thành viên ({summaryStats.totalMembers} người)
+                        {t('dues.empty_view_all_btn', 'Xem danh sách tất cả thành viên')} ({summaryStats.totalMembers} {t('common.person', 'người')})
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-slate-700">
-                      Không có thành viên nào phù hợp với bộ lọc tìm kiếm
+                      {t('dues.empty_search_title', 'Không có thành viên nào phù hợp với bộ lọc tìm kiếm')}
                     </p>
                     <p className="text-xs text-slate-400">
-                      Hãy thử đổi từ khóa tìm kiếm hoặc chọn hiển thị tất cả thành viên.
+                      {t('dues.empty_search_desc', 'Hãy thử đổi từ khóa tìm kiếm hoặc chọn hiển thị tất cả thành viên.')}
                     </p>
                   </div>
                 )}

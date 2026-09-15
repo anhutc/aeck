@@ -52,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   cloudSyncStatus = 'connected',
   onLogout,
 }) => {
-  const { t } = useTranslation();
+  const { t, activeCustomTexts } = useTranslation();
   const {
     activePreset,
     privacyMode,
@@ -75,7 +75,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const totalBalance = funds.reduce((sum, f) => sum + f.balance, 0);
-  const displayTitle = branding?.appTitle || t('portal.header_title', 'Quản Lý Quỹ');
+  const displayTitle = activeCustomTexts?.['portal.header_title'] || branding?.appTitle || t('portal.header_title', 'Quản Lý Quỹ');
   const treasurerName = branding?.treasurerName?.trim() || 'Trần Thị Mai';
   const treasurerPhone = branding?.treasurerPhone?.trim() || '0912345678';
   const treasurerTitle = branding?.treasurerTitle?.trim() || 'Thủ Quỹ Ban Quản Lý';
@@ -237,7 +237,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   title={privacyMode ? 'Hiện số tiền quỹ' : 'Ẩn số tiền quỹ (Chế độ riêng tư)'}
                   className="p-0.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer ml-0.5 transition-colors"
                 >
-                  {privacyMode ? <EyeOff className="w-3.5 h-3.5 text-amber-500" /> : <Eye className="w-3.5 h-3.5" />}
+                  {privacyMode ? <EyeOff className="w-3.5 h-3.5" style={{ color: activePreset.primary }} /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
               </div>
 
@@ -372,7 +372,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title={`${t('nav.balance_title', 'Tổng tồn quỹ')}: ${privacyMode ? '•••••••• ₫' : formatVND(totalBalance)}`}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs"
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" style={{ color: activePreset.primary }}/>
                 <span className="text-xs font-black text-slate-900 dark:text-white font-mono">
                   {privacyMode ? '•••••••• ₫' : formatVND(totalBalance)}
                 </span>
@@ -381,7 +381,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={togglePrivacyMode}
                   className="p-0.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
                 >
-                  {privacyMode ? <EyeOff className="w-3 h-3 text-amber-500" /> : <Eye className="w-3 h-3" />}
+                  {privacyMode ? <EyeOff className="w-3 h-3" style={{ color: activePreset.primary }}/> : <Eye className="w-3 h-3" />}
                 </button>
               </div>
 
@@ -463,7 +463,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="flex items-center gap-1 px-1.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-[11px] font-mono font-bold cursor-pointer active:scale-95 transition-all shadow-2xs shrink-0 select-none"
                 title="Bấm xem thông tin chủ quỹ"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" style={{ color: activePreset.primary }} />
                 <span>{privacyMode ? '••••••' : `${formatNumberCompact(totalBalance)} ₫`}</span>
               </div>
 

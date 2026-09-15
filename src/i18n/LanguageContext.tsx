@@ -1,10 +1,51 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { DEFAULT_VI_DICTIONARY, ALL_DICTIONARY_KEYS, TranslationItem } from './translations';
 import { safeStorage } from '../utils/safeStorage';
+import { saveCustomDictionaryToCloud } from '../lib/cloudStore';
 
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   CUSTOM_DICT: 'quanlyquy_custom_dictionary_v2',
 };
+
+// Recursively flattens any nested JSON structures into standard dot-notation keys
+export function flattenDictionary(obj: Record<string, any>, prefix = ''): Record<string, string> {
+  const result: Record<string, string> = {};
+  if (!obj || typeof obj !== 'object') return result;
+
+  // Handle { vi: { ... } } or { overrides: { ... } } or { dictionary: { ... } } root wrapping
+  if (!prefix && obj.dictionary && typeof obj.dictionary === 'object') {
+    return flattenDictionary(obj.dictionary);
+  }
+  if (!prefix && obj.vi && typeof obj.vi === 'object') {
+    return flattenDictionary(obj.vi);
+  }
+  if (!prefix && obj.overrides && typeof obj.overrides === 'object') {
+    return flattenDictionary(obj.overrides);
+  }
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === null || value === undefined) continue;
+    // Skip metadata fields at the root level if present
+    if (!prefix && (
+      key === 'app' ||
+      key === 'version' ||
+      key === 'exportedAt' ||
+      key === 'description' ||
+      key === 'note' ||
+      key === 'totalKeys' ||
+      key === 'instructions'
+    )) {
+      continue;
+    }
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      Object.assign(result, flattenDictionary(value, fullKey));
+    } else if (typeof value === 'string' && value.trim() !== '') {
+      result[fullKey] = value;
+    }
+  }
+  return result;
+}
 
 interface LanguageContextValue {
   t: (key: string, fallback?: string) => string;
@@ -16,14 +57,14 @@ interface LanguageContextValue {
   exportDictionary: () => string;
   importDictionary: (jsonContent: string) => boolean;
   allDictionaryKeys: TranslationItem[];
-  syncFromCloud: (cloudDict?: Record<string, string> | Record<string, Record<string, string>>) => void;
+  syncFromCloud: (cloudDict?: Record<string, any>) => void;
 }
 
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
 
 interface LanguageProviderProps {
   children: React.ReactNode;
-  cloudCustomDictionary?: Record<string, string> | Record<string, Record<string, string>>;
+  cloudCustomDictionary?: Record<string, any>;
   onSaveToCloud?: (payload: { customDictionary?: Record<string, string> }) => void;
 }
 
@@ -38,11 +79,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
       const saved = safeStorage.getItem(STORAGE_KEYS.CUSTOM_DICT);
       if (!saved) return {};
       const parsed = JSON.parse(saved);
-      // Handle backwards compatibility if it was nested { vi: { ... } }
-      if (parsed && parsed.vi && typeof parsed.vi === 'object') {
-        return parsed.vi;
-      }
-      return typeof parsed === 'object' && parsed !== null ? parsed : {};
+      return flattenDictionary(parsed);
     } catch {
       return {};
     }
@@ -53,19 +90,18 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('quanlyquy_custom_dict_changed', { detail: updated }));
     }
+    // Direct atomic Cloud Firestore update prevents race conditions with parent state
+    saveCustomDictionaryToCloud(updated).catch((err) => {
+      console.warn('Direct save custom dictionary to cloud failed (will retry on next sync):', err);
+    });
     if (onSaveToCloud) {
       onSaveToCloud({ customDictionary: updated });
     }
   }, [onSaveToCloud]);
 
-  const syncFromCloud = useCallback((cloudDict?: Record<string, string> | Record<string, Record<string, string>>) => {
+  const syncFromCloud = useCallback((cloudDict?: Record<string, any>) => {
     if (!cloudDict || typeof cloudDict !== 'object') return;
-    let normalized: Record<string, string> = {};
-    if ('vi' in cloudDict && typeof (cloudDict as Record<string, Record<string, string>>).vi === 'object') {
-      normalized = (cloudDict as Record<string, Record<string, string>>).vi;
-    } else {
-      normalized = cloudDict as Record<string, string>;
-    }
+    const normalized = flattenDictionary(cloudDict);
     setActiveCustomTexts(normalized);
     safeStorage.setItem(STORAGE_KEYS.CUSTOM_DICT, JSON.stringify(normalized));
   }, []);
@@ -123,7 +159,6 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
 
   const resetCustomText = useCallback((key: string) => {
     setActiveCustomTexts(prev => {
-      if (prev[key] === undefined) return prev;
       const updated = { ...prev };
       delete updated[key];
       notifyChange(updated);
@@ -137,10 +172,31 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
   }, [notifyChange]);
 
   const exportDictionary = useCallback((): string => {
+    // Export full dictionary: defaults merged with any user overrides
+    const fullDictionary: Record<string, string> = {};
+
+    // 1. Fill with all master keys from ALL_DICTIONARY_KEYS / DEFAULT_VI_DICTIONARY
+    ALL_DICTIONARY_KEYS.forEach(item => {
+      const customVal = activeCustomTexts[item.key];
+      fullDictionary[item.key] = (customVal !== undefined && customVal.trim() !== '')
+        ? customVal
+        : (item.defaultValue || DEFAULT_VI_DICTIONARY[item.key] || '');
+    });
+
+    // 2. Also append any extra custom keys in activeCustomTexts that may not be in ALL_DICTIONARY_KEYS
+    Object.entries(activeCustomTexts).forEach(([key, val]) => {
+      if (val !== undefined && val.trim() !== '' && !(key in fullDictionary)) {
+        fullDictionary[key] = val;
+      }
+    });
+
     const exportData = {
       app: 'AE Cây Khế - Quản Lý Quỹ',
+      version: '2.0',
       exportedAt: new Date().toISOString(),
-      overrides: activeCustomTexts,
+      description: 'Tệp từ điển toàn bộ câu chữ của ứng dụng (bao gồm cả mặc định và tùy biến). Bạn có thể chỉnh sửa giá trị câu chữ bên ngoài bằng Notepad, VS Code... rồi dùng chức năng "Nhập JSON" để cập nhật lại hệ thống.',
+      totalKeys: Object.keys(fullDictionary).length,
+      dictionary: fullDictionary,
     };
     return JSON.stringify(exportData, null, 2);
   }, [activeCustomTexts]);
@@ -148,23 +204,31 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
   const importDictionary = useCallback((jsonContent: string): boolean => {
     try {
       const parsed = JSON.parse(jsonContent);
-      let overrides: Record<string, string> = {};
-      if (parsed.overrides && typeof parsed.overrides === 'object') {
-        overrides = parsed.overrides;
-      } else if (parsed.vi && typeof parsed.vi === 'object') {
-        overrides = parsed.vi;
-      } else if (typeof parsed === 'object' && parsed !== null) {
-        overrides = parsed;
-      }
+      const importedMap = flattenDictionary(parsed);
 
-      setActiveCustomTexts(prev => {
-        const updated = {
-          ...prev,
-          ...overrides,
-        };
-        notifyChange(updated);
-        return updated;
+      // Determine true overrides: compare each value against DEFAULT_VI_DICTIONARY
+      const newOverrides: Record<string, string> = {};
+
+      Object.entries(importedMap).forEach(([key, value]) => {
+        if (!key || typeof value !== 'string') return;
+        const trimmedVal = value.trim();
+        const defaultVal = (DEFAULT_VI_DICTIONARY[key] || '').trim();
+
+        if (trimmedVal !== '') {
+          // If key is known in DEFAULT_VI_DICTIONARY, only set as override if different from default
+          if (key in DEFAULT_VI_DICTIONARY) {
+            if (trimmedVal !== defaultVal) {
+              newOverrides[key] = value;
+            }
+          } else {
+            // New custom user key
+            newOverrides[key] = value;
+          }
+        }
       });
+
+      setActiveCustomTexts(newOverrides);
+      notifyChange(newOverrides);
       return true;
     } catch (e) {
       console.error('Error importing custom text JSON:', e);

@@ -3215,6 +3215,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               </div>
             )}
 
+            {/* 8. TEXT & LANGUAGE CUSTOMIZER CARD */}
+            {(activeSubTab === 'language' || activeSubTab === 'all') && (
+              <div id="settings-language" className={activeSubTab === 'all' ? 'lg:col-span-2' : 'w-full'}>
+                <TextCustomizerSection onNotifyDirty={onForceSyncToCloud} />
+              </div>
+            )}
+
             </div>
           </div>
         </div>

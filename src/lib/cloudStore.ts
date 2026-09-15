@@ -1,6 +1,7 @@
 import { 
   doc, 
   setDoc, 
+  updateDoc,
   getDoc,
   getDocFromServer,
   onSnapshot, 
@@ -46,7 +47,7 @@ export interface CloudAppState {
   memberPassword?: string;
   viewPermissions?: MemberViewPermissions;
   language?: string;
-  customDictionary?: Record<string, Record<string, string>>;
+  customDictionary?: Record<string, Record<string, string>> | Record<string, string>;
   updatedAt?: string;
 }
 
@@ -161,9 +162,43 @@ export async function saveCloudState(state: Partial<CloudAppState>): Promise<voi
     };
     const cleanPayload = deepClean(payload);
     await setDoc(docRef, cleanPayload, { merge: true });
+
+    // Critical: setDoc with merge: true merges map fields recursively in Firestore,
+    // which prevents removed/restored dictionary keys from being deleted.
+    // Explicitly updating the top-level 'customDictionary' field ensures exact replacement.
+    if (state.customDictionary !== undefined) {
+      await updateDoc(docRef, {
+        customDictionary: deepClean(state.customDictionary || {}),
+      }).catch(() => {});
+    }
   } catch (error) {
     console.error('Error saving to Cloud Firestore:', error);
     throw error;
+  }
+}
+
+// Direct atomic save for custom dictionary overrides
+export async function saveCustomDictionaryToCloud(customDict: Record<string, string>): Promise<void> {
+  try {
+    const docRef = doc(db, SETTINGS_COLLECTION, APP_DOC_ID);
+    const cleanDict = deepClean(customDict || {});
+    const updatedAt = new Date().toISOString();
+
+    // Critical: setDoc with merge: true does not remove deleted keys inside maps in Firestore.
+    // updateDoc replaces the entire customDictionary map field with the new cleanDict object.
+    try {
+      await updateDoc(docRef, {
+        customDictionary: cleanDict,
+        updatedAt,
+      });
+    } catch {
+      await setDoc(docRef, {
+        customDictionary: cleanDict,
+        updatedAt,
+      }, { merge: true });
+    }
+  } catch (error) {
+    console.warn('Could not save custom dictionary to Cloud Firestore directly:', error);
   }
 }
 
