@@ -14,6 +14,7 @@ import {
   Cloud
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from '../../i18n/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { THEME_PRESETS, RADIUS_OPTIONS } from '../../utils/theme';
 import { AppBranding } from '../../types';
@@ -34,6 +35,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
   branding,
   onUpdateBranding,
 }) => {
+  const { t } = useTranslation();
   const {
     themeAccent,
     setThemeAccent,
@@ -69,7 +71,11 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
 
   const handleSaveToGroupCloud = () => {
     if (!isAdmin || !onUpdateBranding || !branding) {
-      showToast('Đã lưu tùy chọn hiển thị trên thiết bị của bạn!', 'success', 'Giao Diện Cá Nhân');
+      showToast(
+        t('theme_modal.toast_device_saved', 'Đã lưu tùy chọn hiển thị trên thiết bị của bạn!'),
+        'success',
+        t('theme_modal.toast_device_title', 'Giao Diện Cá Nhân')
+      );
       onClose();
       return;
     }
@@ -87,7 +93,11 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
 
     setTimeout(() => {
       setIsCloudSaving(false);
-      showToast('Đã đồng bộ màu sắc & giao diện chuẩn cho tất cả thành viên trong nhóm!', 'success', 'Đồng Bộ Giao Diện Nhóm');
+      showToast(
+        t('theme_modal.toast_group_saved', 'Đã đồng bộ màu sắc & giao diện chuẩn cho tất cả thành viên trong nhóm!'),
+        'success',
+        t('theme_modal.toast_group_title', 'Đồng Bộ Giao Diện Nhóm')
+      );
       onClose();
     }, 600);
   };
@@ -122,13 +132,13 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
               </div>
               <div>
                 <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                  Tùy Biến Màu Sắc & Thiết Kế
+                  {t('theme_modal.title', 'Tùy Biến Màu Sắc & Thiết Kế')}
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
-                    Tối ưu góc nhìn
+                    {t('theme_modal.badge_optimized', 'Tối ưu góc nhìn')}
                   </span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Cá nhân hóa bảng màu hài hòa, chế độ sáng/tối và trải nghiệm thị giác
+                  {t('theme_modal.subtitle', 'Cá nhân hóa bảng màu hài hòa, chế độ sáng/tối và trải nghiệm thị giác')}
                 </p>
               </div>
             </div>
@@ -149,10 +159,10 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 uppercase tracking-wider">
                   <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  Góc Nhìn Thực Tế (Live Preview)
+                  {t('theme_modal.live_preview', 'Góc Nhìn Thực Tế (Live Preview)')}
                 </span>
                 <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                  Chủ đề: <b className="text-slate-900 dark:text-white">{activePreset.name}</b>
+                  {t('theme_modal.theme_label', 'Chủ đề:')} <b className="text-slate-900 dark:text-white">{activePreset.name}</b>
                 </span>
               </div>
 
@@ -169,13 +179,13 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                     </span>
                   </div>
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-xs text-white">
-                    Minh Bạch 100%
+                    {t('theme_modal.transparent_badge', 'Minh Bạch 100%')}
                   </span>
                 </div>
 
                 <div className="mt-3 flex items-baseline justify-between">
                   <div>
-                    <span className="text-[11px] opacity-80 block">Tổng số dư quỹ</span>
+                    <span className="text-[11px] opacity-80 block">{t('theme_modal.total_fund_balance', 'Tổng số dư quỹ')}</span>
                     <span className="text-xl sm:text-2xl font-black font-mono tracking-tight">
                       {privacyMode ? '•••••••• ₫' : '45.850.000 ₫'}
                     </span>
@@ -184,7 +194,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                     type="button"
                     className="px-3 py-1.5 rounded-xl bg-white text-slate-900 text-xs font-bold shadow-xs hover:bg-white/95 transition-all cursor-pointer"
                   >
-                    Đóng quỹ ngay
+                    {t('theme_modal.sample_contribute_btn', 'Đóng quỹ ngay')}
                   </button>
                 </div>
               </div>
@@ -196,7 +206,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                   style={{ backgroundColor: activePreset.primary }}
                   className="px-3.5 py-1.5 rounded-xl text-white text-xs font-bold shadow-xs hover:opacity-95 transition-all cursor-pointer"
                 >
-                  Nút Hành Động Chính
+                  {t('theme_modal.sample_action_btn', 'Nút Hành Động Chính')}
                 </button>
                 <span
                   style={{
@@ -206,7 +216,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                   }}
                   className="px-3 py-1 rounded-xl text-xs font-bold border transition-all"
                 >
-                  Thẻ Phân Loại Đẹp Mắt
+                  {t('theme_modal.sample_tag', 'Thẻ Phân Loại Đẹp Mắt')}
                 </span>
                 <button
                   type="button"
@@ -214,7 +224,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                   className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1.5 cursor-pointer ml-auto transition-colors"
                 >
                   {privacyMode ? <EyeOff className="w-3.5 h-3.5 text-amber-500" /> : <Eye className="w-3.5 h-3.5 text-slate-500" />}
-                  <span>{privacyMode ? 'Đang ẩn số tiền' : 'Hiện số tiền'}</span>
+                  <span>{privacyMode ? t('theme_modal.privacy_hiding', 'Đang ẩn số tiền') : t('theme_modal.privacy_showing', 'Hiện số tiền')}</span>
                 </button>
               </div>
             </div>
@@ -223,10 +233,10 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-                  <span>1. Chọn Bảng Màu Chủ Đạo (Palettes)</span>
+                  <span>{t('theme_modal.section_colors', '1. Chọn Bảng Màu Chủ Đạo (Palettes)')}</span>
                 </label>
                 <span className="text-[11px] text-slate-500">
-                  {THEME_PRESETS.length} màu chuẩn thị giác
+                  {THEME_PRESETS.length} {t('theme_modal.visual_colors_count', 'màu chuẩn thị giác')}
                 </span>
               </div>
 
@@ -305,10 +315,10 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                     </div>
                     <div>
                       <span className="text-xs font-bold text-slate-900 dark:text-white block">
-                        Màu Sắc Thương Hiệu Tự Chọn (Custom Hex)
+                        {t('theme_modal.custom_hex_title', 'Màu Sắc Thương Hiệu Tự Chọn (Custom Hex)')}
                       </span>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                        Nhập mã HEX tùy ý theo màu logo câu lạc bộ hoặc công ty
+                        {t('theme_modal.custom_hex_desc', 'Nhập mã HEX tùy ý theo màu logo câu lạc bộ hoặc công ty')}
                       </span>
                     </div>
                   </div>
@@ -340,7 +350,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                           : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
                       }`}
                     >
-                      {themeAccent === 'custom' ? 'Đang dùng' : 'Chọn'}
+                      {themeAccent === 'custom' ? t('theme_modal.using_custom', 'Đang dùng') : t('theme_modal.select_custom', 'Chọn')}
                     </button>
                   </div>
                 </div>
@@ -350,7 +360,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
             {/* 2. APPEARANCE MODE (LIGHT / DARK / SYSTEM) */}
             <div className="space-y-3">
               <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">
-                2. Chế Độ Hiển Thị Ánh Sáng (Mode)
+                {t('theme_modal.section_mode', '2. Chế Độ Hiển Thị Ánh Sáng (Mode)')}
               </label>
 
               <div className="grid grid-cols-3 gap-2.5">
@@ -364,8 +374,8 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                   }`}
                 >
                   <Sun className="w-5 h-5 text-amber-500" />
-                  <span className="text-xs font-bold">Giao diện Sáng</span>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400">Rõ ràng, tinh khôi</span>
+                  <span className="text-xs font-bold">{t('theme_modal.mode_light', 'Giao diện Sáng')}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">{t('theme_modal.mode_light_desc', 'Rõ ràng, tinh khôi')}</span>
                 </button>
 
                 <button
@@ -378,8 +388,8 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                   }`}
                 >
                   <Moon className="w-5 h-5 text-indigo-500" />
-                  <span className="text-xs font-bold">Giao diện Tối</span>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400">Dịu mắt ban đêm</span>
+                  <span className="text-xs font-bold">{t('theme_modal.mode_dark', 'Giao diện Tối')}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">{t('theme_modal.mode_dark_desc', 'Dịu mắt ban đêm')}</span>
                 </button>
 
                 <button
@@ -392,8 +402,8 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                   }`}
                 >
                   <Laptop className="w-5 h-5 text-blue-500" />
-                  <span className="text-xs font-bold">Theo Thiết Bị</span>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400">Tự động thích ứng</span>
+                  <span className="text-xs font-bold">{t('theme_modal.mode_system', 'Theo Thiết Bị')}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">{t('theme_modal.mode_system_desc', 'Tự động thích ứng')}</span>
                 </button>
               </div>
             </div>
@@ -401,7 +411,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
             {/* 3. CORNER RADIUS STYLE */}
             <div className="space-y-3">
               <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">
-                3. Phong Cách Góc Bo Giao Diện (Corner Roundness)
+                {t('theme_modal.section_radius', '3. Phong Cách Góc Bo Giao Diện (Corner Roundness)')}
               </label>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -445,7 +455,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
             {/* 4. DENSITY & VIEWPORT OPTIMIZATION */}
             <div className="space-y-3">
               <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">
-                4. Mật Độ Thông Tin & Trải Nghiệm Góc Nhìn (Display Density)
+                {t('theme_modal.section_density', '4. Mật Độ Thông Tin & Trải Nghiệm Góc Nhìn (Display Density)')}
               </label>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -468,9 +478,9 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                     <Sliders className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold block">Thoáng Đãng (Tiêu chuẩn)</span>
+                    <span className="text-xs font-bold block">{t('theme_modal.density_comfortable', 'Thoáng Đãng (Tiêu chuẩn)')}</span>
                     <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug block">
-                      Khoảng cách rộng rãi, trực quan, dễ đọc trên mọi thiết bị
+                      {t('theme_modal.density_comfortable_desc', 'Khoảng cách rộng rãi, trực quan, dễ đọc trên mọi thiết bị')}
                     </span>
                   </div>
                 </button>
@@ -494,9 +504,9 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                     <Sliders className="w-4 h-4 rotate-90" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold block">Tinh Gọn (Mật độ cao)</span>
+                    <span className="text-xs font-bold block">{t('theme_modal.density_compact', 'Tinh Gọn (Mật độ cao)')}</span>
                     <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug block">
-                      Thu nhỏ khoảng cách, hiển thị nhiều dữ liệu và dòng giao dịch cùng lúc
+                      {t('theme_modal.density_compact_desc', 'Thu nhỏ khoảng cách, hiển thị nhiều dữ liệu và dòng giao dịch cùng lúc')}
                     </span>
                   </div>
                 </button>
@@ -513,10 +523,10 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                 </div>
                 <div>
                   <span className="text-xs font-bold text-slate-900 dark:text-white block">
-                    Chế Độ Riêng Tư Số Tiền (Privacy Masking)
+                    {t('theme_modal.privacy_title', 'Chế Độ Riêng Tư Số Tiền (Privacy Masking)')}
                   </span>
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
-                    Ẩn toàn bộ số tiền trên màn hình (`•••••••• ₫`) khi mở app nơi công cộng
+                    {t('theme_modal.privacy_desc', 'Ẩn toàn bộ số tiền trên màn hình (`•••••••• ₫`) khi mở app nơi công cộng')}
                   </span>
                 </div>
               </div>
@@ -544,12 +554,12 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
               type="button"
               onClick={() => {
                 resetToDefaultTheme();
-                showToast('Đã khôi phục bảng màu & giao diện mặc định!', 'info');
+                showToast(t('theme_modal.toast_reset', 'Đã khôi phục bảng màu & giao diện mặc định!'), 'info');
               }}
               className="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Khôi phục mặc định</span>
+              <span>{t('theme_modal.reset_default', 'Khôi phục mặc định')}</span>
             </button>
 
             <div className="w-full sm:w-auto flex items-center gap-2">
@@ -558,7 +568,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                 onClick={onClose}
                 className="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all cursor-pointer"
               >
-                Đóng
+                {t('common.close', 'Đóng')}
               </button>
 
               {isAdmin && onUpdateBranding ? (
@@ -570,7 +580,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                   className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-white text-xs font-bold shadow-xs hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   <Cloud className="w-3.5 h-3.5" />
-                  <span>{isCloudSaving ? 'Đang lưu...' : 'Lưu cho cả nhóm'}</span>
+                  <span>{isCloudSaving ? t('theme_modal.saving', 'Đang lưu...') : t('theme_modal.save_for_group', 'Lưu cho cả nhóm')}</span>
                 </button>
               ) : (
                 <button
@@ -580,7 +590,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                   className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-white text-xs font-bold shadow-xs hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Check className="w-3.5 h-3.5" />
-                  <span>Áp dụng ngay</span>
+                  <span>{t('theme_modal.apply_now', 'Áp dụng ngay')}</span>
                 </button>
               )}
             </div>

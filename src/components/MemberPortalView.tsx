@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  BankSettings,
   Category,
   ContributionCampaign,
   Fund,
@@ -27,7 +26,6 @@ interface MemberPortalViewProps {
   categories: Category[];
   campaigns: ContributionCampaign[];
   members: Member[];
-  bankSettings: BankSettings;
   branding?: AppBranding;
   groupNotice?: GroupNotice;
   viewPermissions?: MemberViewPermissions;
@@ -43,7 +41,6 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
   categories,
   campaigns,
   members,
-  bankSettings,
   branding,
   groupNotice,
   viewPermissions = INITIAL_VIEW_PERMISSIONS,

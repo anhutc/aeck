@@ -223,7 +223,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               <div className="w-24 h-24 sm:w-28 sm:h-28 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-2xs shrink-0 flex items-center justify-center">
                 <img
                   src={qrCodeUrl}
-                  alt="QR Code Sổ Quỹ"
+                  alt={t('share.qr_alt', 'QR Code Sổ Quỹ')}
                   className="w-full h-full object-contain"
                 />
               </div>

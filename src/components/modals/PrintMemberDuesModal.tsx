@@ -157,7 +157,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
 
             const yearlyItem: DebtBreakdownItem = {
               id: 'yearly',
-              title: 'Theo năm',
+              title: t('dues.scope_yearly_title', 'Theo năm'),
               type: 'yearly',
               required: yReq,
               paid: yPaid,

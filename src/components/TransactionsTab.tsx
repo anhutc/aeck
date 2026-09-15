@@ -199,7 +199,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
               onClick={() => onOpenTransactionModal()}
               style={{ background: activePreset.gradient }}
               className="w-8 h-8 rounded-xl text-white flex items-center justify-center shadow-xs transition-all hover:opacity-95 active:scale-95 cursor-pointer mr-1"
-              title="Ghi nhận thu / chi mới"
+              title={t('transactions.btn_add_tooltip', 'Ghi nhận thu / chi mới')}
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
             </button>
@@ -446,7 +446,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
 
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
                   <div>
-                    <span className="text-[10px] text-slate-400 block uppercase font-bold">Số tiền</span>
+                    <span className="text-[10px] text-slate-400 block uppercase font-bold">{t('common.amount', 'Số tiền')}</span>
                     <span
                       className={`font-mono font-bold text-base ${
                         isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
@@ -518,7 +518,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                 <th 
                   className="py-3 px-3 cursor-pointer hover:opacity-80 select-none transition-opacity"
                   onClick={() => setSortBy(prev => prev === 'date_desc' ? 'date_asc' : 'date_desc')}
-                  title="Click để đổi chiều sắp xếp ngày"
+                  title={t('transactions.sort_date_tooltip', 'Click để đổi chiều sắp xếp ngày')}
                 >
                   <div className="flex items-center gap-1">
                     <span>{t('transactions.table_date', 'Ngày')}</span>
@@ -533,7 +533,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                 <th 
                   className="py-3 px-4 text-right cursor-pointer hover:opacity-80 select-none transition-opacity"
                   onClick={() => setSortBy(prev => prev === 'amount_desc' ? 'amount_asc' : 'amount_desc')}
-                  title="Click để đổi chiều sắp xếp số tiền"
+                  title={t('transactions.sort_amount_tooltip', 'Click để đổi chiều sắp xếp số tiền')}
                 >
                   <div className="flex items-center justify-end gap-1">
                     <span>{t('transactions.table_amount', 'Số tiền')}</span>
@@ -611,7 +611,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                             <button
                               type="button"
                               onClick={() => setViewingBillTx(tx)}
-                              title="Nhấp để xem ảnh hóa đơn / bill"
+                              title={t('transactions.bill_view_tooltip', 'Nhấp để xem ảnh hóa đơn / bill')}
                               style={{ color: activePreset.primary }}
                               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:opacity-80 transition-opacity cursor-pointer"
                             >

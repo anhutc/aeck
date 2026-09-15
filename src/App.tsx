@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   BankSettings,
   Category,
@@ -77,7 +77,7 @@ function deduplicateById<T extends { id: string }>(items: T[]): T[] {
 }
 
 export default function App() {
-  const { t, activeCustomTexts, syncFromCloud } = useTranslation();
+  const { activeCustomTexts, syncFromCloud } = useTranslation();
   const { showToast, showConfirm, setToastPosition } = useFeedback();
   const { isCustomizerOpen, setIsCustomizerOpen, syncFromBranding, revertToSavedTheme } = useTheme();
 
@@ -401,6 +401,7 @@ export default function App() {
   const [editingMember, setEditingMember] = useState<Member | null>(null);
 
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [isQrFromHeader, setIsQrFromHeader] = useState(false);
   const [qrAmount, setQrAmount] = useState<number | undefined>(undefined);
   const [qrContent, setQrContent] = useState<string>(() => {
     const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
@@ -881,12 +882,18 @@ export default function App() {
     setIsTransactionModalOpen(true);
   };
 
-  const handleOpenQRModal = (amount?: number, content?: string) => {
-    setQrAmount(amount);
-    const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
-    const appTitle = branding?.appTitle || '';
-    const defaultSyntax = `${prefix} ${appTitle}`.trim().toUpperCase();
-    setQrContent(content || defaultSyntax);
+  const handleOpenQRModal = (amount?: number, content?: string, fromHeader?: boolean) => {
+    const isHeader = fromHeader !== undefined ? fromHeader : (!amount && !content);
+    setIsQrFromHeader(isHeader);
+    setQrAmount(isHeader ? undefined : amount);
+    if (isHeader) {
+      setQrContent('');
+    } else {
+      const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
+      const appTitle = branding?.appTitle || '';
+      const defaultSyntax = `${prefix} ${appTitle}`.trim().toUpperCase();
+      setQrContent(content !== undefined ? content : defaultSyntax);
+    }
     setIsQRModalOpen(true);
   };
 
@@ -1091,7 +1098,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         funds={funds}
         branding={branding}
-        onOpenQRModal={() => handleOpenQRModal()}
+        onOpenQRModal={() => handleOpenQRModal(undefined, undefined, true)}
         onOpenShareModal={() => setIsShareModalOpen(true)}
         isMemberView={isMemberView}
         pendingTransactionsCount={pendingTransactionsCount}
@@ -1109,7 +1116,6 @@ export default function App() {
             categories={categories}
             campaigns={campaigns}
             members={members}
-            bankSettings={bankSettings}
             branding={branding}
             groupNotice={groupNotice}
             viewPermissions={viewPermissions}
@@ -1255,6 +1261,7 @@ export default function App() {
         defaultContent={qrContent}
         branding={branding}
         isAdmin={!isMemberView}
+        isFromHeader={isQrFromHeader}
       />
 
       <PrintStatementModal

@@ -339,24 +339,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     });
   };
 
-  const handleResetPerms = () => {
-    if (viewPermissions) {
-      setPerms(viewPermissions);
-      showToast('Đã hủy thay đổi phân quyền!', 'info');
-    }
-  };
-
-  const handleResetNotice = () => {
-    if (groupNotice) {
-      setNoticeEnabled(groupNotice.enabled !== false);
-      setNoticeTitle(groupNotice.title || 'Nội quy & Quy định hoạt động quỹ');
-      setNoticeContent(groupNotice.content || '');
-      setNoticeType(groupNotice.type || 'info');
-      setNoticeUpdatedAt(groupNotice.updatedAt || '2026-08-28');
-      showToast('Đã hủy thay đổi nội quy!', 'info');
-    }
-  };
-
   // Dirty state tracking to detect unsaved changes across all configuration sections
   const isBrandingDirty =
     appTitle.trim() !== (branding.appTitle || 'Quản Lý Quỹ').trim() ||
@@ -542,23 +524,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     handleSaveAllSettings(e);
   };
 
-  const handleResetBranding = () => {
-    if (branding) {
-      setAppTitle(branding.appTitle || 'Quản Lý Quỹ');
-      setAppSubtitle(branding.appSubtitle || 'Sổ thu chi & đóng quỹ minh bạch');
-      setTreasurerName(branding.treasurerName || 'Thủ Quỹ Ban Đại Diện');
-      setTreasurerPhone(branding.treasurerPhone || '0988.888.888');
-      setTransferSyntaxPrefix(branding.transferSyntaxPrefix || 'NOP QUY');
-      setGroupEmoji(branding.groupEmoji || '💼');
-      setSelectedDefaultTheme(branding.themeMode || 'light');
-      setDraftToastPosition((branding.toastPosition || 'top-center') as ToastPosition);
-      revertToSavedTheme(branding);
-      showToast('Đã hủy thay đổi nhận diện & giao diện!', 'info');
-    } else {
-      setDraftToastPosition(savedToastPosition);
-    }
-  };
-
   const handleResetBank = () => {
     if (bankSettings) {
       setBankId(bankSettings.bankId || 'MB');
@@ -566,40 +531,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setAccountName(bankSettings.accountName || '');
       setQrTemplate(bankSettings.qrTemplate || 'compact');
       showToast('Đã hủy thay đổi tài khoản ngân hàng!', 'info');
-    }
-  };
-
-  const handleApplyBrandingPreset = (preset: 'class' | 'company' | 'club' | 'family' | 'travel') => {
-    if (preset === 'class') {
-      setAppTitle('Quỹ Lớp Học & Bạn Bè');
-      setAppSubtitle('Sổ quỹ lớp học, liên hoan và sự kiện');
-      setTransferSyntaxPrefix('LOP');
-      setGroupEmoji('🏫');
-      setTreasurerName('Lớp Trưởng / Thủ Quỹ');
-    } else if (preset === 'company') {
-      setAppTitle('Quỹ Team Kỹ Thuật');
-      setAppSubtitle('Minh bạch thu chi liên hoan & teambuilding');
-      setTransferSyntaxPrefix('TEAM');
-      setGroupEmoji('💼');
-      setTreasurerName('Thủ Quỹ Team');
-    } else if (preset === 'club') {
-      setAppTitle('Quỹ Câu Lạc Bộ Thể Thao');
-      setAppSubtitle('Đóng quỹ & chi phí sân bãi thi đấu');
-      setTransferSyntaxPrefix('CLB');
-      setGroupEmoji('⚽');
-      setTreasurerName('Ban Quản Lý CLB');
-    } else if (preset === 'family') {
-      setAppTitle('Quỹ Gia Đình & Dòng Họ');
-      setAppSubtitle('Gắn kết tình thân, hiếu hỉ tương thân tương ái');
-      setTransferSyntaxPrefix('GD');
-      setGroupEmoji('🏡');
-      setTreasurerName('Đại Diện Gia Đình');
-    } else if (preset === 'travel') {
-      setAppTitle('Quỹ Đi Phượt & Du Lịch');
-      setAppSubtitle('Chia tiền ăn ở, xăng xe và trải nghiệm tour');
-      setTransferSyntaxPrefix('TOUR');
-      setGroupEmoji('✈️');
-      setTreasurerName('Trưởng Đoàn Du Lịch');
     }
   };
 
@@ -2266,10 +2197,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   </div>
                   <div className="space-y-1 text-xs">
                     <h4 className="font-bold text-slate-900 dark:text-white">
-                      Cơ Chế Phân Quyền 2 Mật Khẩu Độc Lập
+                      {t('settings.security_dual_pass_title', 'Cơ Chế Phân Quyền 2 Mật Khẩu Độc Lập')}
                     </h4>
                     <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                      Hệ thống hoạt động với 2 mật khẩu riêng biệt: <strong>Mật khẩu Admin</strong> (toàn quyền quản lý, thêm/sửa/xóa thu chi, cấu hình) và <strong>Mật khẩu Thành viên</strong> (chỉ mở xem bảng minh bạch số dư, giao dịch, nộp quỹ VietQR và in sao kê).
+                      {t('settings.security_dual_pass_desc', 'Hệ thống hoạt động với 2 mật khẩu riêng biệt: Mật khẩu Admin (toàn quyền quản lý, thêm/sửa/xóa thu chi, cấu hình) và Mật khẩu Thành viên (chỉ mở xem bảng minh bạch số dư, giao dịch, nộp quỹ VietQR và in sao kê).')}
                     </p>
                   </div>
                 </div>
@@ -2289,9 +2220,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       </div>
                       <div>
                         <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                          1. Mật Khẩu Quản Trị Viên (Admin)
+                          {t('settings.security_admin_title', '1. Mật Khẩu Quản Trị Viên (Admin)')}
                         </h3>
-                        <p className="text-xs text-slate-500">Mã khóa mở toàn bộ quyền can thiệp dữ liệu và cài đặt hệ thống</p>
+                        <p className="text-xs text-slate-500">
+                          {t('settings.security_admin_subtitle', 'Mã khóa mở toàn bộ quyền can thiệp dữ liệu và cài đặt hệ thống')}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -2299,7 +2232,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   {/* Active Admin Password Display */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-slate-600">Mật khẩu Admin hiện tại:</span>
+                      <span className="text-xs font-semibold text-slate-600">
+                        {t('settings.security_admin_current_label', 'Mật khẩu Admin hiện tại:')}
+                      </span>
                       <span className="font-mono text-sm font-bold text-slate-900 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200 tracking-wider">
                         {showAdminPassValue ? (adminPassword || 'admin') : '••••••••'}
                       </span>
@@ -2309,10 +2244,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         type="button"
                         onClick={() => setShowAdminPassValue(!showAdminPassValue)}
                         className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-700 transition-colors flex items-center gap-1 cursor-pointer"
-                        title={showAdminPassValue ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                        title={showAdminPassValue ? t('settings.security_hide', 'Ẩn') : t('settings.security_show', 'Hiện')}
                       >
                         {showAdminPassValue ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                        <span>{showAdminPassValue ? 'Ẩn' : 'Hiện'}</span>
+                        <span>{showAdminPassValue ? t('settings.security_hide', 'Ẩn') : t('settings.security_show', 'Hiện')}</span>
                       </button>
                       <button
                         type="button"
@@ -2321,7 +2256,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         title="Sao chép mật khẩu Admin"
                       >
                         <Copy className="w-3.5 h-3.5" />
-                        <span>Sao chép</span>
+                        <span>{t('settings.security_copy', 'Sao chép')}</span>
                       </button>
                     </div>
                   </div>
@@ -2331,7 +2266,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Mật khẩu Admin mới
+                          {t('settings.security_admin_new_label', 'Mật khẩu Admin mới')}
                         </label>
                         <div className="relative">
                           <input
@@ -2354,7 +2289,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Xác nhận mật khẩu Admin mới
+                          {t('settings.security_admin_confirm_label', 'Xác nhận mật khẩu Admin mới')}
                         </label>
                         <input
                           type="password"
@@ -2381,7 +2316,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-xs transition-all cursor-pointer"
                         title="Đặt lại mật khẩu Admin về 'admin'"
                       >
-                        Khôi phục về "admin"
+                        {t('common.restore', 'Khôi phục')} về "admin"
                       </button>
                       <button
                         type="submit"
@@ -2392,7 +2327,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         className="flex-1 py-2.5 rounded-xl hover:brightness-110 active:scale-[0.99] text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                       >
                         <KeyRound className="w-4 h-4" />
-                        <span>Cập nhật mật khẩu Admin</span>
+                        <span>{t('settings.security_admin_btn', 'Cập nhật mật khẩu Admin')}</span>
                       </button>
                     </div>
                   </form>
@@ -2413,9 +2348,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       </div>
                       <div>
                         <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                          2. Mật Khẩu Thành Viên (Chỉ Xem)
+                          {t('settings.security_member_title', '2. Mật Khẩu Dành Cho Thành Viên (Member)')}
                         </h3>
-                        <p className="text-xs text-slate-500">Mật khẩu cung cấp cho các thành viên trong nhóm để truy cập cổng tra cứu</p>
+                        <p className="text-xs text-slate-500">
+                          {t('settings.security_member_subtitle', 'Mật khẩu cung cấp cho các thành viên trong nhóm để truy cập cổng tra cứu')}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -2423,7 +2360,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   {/* Active Member Password Display */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Mật khẩu Thành viên hiện tại:</span>
+                      <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        {t('settings.security_member_current_label', 'Mật khẩu Thành viên hiện tại:')}
+                      </span>
                       <span
                         className="font-mono text-sm font-bold bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 tracking-wider"
                         style={{ color: activePreset.primary }}
@@ -2436,10 +2375,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         type="button"
                         onClick={() => setShowMemberPassValue(!showMemberPassValue)}
                         className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-700 transition-colors flex items-center gap-1 cursor-pointer"
-                        title={showMemberPassValue ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                        title={showMemberPassValue ? t('settings.security_hide', 'Ẩn') : t('settings.security_show', 'Hiện')}
                       >
                         {showMemberPassValue ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                        <span>{showMemberPassValue ? 'Ẩn' : 'Hiện'}</span>
+                        <span>{showMemberPassValue ? t('settings.security_hide', 'Ẩn') : t('settings.security_show', 'Hiện')}</span>
                       </button>
                       <button
                         type="button"
@@ -2453,7 +2392,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         title="Sao chép mật khẩu gửi cho thành viên trong nhóm"
                       >
                         <Copy className="w-3.5 h-3.5" />
-                        <span>Sao chép</span>
+                        <span>{t('settings.security_copy', 'Sao chép')}</span>
                       </button>
                     </div>
                   </div>
@@ -2463,7 +2402,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Mật khẩu Thành viên mới
+                          {t('settings.security_member_new_label', 'Mật khẩu Thành viên mới')}
                         </label>
                         <div className="relative">
                           <input
@@ -2486,7 +2425,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Xác nhận mật khẩu Thành viên mới
+                          {t('settings.security_member_confirm_label', 'Xác nhận mật khẩu Thành viên mới')}
                         </label>
                         <input
                           type="password"
@@ -2513,7 +2452,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-xs transition-all cursor-pointer"
                         title="Đặt lại mật khẩu Thành viên về '123'"
                       >
-                        Khôi phục về "123"
+                        {t('common.restore', 'Khôi phục')} về "123"
                       </button>
                       <button
                         type="submit"
@@ -2524,7 +2463,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         className="flex-1 py-2.5 rounded-xl hover:brightness-110 active:scale-[0.99] text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                       >
                         <Lock className="w-4 h-4" />
-                        <span>Cập nhật mật khẩu Thành viên</span>
+                        <span>{t('settings.security_member_btn', 'Cập nhật mật khẩu Thành viên')}</span>
                       </button>
                     </div>
                   </form>
@@ -2548,14 +2487,16 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     </div>
                     <div>
                       <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                        <span>Tài Khoản Ngân Hàng & VietQR</span>
+                        <span>{t('settings.bank_card_title', 'Tài Khoản Ngân Hàng & VietQR')}</span>
                         {isBankDirty && (
                           <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded-md border border-amber-200 dark:border-amber-800">
-                            Chưa lưu
+                            {t('common.unsaved', 'Chưa lưu')}
                           </span>
                         )}
                       </h3>
-                      <p className="text-xs text-slate-500">Thiết lập tài khoản nhận tiền để tự động tạo mã QR</p>
+                      <p className="text-xs text-slate-500">
+                        {t('settings.bank_card_subtitle', 'Thiết lập tài khoản nhận tiền để tự động tạo mã QR')}
+                      </p>
                     </div>
                   </div>
                   {isBankDirty && (
@@ -2563,9 +2504,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       type="button"
                       onClick={handleResetBank}
                       className="text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline cursor-pointer"
-                      title="Khôi phục lại thông tin tài khoản ban đầu"
+                      title={t('common.restore', 'Khôi phục')}
                     >
-                      Khôi phục
+                      {t('common.restore', 'Khôi phục')}
                     </button>
                   )}
                 </div>
@@ -2573,7 +2514,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 <form onSubmit={handleSaveBank} className="space-y-3.5 pt-1">
                   <div>
                     <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                      Ngân hàng thụ hưởng
+                      {t('settings.bank_recipient_label', 'Ngân hàng thụ hưởng')}
                     </label>
                     <select
                       value={bankId}
@@ -2590,7 +2531,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
                   <div>
                     <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                      Số tài khoản ngân hàng
+                      {t('settings.bank_acc_num_label', 'Số tài khoản ngân hàng')}
                     </label>
                     <input
                       type="text"
@@ -2604,7 +2545,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
                   <div>
                     <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                      Tên chủ tài khoản (Không dấu)
+                      {t('settings.bank_acc_name_label', 'Tên chủ tài khoản (Không dấu)')}
                     </label>
                     <input
                       type="text"
@@ -2620,7 +2561,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                        Xem trước thẻ thụ hưởng (Live Preview)
+                        {t('settings.bank_preview_card_title', 'Xem trước thẻ thụ hưởng (Live Preview)')}
                       </span>
                       <span
                         style={{
@@ -2630,7 +2571,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         }}
                         className="text-[10px] font-bold px-2 py-0.5 rounded-md"
                       >
-                        Chuẩn VietQR
+                        {t('settings.bank_preview_standard', 'Chuẩn VietQR')}
                       </span>
                     </div>
                     <div
@@ -2653,22 +2594,26 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                           </span>
                         </div>
                         <div className="pt-1">
-                          <span className="text-[10px] text-white/75 block uppercase font-semibold">Số tài khoản</span>
+                          <span className="text-[10px] text-white/75 block uppercase font-semibold">
+                            {t('settings.account_number', 'Số tài khoản')}
+                          </span>
                           <span className="font-mono text-base sm:text-lg font-black tracking-wider text-white drop-shadow-xs">
-                            {accountNumber || 'Chưa nhập số tài khoản'}
+                            {accountNumber || t('settings.bank_no_acc_num', 'Chưa nhập số tài khoản')}
                           </span>
                         </div>
                         <div>
-                          <span className="text-[10px] text-white/75 block uppercase font-semibold">Chủ tài khoản</span>
+                          <span className="text-[10px] text-white/75 block uppercase font-semibold">
+                            {t('settings.account_name', 'Chủ tài khoản')}
+                          </span>
                           <span className="font-bold text-xs sm:text-sm tracking-wide text-white uppercase drop-shadow-xs">
-                            {accountName || 'CHƯA NHẬP TÊN CHỦ TÀI KHOẢN'}
+                            {accountName || t('settings.bank_no_acc_name', 'CHƯA NHẬP TÊN CHỦ TÀI KHOẢN')}
                           </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2.5 bg-white/15 backdrop-blur-md p-2.5 rounded-xl border border-white/20 shrink-0 self-start sm:self-auto z-10 shadow-xs">
                         <QrCode className="w-9 h-9 sm:w-10 sm:h-10 text-white" />
-                        <div className="text-[10px] text-white leading-tight font-semibold">
-                          Mã QR nộp quỹ<br />tự động sinh<br />chuẩn Napas247
+                        <div className="text-[10px] text-white leading-tight font-semibold whitespace-pre-line">
+                          {t('settings.bank_qr_napas_desc', 'Mã QR nộp quỹ tự động sinh chuẩn Napas247')}
                         </div>
                       </div>
                     </div>
@@ -2696,7 +2641,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     </div>
                     <div>
                       <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
-                        <span>Đồng bộ đám mây & Quản lý dữ liệu</span>
+                        <span>{t('settings.cloud_section_title', 'Đồng bộ đám mây & Quản lý dữ liệu')}</span>
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 ${
                           cloudSyncStatus === 'connected'
                             ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
@@ -2711,11 +2656,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                               ? 'bg-blue-500 animate-spin'
                               : 'bg-amber-500'
                           }`} />
-                          {cloudSyncStatus === 'connected' ? 'Cloud Firestore Online' : cloudSyncStatus === 'syncing' ? 'Đang đồng bộ...' : 'Chế độ Cục bộ'}
+                          {cloudSyncStatus === 'connected' ? t('settings.cloud_status_online', 'Cloud Firestore Online') : cloudSyncStatus === 'syncing' ? t('settings.cloud_status_syncing', 'Đang đồng bộ...') : t('settings.cloud_status_local', 'Chế độ Cục bộ')}
                         </span>
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Dữ liệu lưu trữ tập trung trên máy chủ Cloud Firestore – cập nhật tức thì trên mọi máy tính và điện thoại
+                        {t('settings.cloud_section_desc', 'Dữ liệu lưu trữ tập trung trên máy chủ Cloud Firestore – cập nhật tức thì trên mọi máy tính và điện thoại')}
                       </p>
                     </div>
                   </div>
@@ -2727,7 +2672,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     <div className="flex items-center gap-2">
                       <Database className="w-4 h-4" style={{ color: activePreset.primary }} />
                       <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                        Thông Tin Hạ Tầng Máy Chủ Đám Mây
+                        {t('settings.cloud_infra_title', 'Thông Tin Hạ Tầng Máy Chủ Đám Mây')}
                       </span>
                     </div>
                     {onTestCloudConnection && (
@@ -2738,35 +2683,43 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 text-[11px] font-semibold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
                       >
                         <Zap className={`w-3 h-3 text-amber-500 ${isTestingPing ? 'animate-bounce' : ''}`} />
-                        <span>{isTestingPing ? 'Đang kiểm tra...' : 'Kiểm tra kết nối (Ping Test)'}</span>
+                        <span>{isTestingPing ? t('settings.cloud_ping_testing', 'Đang kiểm tra...') : t('settings.cloud_ping_btn', 'Kiểm tra kết nối (Ping Test)')}</span>
                       </button>
                     )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                     <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800">
-                      <span className="text-[11px] text-slate-500 block">Cơ sở dữ liệu (Database)</span>
+                      <span className="text-[11px] text-slate-500 block">
+                        {t('settings.cloud_db_label', 'Cơ sở dữ liệu (Database)')}
+                      </span>
                       <span className="font-semibold text-slate-900 dark:text-slate-100 text-[11px] truncate block" title="ai-studio-aecykh-da837c9f-f6d4-4ecc-8775-b97c31a3dc6c">
                         ai-studio-aecykh...
                       </span>
                     </div>
                     <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800">
-                      <span className="text-[11px] text-slate-500 block">Dự án (Project)</span>
+                      <span className="text-[11px] text-slate-500 block">
+                        {t('settings.cloud_project_label', 'Dự án (Project)')}
+                      </span>
                       <span className="font-semibold text-slate-900 dark:text-slate-100 text-[11px] truncate block">
                         proverbial-volt-7fs6l
                       </span>
                     </div>
                     <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800">
-                      <span className="text-[11px] text-slate-500 block">Lần đồng bộ gần nhất</span>
+                      <span className="text-[11px] text-slate-500 block">
+                        {t('settings.cloud_last_sync_label', 'Lần đồng bộ gần nhất')}
+                      </span>
                       <span className="font-semibold text-slate-900 dark:text-slate-100 text-[11px] truncate block">
-                        {lastCloudSyncTime || 'Tự động theo thời gian thực'}
+                        {lastCloudSyncTime || t('settings.cloud_auto_realtime', 'Tự động theo thời gian thực')}
                       </span>
                     </div>
                     <div className="p-2.5 rounded-lg bg-white dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800">
-                      <span className="text-[11px] text-slate-500 block">Độ trễ máy chủ (Latency)</span>
+                      <span className="text-[11px] text-slate-500 block">
+                        {t('settings.cloud_latency_label', 'Độ trễ máy chủ (Latency)')}
+                      </span>
                       <span className="font-semibold text-emerald-600 dark:text-emerald-400 text-[11px] flex items-center gap-1">
                         <Activity className="w-3 h-3" />
-                        {pingResult?.latencyMs ? `${pingResult.latencyMs} ms` : cloudLatency ? `${cloudLatency} ms` : '< 50 ms (Cực nhanh)'}
+                        {pingResult?.latencyMs ? `${pingResult.latencyMs} ms` : cloudLatency ? `${cloudLatency} ms` : t('settings.cloud_latency_fast', '< 50 ms (Cực nhanh)')}
                       </span>
                     </div>
                   </div>
@@ -2784,8 +2737,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       )}
                       <span>
                         {pingResult.success
-                          ? `Kết nối máy chủ Cloud Firestore hoàn hảo! Tốc độ phản hồi: ${pingResult.latencyMs}ms.`
-                          : `Lỗi kết nối: ${pingResult.error}`}
+                          ? `${t('settings.cloud_ping_success_prefix', 'Kết nối máy chủ Cloud Firestore hoàn hảo! Tốc độ phản hồi:')} ${pingResult.latencyMs}ms.`
+                          : `${t('settings.cloud_ping_error_prefix', 'Lỗi kết nối:')} ${pingResult.error}`}
                       </span>
                     </div>
                   )}
@@ -2808,7 +2761,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                           style={{ color: activePreset.primary }}
                         >
                           <Database className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
-                          Nguồn Dữ Liệu Đám Mây
+                          {t('settings.cloud_data_source_title', 'Nguồn Dữ Liệu Đám Mây')}
                         </span>
                         {savedCustomFirebase ? (
                           <span
@@ -2818,16 +2771,16 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             }}
                             className="px-1.5 py-0.5 rounded text-[9px] font-bold"
                           >
-                            Tùy chỉnh
+                            {t('common.custom', 'Tùy chỉnh')}
                           </span>
                         ) : (
                           <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                            Mặc định
+                            {t('common.default', 'Mặc định')}
                           </span>
                         )}
                       </div>
                       <span className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 block">
-                        Đổi sang Firebase của riêng bạn hoặc kết nối Bot Zalo / Telegram / App khác.
+                        {t('settings.cloud_data_source_desc', 'Đổi sang Firebase của riêng bạn hoặc kết nối Bot Zalo / Telegram / App khác.')}
                       </span>
                     </div>
                     <button
@@ -2840,7 +2793,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       className="w-full py-2.5 rounded-xl hover:brightness-110 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                     >
                       <KeyRound className="w-3.5 h-3.5" />
-                      <span>Đổi Nguồn & Xem Hướng Dẫn</span>
+                      <span>{t('settings.cloud_btn_change_source', 'Đổi Nguồn & Xem Hướng Dẫn')}</span>
                     </button>
                   </div>
 
@@ -2852,10 +2805,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <div>
                         <span className="font-bold text-xs block flex items-center gap-1.5" style={{ color: activePreset.primary }}>
                           <Cloud className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
-                          Đồng bộ dữ liệu lên Cloud
+                          {t('settings.cloud_push_title', 'Đồng bộ dữ liệu lên Cloud')}
                         </span>
                         <span className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 block">
-                          Chủ động tải toàn bộ thu chi, quỹ và thành viên hiện tại lên Cloud Firestore để chia sẻ cho mọi người.
+                          {t('settings.cloud_push_desc', 'Chủ động tải toàn bộ thu chi, quỹ và thành viên hiện tại lên Cloud Firestore để chia sẻ cho mọi người.')}
                         </span>
                       </div>
                       <button
@@ -2868,7 +2821,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         className="w-full py-2.5 rounded-xl hover:brightness-110 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
-                        <span>Đẩy dữ liệu lên Cloud ngay</span>
+                        <span>{t('settings.cloud_push_btn', 'Đẩy dữ liệu lên Cloud ngay')}</span>
                       </button>
                     </div>
                   )}
@@ -2881,10 +2834,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       <div>
                         <span className="font-bold text-xs block flex items-center gap-1.5" style={{ color: activePreset.primary }}>
                           <Download className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
-                          Tải lại từ Cloud Firestore
+                          {t('settings.cloud_pull_title', 'Tải lại từ Cloud Firestore')}
                         </span>
                         <span className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 block">
-                          Kéo bản ghi mới nhất từ máy chủ về máy (hữu ích khi người khác vừa nhập liệu và bạn muốn làm mới).
+                          {t('settings.cloud_pull_desc', 'Kéo bản ghi mới nhất từ máy chủ về máy (hữu ích khi người khác vừa nhập liệu và bạn muốn làm mới).')}
                         </span>
                       </div>
                       <button
@@ -2897,7 +2850,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         className="w-full py-2.5 rounded-xl hover:brightness-110 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
-                        <span>Tải lại dữ liệu mới nhất</span>
+                        <span>{t('settings.cloud_pull_btn', 'Tải lại dữ liệu mới nhất')}</span>
                       </button>
                     </div>
                   )}
@@ -2909,10 +2862,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     <div>
                       <span className="font-bold text-xs text-slate-900 dark:text-white block flex items-center gap-1.5">
                         <Download className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
-                        Xuất tệp sao lưu (JSON)
+                        {t('settings.backup_export_title', 'Xuất tệp sao lưu (JSON)')}
                       </span>
                       <span className="text-[11px] text-slate-500 mt-0.5 block">
-                        Tải về máy tính toàn bộ giao dịch, đợt thu, thành viên và cài đặt
+                        {t('settings.backup_export_desc', 'Tải về máy tính toàn bộ giao dịch, đợt thu, thành viên và cài đặt')}
                       </span>
                     </div>
                     <button
@@ -2925,17 +2878,17 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       className="w-full py-2.5 rounded-xl hover:brightness-110 text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-xs"
                     >
                       <Download className="w-3.5 h-3.5" />
-                      <span>Tải file sao lưu (.JSON)</span>
+                      <span>{t('settings.backup_export_btn', 'Tải file sao lưu (.JSON)')}</span>
                     </button>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between gap-3">
                     <div>
                       <span className="font-bold text-xs text-slate-900 dark:text-white block">
-                        Nhập dữ liệu từ tệp
+                        {t('settings.backup_import_title', 'Nhập dữ liệu từ tệp')}
                       </span>
                       <span className="text-[11px] text-slate-500">
-                        Khôi phục từ tệp JSON đã sao lưu trước đó
+                        {t('settings.backup_import_desc', 'Khôi phục từ tệp JSON đã sao lưu trước đó')}
                       </span>
                     </div>
                     <label
@@ -2947,7 +2900,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       className="w-full py-2.5 rounded-xl border-2 border-dashed font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all duration-200 shadow-xs hover:opacity-85 group"
                     >
                       <Upload className="w-4 h-4" style={{ color: activePreset.primary }} />
-                      <span>Chọn file JSON khôi phục</span>
+                      <span>{t('settings.backup_import_btn', 'Chọn file JSON khôi phục')}</span>
                       <input
                         type="file"
                         accept=".json"
@@ -2976,9 +2929,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                     </div>
                     <div>
                       <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                        Quản lý danh mục thu & chi
+                        {t('settings.categories_title', 'Quản lý danh mục thu & chi')}
                       </h3>
-                      <p className="text-xs text-slate-500">Phân loại dòng tiền theo mục đích sử dụng (chỉnh sửa tên, loại thu/chi và màu sắc)</p>
+                      <p className="text-xs text-slate-500">
+                        {t('settings.categories_desc', 'Phân loại dòng tiền theo mục đích sử dụng (chỉnh sửa tên, loại thu/chi và màu sắc)')}
+                      </p>
                     </div>
                   </div>
 
@@ -2994,7 +2949,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
-                      Tất cả ({categories.length})
+                      {t('settings.cat_filter_all', 'Tất cả')} ({categories.length})
                     </button>
                     <button
                       type="button"
@@ -3005,7 +2960,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
-                      Khoản chi ({categories.filter(c => c.type === 'expense').length})
+                      {t('settings.cat_filter_expense', 'Khoản chi')} ({categories.filter(c => c.type === 'expense').length})
                     </button>
                     <button
                       type="button"
@@ -3016,7 +2971,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
-                      Khoản thu ({categories.filter(c => c.type === 'income').length})
+                      {t('settings.cat_filter_income', 'Khoản thu')} ({categories.filter(c => c.type === 'income').length})
                     </button>
                   </div>
                 </div>
@@ -3025,7 +2980,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 <form onSubmit={handleAddCategorySubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
                   <input
                     type="text"
-                    placeholder="Tên danh mục mới (VD: Tiền điện, Mua quà, Tài trợ)..."
+                    placeholder={t('settings.cat_new_placeholder', 'Tên danh mục mới (VD: Tiền điện, Mua quà, Tài trợ)...')}
                     value={newCatName}
                     onChange={(e) => setNewCatName(e.target.value)}
                     className="flex-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-purple-500 focus:outline-hidden"
@@ -3037,8 +2992,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       onChange={(e) => setNewCatType(e.target.value as any)}
                       className="flex-1 sm:flex-initial px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-hidden"
                     >
-                      <option value="expense">Khoản chi (-)</option>
-                      <option value="income">Khoản thu (+)</option>
+                      <option value="expense">{t('settings.cat_type_expense_opt', 'Khoản chi (-)')}</option>
+                      <option value="income">{t('settings.cat_type_income_opt', 'Khoản thu (+)')}</option>
                     </select>
 
                     <input
@@ -3058,7 +3013,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       className="flex-1 sm:flex-initial px-4 py-2 rounded-lg hover:brightness-110 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs shrink-0"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      <span>Thêm</span>
+                      <span>{t('common.add', 'Thêm')}</span>
                     </button>
                   </div>
                 </form>
@@ -3088,7 +3043,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                 style={{ color: activePreset.primary }}
                               >
                                 <Pencil className="w-3.5 h-3.5" />
-                                Chỉnh sửa danh mục
+                                {t('settings.cat_edit_title', 'Chỉnh sửa danh mục')}
                               </span>
                               <div className="flex items-center gap-1.5">
                                 <button
@@ -3102,7 +3057,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                   title="Lưu thay đổi"
                                 >
                                   <Check className="w-3.5 h-3.5" />
-                                  <span>Lưu</span>
+                                  <span>{t('common.save', 'Lưu')}</span>
                                 </button>
                                 <button
                                   type="button"
@@ -3111,7 +3066,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                   title="Hủy"
                                 >
                                   <X className="w-3.5 h-3.5" />
-                                  <span>Hủy</span>
+                                  <span>{t('common.cancel', 'Hủy')}</span>
                                 </button>
                               </div>
                             </div>
@@ -3121,7 +3076,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                 type="text"
                                 value={editCatName}
                                 onChange={(e) => setEditCatName(e.target.value)}
-                                placeholder="Tên danh mục..."
+                                placeholder={t('settings.cat_edit_name_placeholder', 'Tên danh mục...')}
                                 className="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:outline-hidden"
                               />
 
@@ -3130,8 +3085,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                 onChange={(e) => setEditCatType(e.target.value as any)}
                                 className="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-medium focus:outline-hidden"
                               >
-                                <option value="expense">Khoản chi (-)</option>
-                                <option value="income">Khoản thu (+)</option>
+                                <option value="expense">{t('settings.cat_type_expense_opt', 'Khoản chi (-)')}</option>
+                                <option value="income">{t('settings.cat_type_income_opt', 'Khoản thu (+)')}</option>
                               </select>
 
                               <div className="flex items-center gap-2">
@@ -3178,7 +3133,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             <button
                               type="button"
                               onClick={() => handleStartEditCat(c)}
-                              title="Chỉnh sửa danh mục"
+                              title={t('settings.cat_edit_tooltip', 'Chỉnh sửa danh mục')}
                               style={{
                                 color: undefined,
                               }}
@@ -3202,7 +3157,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                                   },
                                 });
                               }}
-                              title="Xóa danh mục"
+                              title={t('settings.cat_delete_tooltip', 'Xóa danh mục')}
                               className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -3233,15 +3188,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0 animate-pulse" />
               <div className="min-w-0">
                 <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                  <span className="sm:hidden">{dirtyCount} thay đổi chưa lưu</span>
-                  <span className="hidden sm:inline">Có {dirtyCount} mục thay đổi chưa lưu</span>
+                  <span className="sm:hidden">{dirtyCount} {t('settings.unsaved_changes_short', 'thay đổi chưa lưu')}</span>
+                  <span className="hidden sm:inline">{t('settings.unsaved_has_changes', 'Có')} {dirtyCount} {t('settings.unsaved_changes_long', 'mục thay đổi chưa lưu')}</span>
                 </p>
                 <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 overflow-x-auto no-scrollbar pt-0.5">
-                  {isBrandingDirty && <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">Nhận diện</span>}
-                  {isThemeDirty && <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">Giao diện</span>}
-                  {isBankDirty && <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">Tài khoản</span>}
-                  {isNoticeDirty && <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">Nội quy</span>}
-                  {isPermsDirty && <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">Phân quyền</span>}
+                  {isBrandingDirty && <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">{t('settings.tab_branding', 'Nhận diện')}</span>}
+                  {isThemeDirty && <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">{t('settings.tab_theme', 'Giao diện')}</span>}
+                  {isBankDirty && <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">{t('settings.tab_bank', 'Tài khoản')}</span>}
+                  {isNoticeDirty && <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">{t('settings.tab_notice', 'Nội quy')}</span>}
+                  {isPermsDirty && <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-medium">{t('settings.tab_permissions', 'Phân quyền')}</span>}
                 </div>
               </div>
             </div>
@@ -3252,7 +3207,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 onClick={handleDiscardAll}
                 className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer"
               >
-                Hủy bỏ
+                {t('common.cancel', 'Hủy bỏ')}
               </button>
               <button
                 type="button"
@@ -3264,7 +3219,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl hover:brightness-110 active:scale-[0.98] text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
               >
                 <Save className="w-3.5 h-3.5" />
-                <span>Lưu ngay</span>
+                <span>{t('settings.btn_save_all_sticky', 'Lưu ngay')}</span>
               </button>
             </div>
           </div>

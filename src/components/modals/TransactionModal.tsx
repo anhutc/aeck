@@ -111,7 +111,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   const processFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      setError('Vui lòng chỉ chọn tệp hình ảnh (JPG, PNG, WebP).');
+      setError(t('transactions.error_image_type', 'Vui lòng chỉ chọn tệp hình ảnh (JPG, PNG, WebP).'));
       return;
     }
     try {
@@ -121,7 +121,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setBillImage(result.dataUrl);
       setImageSizeKb(result.compressedSizeKb);
     } catch (err: any) {
-      setError(err?.message || 'Không thể xử lý ảnh hóa đơn. Vui lòng thử lại.');
+      setError(err?.message || t('transactions.error_compress_fail', 'Không thể xử lý ảnh hóa đơn. Vui lòng thử lại.'));
     } finally {
       setIsCompressing(false);
     }
@@ -431,7 +431,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     >
                       <img
                         src={billImage}
-                        alt="Hóa đơn"
+                        alt={t('modal_tx.bill_image_alt', 'Hóa đơn')}
                         className="w-full h-full object-cover transition-transform group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
@@ -518,7 +518,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             amount: typeof amount === 'number' ? amount : (parseFloat(amount) || 0),
             categoryId,
             date,
-            description: description || 'Xem trước ảnh hóa đơn',
+            description: description || t('modal_tx.bill_preview_desc', 'Xem trước ảnh hóa đơn'),
             billImage,
             status: 'completed',
             createdAt: new Date().toISOString(),

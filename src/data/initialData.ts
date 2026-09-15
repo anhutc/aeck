@@ -88,7 +88,6 @@ export const INITIAL_BRANDING: AppBranding = {
 
   // 4. VietQR & Chuyển khoản
   transferSyntaxPrefix: 'DONG QUY',
-  qrGuideNote: 'Vui lòng giữ nguyên nội dung chuyển khoản tự sinh để hệ thống đối soát chính xác.',
   qrShareHeader: 'THÔNG TIN CHUYỂN KHOẢN ĐÓNG QUỸ',
   qrShareFooter: 'Trân trọng cảm ơn sự đồng hành và đóng góp của bạn! ✨',
 

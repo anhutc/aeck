@@ -10,13 +10,7 @@ import {
   X, 
   Copy, 
   Sparkles,
-  ArrowUpDown,
-  BookOpen,
-  SlidersHorizontal,
-  Wallet,
-  ArrowRight,
-  HelpCircle,
-  Undo2
+  BookOpen
 } from 'lucide-react';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -34,7 +28,6 @@ export const TextCustomizerSection: React.FC<TextCustomizerSectionProps> = ({
     t, 
     activeCustomTexts, 
     updateCustomText, 
-    batchUpdateCustomTexts,
     resetCustomText, 
     resetAllCustomTexts,
     exportDictionary,

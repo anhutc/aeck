@@ -126,7 +126,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
           lastPageWithSignMax: 24,
           rowPy: 'py-1.5 px-2.5',
           fontSize: 'text-xs',
-          label: 'Tiết kiệm',
+          label: t('print.compact_label', 'Tiết kiệm'),
         };
       case 'spacious':
         return {
@@ -136,7 +136,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
           lastPageWithSignMax: 14,
           rowPy: 'py-2.5 px-3',
           fontSize: 'text-xs',
-          label: 'Rộng rãi',
+          label: t('print.spacious_label', 'Rộng rãi'),
         };
       case 'normal':
       default:
@@ -147,7 +147,7 @@ export const PrintStatementModal: React.FC<PrintStatementModalProps> = ({
           lastPageWithSignMax: 19,
           rowPy: 'py-2 px-2.5',
           fontSize: 'text-xs',
-          label: 'Chuẩn A4',
+          label: t('print.standard_a4_label', 'Chuẩn A4'),
         };
     }
   }, [density, showSummary, activeSignatoriesCount]);

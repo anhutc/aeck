@@ -14,6 +14,7 @@ interface VietQRModalProps {
   defaultAmount?: number;
   defaultContent?: string;
   branding?: AppBranding;
+  isFromHeader?: boolean;
 }
 
 export const VietQRModal: React.FC<VietQRModalProps> = ({
@@ -24,11 +25,16 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
   defaultAmount = 0,
   defaultContent = '',
   branding,
+  isFromHeader = false,
 }) => {
+  const shouldHideInputs = isFromHeader;
   const { t } = useTranslation();
   const { activePreset } = useTheme();
-  const [amount, setAmount] = useState<number | string>(defaultAmount > 0 ? defaultAmount : '');
+  const [amount, setAmount] = useState<number | string>(
+    shouldHideInputs ? '' : defaultAmount > 0 ? defaultAmount : ''
+  );
   const [content, setContent] = useState<string>(() => {
+    if (shouldHideInputs) return '';
     if (defaultContent) return defaultContent;
     const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
     const appTitle = branding?.appTitle || '';
@@ -39,21 +45,27 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
   // Sync content and amount when modal opens or default props change
   useEffect(() => {
     if (isOpen) {
-      setAmount(defaultAmount > 0 ? defaultAmount : '');
-      if (defaultContent) {
-        setContent(defaultContent);
+      if (shouldHideInputs) {
+        setAmount('');
+        setContent('');
       } else {
-        const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
-        const appTitle = branding?.appTitle || '';
-        setContent(`${prefix} ${appTitle}`.trim().toUpperCase());
+        setAmount(defaultAmount > 0 ? defaultAmount : '');
+        if (defaultContent) {
+          setContent(defaultContent);
+        } else {
+          const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
+          const appTitle = branding?.appTitle || '';
+          setContent(`${prefix} ${appTitle}`.trim().toUpperCase());
+        }
       }
     }
-  }, [isOpen, defaultAmount, defaultContent, branding]);
+  }, [isOpen, defaultAmount, defaultContent, branding, shouldHideInputs]);
 
   if (!isOpen) return null;
 
-  const numAmount = typeof amount === 'number' ? amount : (parseFloat(amount) || 0);
-  const qrUrl = getVietQRUrl(bankSettings, numAmount > 0 ? numAmount : undefined, content.trim());
+  const numAmount = shouldHideInputs ? 0 : typeof amount === 'number' ? amount : (parseFloat(amount) || 0);
+  const effectiveContent = shouldHideInputs ? '' : content.trim();
+  const qrUrl = getVietQRUrl(bankSettings, numAmount > 0 ? numAmount : undefined, effectiveContent || undefined);
 
   const handleCopy = (text: string, fieldName: string) => {
     navigator.clipboard.writeText(text);
@@ -65,23 +77,39 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
     const header = branding?.qrShareHeader || t('vietqr.share_header', 'THÔNG TIN CHUYỂN KHOẢN ĐÓNG QUỸ TẬP THỂ');
     const footer = branding?.qrShareFooter || t('vietqr.share_footer', 'Trân trọng cảm ơn sự đồng hành và đóng góp của bạn! ✨');
 
-    const text = `💰 ${header}\n` +
-      `🏛️ ${t('settings.bank_label', 'Ngân hàng')}: ${bankSettings.bankName}\n` +
-      `🔢 ${t('settings.account_number_label', 'Số tài khoản')}: ${bankSettings.accountNumber}\n` +
-      `👤 ${t('settings.account_name_label', 'Chủ tài khoản')}: ${bankSettings.accountName}\n` +
-      (numAmount > 0 ? `💵 ${t('common.amount', 'Số tiền')}: ${formatVND(numAmount)}\n` : '') +
-      `📝 ${t('transactions.transfer_content', 'Nội dung CK')}: ${content}\n\n` +
-      `${footer}`;
-    handleCopy(text, 'all');
+    const lines: string[] = [
+      `💰 ${header}`,
+      `🏛️ ${t('settings.bank_label', 'Ngân hàng')}: ${bankSettings.bankName}`,
+      `🔢 ${t('settings.account_number_label', 'Số tài khoản')}: ${bankSettings.accountNumber}`,
+      `👤 ${t('settings.account_name_label', 'Chủ tài khoản')}: ${bankSettings.accountName}`,
+    ];
+
+    if (numAmount > 0) {
+      lines.push(`💵 ${t('common.amount', 'Số tiền')}: ${formatVND(numAmount)}`);
+    }
+    if (effectiveContent) {
+      lines.push(`📝 ${t('transactions.transfer_content', 'Nội dung CK')}: ${effectiveContent}`);
+    }
+
+    lines.push('', footer);
+    handleCopy(lines.join('\n'), 'all');
   };
 
   const copyTransferInfo = () => {
-    const text = `${t('settings.bank_label', 'Ngân hàng')}: ${bankSettings.bankName}\n` +
-      `${t('settings.account_number_label', 'Số tài khoản')}: ${bankSettings.accountNumber}\n` +
-      `${t('settings.account_name_label', 'Chủ tài khoản')}: ${bankSettings.accountName}\n` +
-      (numAmount > 0 ? `${t('common.amount', 'Số tiền')}: ${formatVND(numAmount)}\n` : '') +
-      `${t('transactions.transfer_content', 'Nội dung CK')}: ${content}`;
-    handleCopy(text, 'transfer_info');
+    const lines: string[] = [
+      `${t('settings.bank_label', 'Ngân hàng')}: ${bankSettings.bankName}`,
+      `${t('settings.account_number_label', 'Số tài khoản')}: ${bankSettings.accountNumber}`,
+      `${t('settings.account_name_label', 'Chủ tài khoản')}: ${bankSettings.accountName}`,
+    ];
+
+    if (numAmount > 0) {
+      lines.push(`${t('common.amount', 'Số tiền')}: ${formatVND(numAmount)}`);
+    }
+    if (effectiveContent) {
+      lines.push(`${t('transactions.transfer_content', 'Nội dung CK')}: ${effectiveContent}`);
+    }
+
+    handleCopy(lines.join('\n'), 'transfer_info');
   };
 
   return (
@@ -128,7 +156,7 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
               <img
                 id="vietqr-image"
                 src={qrUrl}
-                alt="VietQR Chuyển Khoản"
+                alt={t('vietqr.img_alt', 'VietQR Chuyển Khoản')}
                 className="w-full h-auto object-contain rounded-lg"
                 loading="lazy"
               />
@@ -138,34 +166,36 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
             </p>
           </div>
 
-          {/* Dynamic input controls for amount and content */}
-          <div className="space-y-3">
-            <AmountInput
-              id="qr-amount-input"
-              value={amount}
-              onChange={(val) => setAmount(val)}
-              type="income"
-              label={t('vietqr.amount_label', 'Số tiền chỉ định (VNĐ)')}
-              placeholder={t('vietqr.amount_placeholder', 'Tự nhập khi quét hoặc nhập số...')}
-              presets={[50000, 100000, 200000, 500000, 1000000]}
-              showAdders
-              showInWords
-              showPresets
-            />
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                {t('transactions.transfer_content', 'Nội dung chuyển khoản')}
-              </label>
-              <input
-                id="qr-content-input"
-                type="text"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+          {/* Dynamic input controls for amount and content - hidden when opened from header */}
+          {!shouldHideInputs && (
+            <div className="space-y-3">
+              <AmountInput
+                id="qr-amount-input"
+                value={amount}
+                onChange={(val) => setAmount(val)}
+                type="income"
+                label={t('vietqr.amount_label', 'Số tiền chỉ định (VNĐ)')}
+                placeholder={t('vietqr.amount_placeholder', 'Tự nhập khi quét hoặc nhập số...')}
+                presets={[50000, 100000, 200000, 500000, 1000000]}
+                showAdders
+                showInWords
+                showPresets
               />
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  {t('transactions.transfer_content', 'Nội dung chuyển khoản')}
+                </label>
+                <input
+                  id="qr-content-input"
+                  type="text"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Bank details with 1-click copy */}
           <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
