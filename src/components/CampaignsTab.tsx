@@ -142,6 +142,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
   const showCopyToast = (key: string, message: string) => {
     setCopiedKey(key);
     setCopyFeedbackText(message);
+    showToast(message, 'success');
     setTimeout(() => {
       setCopiedKey(null);
       setCopyFeedbackText(null);
@@ -184,6 +185,8 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
     const success = await copyToClipboard(text);
     if (success) {
       showCopyToast(camp.id + '_full', t('campaigns.copied_report_toast', 'Đã sao chép báo cáo!'));
+    } else {
+      showToast(t('common.copy_failed', 'Không thể sao chép, vui lòng thử lại!'), 'error');
     }
     setActiveCopyMenuId(null);
   };
@@ -210,6 +213,8 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
     const success = await copyToClipboard(text);
     if (success) {
       showCopyToast(camp.id + '_unpaid', `${t('campaigns.copied_unpaid_prefix', 'Đã sao chép danh sách')} ${unpaidMembers.length} ${t('campaigns.copied_unpaid_suffix', 'người chưa nộp!')}`);
+    } else {
+      showToast(t('common.copy_failed', 'Không thể sao chép, vui lòng thử lại!'), 'error');
     }
     setActiveCopyMenuId(null);
   };
@@ -220,6 +225,8 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
     const success = await copyToClipboard(syntax);
     if (success) {
       showCopyToast(camp.id + '_syntax', `${t('campaigns.copied_syntax_prefix', 'Đã sao chép cú pháp:')} "${syntax}"`);
+    } else {
+      showToast(t('common.copy_failed', 'Không thể sao chép, vui lòng thử lại!'), 'error');
     }
     setActiveCopyMenuId(null);
   };
@@ -230,6 +237,8 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
     const success = await copyToClipboard(syntax);
     if (success) {
       showCopyToast(`${camp.id}_${member.id}`, `${t('campaigns.copied_member_syntax_prefix', 'Đã sao chép cú pháp cho')} ${member.name}`);
+    } else {
+      showToast(t('common.copy_failed', 'Không thể sao chép, vui lòng thử lại!'), 'error');
     }
   };
 
@@ -360,39 +369,83 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
               >
                 {/* Campaign Header Card */}
                 <div className="p-4 sm:p-5">
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div className="flex items-start gap-3.5">
-                      <div
-                        style={{ backgroundColor: activePreset.primaryLight, color: activePreset.primary }}
-                        className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
-                      >
-                        <Target className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="flex items-center flex-wrap gap-2">
-                          <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                            {camp.title}
-                          </h3>
-                          <span
-                            style={{
-                              backgroundColor: `${activePreset.primary}12`,
-                              color: activePreset.primary,
-                              borderColor: `${activePreset.primary}30`,
-                            }}
-                            className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold flex items-center gap-1 border"
-                          >
-                            <Calendar className="w-3 h-3" style={{ color: activePreset.primary }} />
-                            <span>{t('campaigns.launch_date_prefix', 'Phát động')}: {formatDate(camp.launchDate || camp.createdAt)}</span>
-                          </span>
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
+                    <div className="flex items-start justify-between sm:justify-start gap-2.5 sm:gap-3.5 w-full lg:w-auto">
+                      <div className="flex items-start gap-2.5 sm:gap-3.5 min-w-0 flex-1">
+                        <div
+                          style={{ backgroundColor: activePreset.primaryLight, color: activePreset.primary }}
+                          className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
+                        >
+                          <Target className="w-5 h-5" />
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">
-                          {camp.description || t('campaigns.no_description', 'Chưa có mô tả')}
-                        </p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">
+                            <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white break-words">
+                              {camp.title}
+                            </h3>
+                            <span
+                              style={{
+                                backgroundColor: `${activePreset.primary}12`,
+                                color: activePreset.primary,
+                                borderColor: `${activePreset.primary}30`,
+                              }}
+                              className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 border shrink-0"
+                            >
+                              <Calendar className="w-3 h-3" style={{ color: activePreset.primary }} />
+                              <span>{t('campaigns.launch_date_prefix', 'Phát động')}: {formatDate(camp.launchDate || camp.createdAt)}</span>
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1 line-clamp-2 sm:line-clamp-none">
+                            {camp.description || t('campaigns.no_description', 'Chưa có mô tả')}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Header quick action icons on mobile (< sm): Edit, Delete, Collapse/Expand */}
+                      <div className="flex items-center gap-1 shrink-0 sm:hidden">
+                        {isAdmin && (
+                          <button
+                            onClick={() => onOpenCampaignModal(camp)}
+                            title={t('common.edit', 'Sửa đợt thu')}
+                            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        {isAdmin && (
+                          <button
+                            onClick={() => {
+                              showConfirm({
+                                title: t('dialog.confirm_delete_title', 'Xác Nhận Xóa Dữ Liệu'),
+                                message: `${t('dialog.confirm_delete_campaign', 'Bạn có chắc chắn muốn xóa đợt thu quỹ này? Lịch sử đóng góp của đợt thu sẽ bị xóa.')}\n(${camp.title})`,
+                                type: 'danger',
+                                confirmText: t('dialog.confirm_delete_btn', 'Đồng Ý Xóa'),
+                                cancelText: t('common.cancel', 'Hủy bỏ'),
+                                onConfirm: () => {
+                                  onDeleteCampaign(camp.id);
+                                  showToast(t('common.saved_success', 'Đã xóa đợt thu thành công!'), 'success');
+                                },
+                              });
+                            }}
+                            title={t('common.delete', 'Xóa đợt thu')}
+                            className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-all active:scale-95 cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => toggleExpand(camp.id)}
+                          title={isExpanded ? t('campaigns.collapse_list', 'Thu gọn danh sách') : t('campaigns.expand_list', 'Mở rộng xem chi tiết từng người')}
+                          className="px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700 transition-all active:scale-95 cursor-pointer shadow-2xs min-h-[36px]"
+                        >
+                          <span>{isExpanded ? t('campaigns.collapse_list_short', 'Thu gọn') : t('campaigns.expand_list_short', 'Chi tiết')}</span>
+                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                        </button>
                       </div>
                     </div>
 
-                    {/* Quick Stats & Action Controls */}
-                    <div className="flex items-center flex-wrap gap-2 shrink-0">
+                    {/* Quick Stats & Action Controls (Full-width 2-column grid on mobile, inline on desktop) */}
+                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full lg:w-auto shrink-0 pt-1 lg:pt-0">
                       {/* Quick VietQR Button */}
                       <button
                         onClick={() => onOpenQRModal(camp.amountPerMember, `${prefix} ${camp.title}`.trim().toUpperCase())}
@@ -402,162 +455,208 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                           backgroundColor: `${activePreset.primary}10`,
                           color: activePreset.primary,
                         }}
-                        className="px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 hover:opacity-85 hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                        className="w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 hover:opacity-85 hover:shadow-xs active:scale-95 transition-all cursor-pointer min-h-[38px]"
                       >
-                        <QrCode className="w-4 h-4" style={{ color: activePreset.primary }} />
-                        <span>{t('campaigns.qr_code_label', 'Mã QR')} ({displayVND(camp.amountPerMember)})</span>
+                        <QrCode className="w-4 h-4 shrink-0" style={{ color: activePreset.primary }} />
+                        <span className="truncate">{t('campaigns.qr_code_label', 'Mã QR')} ({displayVND(camp.amountPerMember)})</span>
                       </button>
 
                       {/* Admin Copy Dropdown Menu vs Member Direct Syntax Copy */}
                       {isAdmin ? (
-                        <div className="relative">
+                        <div className="relative w-full sm:w-auto">
                           <button
                             onClick={() => setActiveCopyMenuId(isMenuOpen ? null : camp.id)}
                             title={t('campaigns.copy_options_tooltip', 'Sao chép danh sách, báo cáo hoặc cú pháp chuyển khoản')}
-                            className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
+                            className={`w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 min-h-[38px] ${
                               copiedKey?.startsWith(camp.id)
                                 ? 'border-theme-primary bg-theme-light text-theme-primary'
                                 : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 hover:border-slate-400'
                             }`}
                           >
                             {copiedKey?.startsWith(camp.id) ? (
-                              <Check className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
+                              <Check className="w-3.5 h-3.5 shrink-0" style={{ color: activePreset.primary }} />
                             ) : (
-                              <Copy className="w-3.5 h-3.5 text-slate-500" />
+                              <Copy className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                             )}
-                            <span>{copiedKey?.startsWith(camp.id) ? t('campaigns.copied', 'Đã sao chép!') : t('campaigns.copy_dots', 'Sao chép...')}</span>
-                            <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
+                            <span className="truncate">{copiedKey?.startsWith(camp.id) ? t('campaigns.copied', 'Đã sao chép!') : t('campaigns.copy_dots', 'Sao chép...')}</span>
+                            <ChevronDown className={`w-3 h-3 text-slate-400 shrink-0 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
                           </button>
 
                           {/* Dropdown Options */}
                           {isMenuOpen && (
-                            <div className="absolute right-0 top-full mt-1.5 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-1.5 z-30 animate-in fade-in zoom-in-95 duration-100">
-                              <div className="text-[10px] font-bold text-slate-400 px-2.5 py-1 uppercase tracking-wider">
-                                {t('campaigns.copy_options', 'Tùy chọn sao chép')}
+                            <>
+                              {/* Backdrop for closing when clicking outside */}
+                              <div
+                                className="fixed inset-0 z-40 bg-black/40 backdrop-blur-2xs"
+                                onClick={() => setActiveCopyMenuId(null)}
+                              />
+
+                              {/* Responsive action menu: Clean centered Bottom Sheet on Mobile, Popover on Desktop */}
+                              <div className="fixed inset-x-3 bottom-6 z-50 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:bottom-auto sm:mt-1.5 w-auto sm:w-72 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-xl shadow-2xl sm:shadow-xl border border-slate-200 dark:border-slate-700 p-2 sm:p-1.5 animate-in fade-in zoom-in-95 duration-150 max-h-[85vh] overflow-y-auto">
+                                <div className="text-[11px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 px-3 sm:px-2.5 py-2 sm:py-1 uppercase tracking-wider flex items-center justify-between border-b border-slate-100 dark:border-slate-800 mb-1">
+                                  <span>{t('campaigns.copy_options', 'Tùy chọn sao chép & chia sẻ')}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveCopyMenuId(null)}
+                                    className="sm:hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-2 py-0.5 rounded text-xs font-bold cursor-pointer"
+                                  >
+                                    Đóng ✕
+                                  </button>
+                                </div>
+
+                                <div className="space-y-1">
+                                  {/* Cú pháp chuyển khoản */}
+                                  <button
+                                    onClick={() => copyTransferSyntax(camp)}
+                                    className="w-full text-left px-3 py-2.5 sm:py-2 rounded-xl sm:rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 transition-colors cursor-pointer active:scale-98"
+                                  >
+                                    <div
+                                      style={{ backgroundColor: `${activePreset.primary}18`, color: activePreset.primary }}
+                                      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                                    >
+                                      <CreditCard className="w-4 h-4" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="font-bold text-slate-800 dark:text-slate-100 flex items-center justify-between">
+                                        <span>{t('campaigns.copy_transfer_syntax', 'Cú pháp chuyển khoản')}</span>
+                                        <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">Nhanh nhất</span>
+                                      </div>
+                                      <div className="text-[11px] text-slate-400 font-mono truncate">{prefix} {camp.title}</div>
+                                    </div>
+                                  </button>
+
+                                  {/* Báo cáo đầy đủ */}
+                                  <button
+                                    onClick={() => copyCampaignSummary(camp)}
+                                    className="w-full text-left px-3 py-2.5 sm:py-2 rounded-xl sm:rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-2.5 transition-colors cursor-pointer active:scale-98"
+                                  >
+                                    <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950/70 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                                      <Copy className="w-4 h-4" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="font-bold">{t('campaigns.copy_full_report', 'Báo cáo đầy đủ')}</div>
+                                      <div className="text-[11px] text-slate-400">{t('campaigns.copy_full_report_desc', 'Gồm tiến độ, đã nộp & chưa nộp')}</div>
+                                    </div>
+                                  </button>
+
+                                  {/* Danh sách nhắc nộp */}
+                                  <button
+                                    onClick={() => copyUnpaidReminder(camp)}
+                                    className="w-full text-left px-3 py-2.5 sm:py-2 rounded-xl sm:rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/50 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-2.5 transition-colors cursor-pointer active:scale-98"
+                                  >
+                                    <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                      <BellRing className="w-4 h-4" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="font-bold flex items-center justify-between">
+                                        <span>{t('campaigns.copy_unpaid_list', 'Danh sách nhắc nộp')}</span>
+                                        <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">({unpaidMembers.length})</span>
+                                      </div>
+                                      <div className="text-[11px] text-slate-400">{t('campaigns.copy_unpaid_list_desc', 'Chỉ người chưa hoàn thành')}</div>
+                                    </div>
+                                  </button>
+
+                                  {/* Xuất ảnh đóng quỹ đợt này */}
+                                  {onOpenPrintDuesModal && (
+                                    <button
+                                      onClick={() => {
+                                        setActiveCopyMenuId(null);
+                                        onOpenPrintDuesModal(camp.id);
+                                      }}
+                                      className="w-full text-left px-3 py-2.5 sm:py-2 rounded-xl sm:rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 transition-colors cursor-pointer active:scale-98 border-t border-slate-100 dark:border-slate-800 pt-2"
+                                    >
+                                      <div
+                                        style={{ backgroundColor: activePreset.primaryLight, color: activePreset.primary }}
+                                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                                      >
+                                        <ReceiptText className="w-4 h-4" />
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <div className="font-bold text-slate-800 dark:text-slate-100">{t('campaigns.export_single_campaign_img', 'Xuất ảnh đóng quỹ đợt này')}</div>
+                                        <div className="text-[11px] text-slate-400">{t('campaigns.export_single_campaign_img_desc', 'Tạo ảnh danh sách & mã QR VietQR')}</div>
+                                      </div>
+                                    </button>
+                                  )}
+                                </div>
                               </div>
-
-                              {onOpenPrintDuesModal && (
-                                <button
-                                  onClick={() => {
-                                    setActiveCopyMenuId(null);
-                                    onOpenPrintDuesModal(camp.id);
-                                  }}
-                                  className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-theme-light hover:text-theme-primary flex items-center gap-2 transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700 pb-1.5"
-                                >
-                                  <ReceiptText className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
-                                  <div>
-                                    <div className="font-semibold text-slate-800 dark:text-slate-100">{t('campaigns.export_single_campaign_img', 'Xuất ảnh đóng quỹ đợt này')}</div>
-                                    <div className="text-[10px] text-slate-400">{t('campaigns.export_single_campaign_img_desc', 'Tạo ảnh danh sách & mã QR VietQR')}</div>
-                                  </div>
-                                </button>
-                              )}
-
-                              <button
-                                onClick={() => copyCampaignSummary(camp)}
-                                className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-2 transition-colors cursor-pointer"
-                              >
-                                <Copy className="w-3.5 h-3.5 text-purple-600" />
-                                <div>
-                                  <div className="font-semibold">{t('campaigns.copy_full_report', 'Báo cáo đầy đủ')}</div>
-                                  <div className="text-[10px] text-slate-400">{t('campaigns.copy_full_report_desc', 'Gồm tiến độ, đã nộp & chưa nộp')}</div>
-                                </div>
-                              </button>
-
-                              <button
-                                onClick={() => copyUnpaidReminder(camp)}
-                                className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/50 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-2 transition-colors cursor-pointer"
-                              >
-                                <BellRing className="w-3.5 h-3.5 text-amber-500" />
-                                <div>
-                                  <div className="font-semibold">{t('campaigns.copy_unpaid_list', 'Danh sách nhắc nộp')} ({unpaidMembers.length})</div>
-                                  <div className="text-[10px] text-slate-400">{t('campaigns.copy_unpaid_list_desc', 'Chỉ người chưa hoàn thành')}</div>
-                                </div>
-                              </button>
-
-                              <button
-                                onClick={() => copyTransferSyntax(camp)}
-                                className="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-[var(--theme-primary)] flex items-center gap-2 transition-colors cursor-pointer border-t border-slate-100 dark:border-slate-700 mt-1 pt-1.5"
-                              >
-                                <CreditCard className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
-                                <div>
-                                  <div className="font-semibold">{t('campaigns.copy_transfer_syntax', 'Cú pháp chuyển khoản')}</div>
-                                  <div className="text-[10px] text-slate-400 font-mono">{prefix} {camp.title}</div>
-                                </div>
-                              </button>
-                            </div>
+                            </>
                           )}
                         </div>
                       ) : (
                         <button
                           onClick={() => copyTransferSyntax(camp)}
                           title={t('campaigns.copy_transfer_syntax_tooltip', 'Sao chép cú pháp nội dung chuyển khoản')}
-                          className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
+                          className={`w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 min-h-[38px] ${
                             copiedKey === camp.id + '_syntax'
                               ? 'border-theme-primary bg-theme-light text-theme-primary'
                               : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 hover:border-slate-400'
                           }`}
                         >
                           {copiedKey === camp.id + '_syntax' ? (
-                            <Check className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
+                            <Check className="w-3.5 h-3.5 shrink-0" style={{ color: activePreset.primary }} />
                           ) : (
-                            <Copy className="w-3.5 h-3.5 text-slate-500" />
+                            <Copy className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                           )}
-                          <span>{copiedKey === camp.id + '_syntax' ? t('campaigns.copied_syntax_badge', 'Đã chép cú pháp!') : t('campaigns.copy_syntax_btn', 'Chép cú pháp')}</span>
+                          <span className="truncate">{copiedKey === camp.id + '_syntax' ? t('campaigns.copied_syntax_badge', 'Đã chép cú pháp!') : t('campaigns.copy_syntax_btn', 'Chép cú pháp')}</span>
                         </button>
                       )}
 
-                      {/* Edit Button */}
-                      {isAdmin && (
+                      {/* Desktop / Tablet Quick Actions (sm+) */}
+                      <div className="hidden sm:flex items-center gap-1">
+                        {/* Edit Button */}
+                        {isAdmin && (
+                          <button
+                            onClick={() => onOpenCampaignModal(camp)}
+                            title={t('common.edit', 'Sửa đợt thu')}
+                            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                        )}
+
+                        {/* Delete Button */}
+                        {isAdmin && (
+                          <button
+                            onClick={() => {
+                              showConfirm({
+                                title: t('dialog.confirm_delete_title', 'Xác Nhận Xóa Dữ Liệu'),
+                                message: `${t('dialog.confirm_delete_campaign', 'Bạn có chắc chắn muốn xóa đợt thu quỹ này? Lịch sử đóng góp của đợt thu sẽ bị xóa.')}\n(${camp.title})`,
+                                type: 'danger',
+                                confirmText: t('dialog.confirm_delete_btn', 'Đồng Ý Xóa'),
+                                cancelText: t('common.cancel', 'Hủy bỏ'),
+                                onConfirm: () => {
+                                  onDeleteCampaign(camp.id);
+                                  showToast(t('common.saved_success', 'Đã xóa đợt thu thành công!'), 'success');
+                                },
+                              });
+                            }}
+                            title={t('common.delete', 'Xóa đợt thu')}
+                            className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-all active:scale-95 cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+
+                        {/* Toggle Collapse Button */}
                         <button
-                          onClick={() => onOpenCampaignModal(camp)}
-                          title={t('common.edit', 'Sửa đợt thu')}
-                          className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
+                          onClick={() => toggleExpand(camp.id)}
+                          title={isExpanded ? t('campaigns.collapse_list', 'Thu gọn danh sách') : t('campaigns.expand_list', 'Mở rộng xem chi tiết từng người')}
+                          className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-2xs min-h-[38px]"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <span>{isExpanded ? t('campaigns.collapse_list_short', 'Thu gọn') : t('campaigns.expand_list_short', 'Chi tiết')}</span>
+                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
-                      )}
-
-                      {/* Delete Button */}
-                      {isAdmin && (
-                        <button
-                          onClick={() => {
-                            showConfirm({
-                              title: t('dialog.confirm_delete_title', 'Xác Nhận Xóa Dữ Liệu'),
-                              message: `${t('dialog.confirm_delete_campaign', 'Bạn có chắc chắn muốn xóa đợt thu quỹ này? Lịch sử đóng góp của đợt thu sẽ bị xóa.')}\n(${camp.title})`,
-                              type: 'danger',
-                              confirmText: t('dialog.confirm_delete_btn', 'Đồng Ý Xóa'),
-                              cancelText: t('common.cancel', 'Hủy bỏ'),
-                              onConfirm: () => {
-                                onDeleteCampaign(camp.id);
-                                showToast(t('common.saved_success', 'Đã xóa đợt thu thành công!'), 'success');
-                              },
-                            });
-                          }}
-                          title={t('common.delete', 'Xóa đợt thu')}
-                          className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-all active:scale-95 cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-
-                      {/* Toggle Collapse Button */}
-                      <button
-                        onClick={() => toggleExpand(camp.id)}
-                        title={isExpanded ? t('campaigns.collapse_list', 'Thu gọn danh sách') : t('campaigns.expand_list', 'Mở rộng xem chi tiết từng người')}
-                        className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
-                      >
-                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                      </button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Progress Metric Bar */}
                   <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
-                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
-                      <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 text-xs text-slate-600 dark:text-slate-400">
+                      <div className="truncate">
                         {t('campaigns.collected_label', 'Đã thu')}: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{displayVND(collected)}</strong> / {displayVND(camp.totalTarget)}
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
                         <span>{t('campaigns.progress_label', 'Tiến độ')}: <strong>{paidCount}/{camp.participants.length} {t('common.members_unit', 'người')}</strong></span>
                         <span className="font-bold" style={{ color: activePreset.primary }}>{progress}%</span>
                       </div>
@@ -569,6 +668,24 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                         style={{ width: `${progress}%`, background: activePreset.gradient }}
                       />
                     </div>
+
+                    {/* Full-width, prominent expand / collapse bar for easy one-tap access on all devices */}
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(camp.id)}
+                      className="w-full mt-2.5 pt-2 pb-0.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer group active:scale-[0.99] min-h-[40px]"
+                    >
+                      <span>
+                        {isExpanded
+                          ? t('campaigns.collapse_list', 'Thu gọn danh sách thành viên')
+                          : `${t('campaigns.expand_list', 'Xem chi tiết danh sách')} (${paidCount}/${camp.participants.length} ${t('common.members_unit', 'người đã nộp')})`}
+                      </span>
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform" />
+                      )}
+                    </button>
                   </div>
                 </div>
 
@@ -688,12 +805,12 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                                     <button
                                       onClick={() => copyMemberTransferSyntax(camp, member)}
                                       title={`${t('campaigns.copy_member_syntax_tooltip', 'Sao chép cú pháp chuyển khoản cho')} ${member.name}`}
-                                      className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 rounded transition-colors cursor-pointer"
+                                      className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 -m-1 rounded-lg transition-colors cursor-pointer active:scale-95 touch-manipulation"
                                     >
                                       {isMemberCopied ? (
-                                        <Check className="w-3 h-3 text-emerald-500" />
+                                        <Check className="w-3.5 h-3.5 text-emerald-500" />
                                       ) : (
-                                        <Copy className="w-3 h-3 opacity-60 group-hover/card:opacity-100" />
+                                        <Copy className="w-3.5 h-3.5 opacity-70 group-hover/card:opacity-100" />
                                       )}
                                     </button>
                                   )}

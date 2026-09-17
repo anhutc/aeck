@@ -348,6 +348,8 @@ export const DEFAULT_VI_DICTIONARY: Record<string, string> = {
   "campaigns.zalo_remind_intro": "Danh sách các thành viên chưa hoàn thành",
   "campaigns.collapse_tooltip": "Thu gọn danh sách",
   "campaigns.expand_tooltip": "Mở rộng xem chi tiết từng người",
+  "campaigns.collapse_list_short": "Thu gọn",
+  "campaigns.expand_list_short": "Chi tiết",
   "campaigns.sort_tooltip": "Sắp xếp danh sách đóng quỹ",
   "campaigns.qr_btn_tooltip": "Tạo mã QR chuyển khoản nhanh",
   "campaigns.copy_menu_tooltip": "Sao chép danh sách, báo cáo hoặc cú pháp chuyển khoản",

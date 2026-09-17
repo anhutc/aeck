@@ -195,29 +195,48 @@ export function getMemberRoles(member: { roles?: string[]; role?: string }): str
 
 export async function copyToClipboard(text: string): Promise<boolean> {
   if (!text) return false;
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-  } catch (err) {
-    // fallback below
-  }
 
+  // 1. First attempt: Synchronous document.execCommand('copy') while user gesture is 100% active.
+  // This works reliably inside sandboxed iframes, Android Chrome, and mobile Safari.
   try {
     const textArea = document.createElement('textarea');
     textArea.value = text;
     textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.width = '2em';
+    textArea.style.height = '2em';
+    textArea.style.padding = '0';
+    textArea.style.border = 'none';
+    textArea.style.outline = 'none';
+    textArea.style.boxShadow = 'none';
+    textArea.style.background = 'transparent';
+    textArea.style.fontSize = '16px'; // Prevent auto-zoom on iOS
+    textArea.setAttribute('readonly', '');
     document.body.appendChild(textArea);
+
     textArea.focus();
     textArea.select();
+    textArea.setSelectionRange(0, text.length);
+
     const successful = document.execCommand('copy');
     document.body.removeChild(textArea);
-    return successful;
+    if (successful) {
+      return true;
+    }
   } catch (err) {
-    console.error('Failed to copy to clipboard', err);
-    return false;
+    // Continue to navigator.clipboard
   }
+
+  // 2. Second attempt: Modern Navigator Clipboard API
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (err) {
+    console.warn('Navigator clipboard failed:', err);
+  }
+
+  return false;
 }

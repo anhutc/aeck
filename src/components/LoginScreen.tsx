@@ -170,7 +170,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   e.currentTarget.style.borderColor = '';
                   e.currentTarget.style.boxShadow = '';
                 }}
-                autoComplete="new-password"
+                autoComplete="current-password"
               />
               <button
                 type="button"

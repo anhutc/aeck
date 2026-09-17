@@ -365,7 +365,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
 
           {/* Period Selector Tabs */}
-          <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800/90 rounded-2xl text-xs font-semibold self-start sm:self-auto">
+          <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto p-1 bg-slate-100 dark:bg-slate-800/90 rounded-2xl text-xs font-semibold overflow-x-auto no-scrollbar">
             {(
               [
                 { id: 'this_month', label: t('reports.period_month', 'Tháng này') },
@@ -380,7 +380,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   key={p.id}
                   onClick={() => setPeriod(p.id)}
                   style={isSelected ? { color: activePreset.primary } : undefined}
-                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                  className={`flex-1 sm:flex-initial text-center px-2.5 sm:px-3 py-1.5 rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                     isSelected
                       ? 'bg-white dark:bg-slate-700 shadow-xs font-bold'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'

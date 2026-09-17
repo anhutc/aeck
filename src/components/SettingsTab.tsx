@@ -80,20 +80,21 @@ interface SettingsTabProps {
 const SETTING_NAV_ITEMS: Array<{
   id: SettingSubTab;
   label: string;
+  shortLabel: string;
   sublabel: string;
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   iconColor: string;
   activeColor: string;
 }> = [
-  { id: 'branding', label: 'Nhận Diện & Giao Diện', sublabel: 'Tên nhóm, bảng màu & giao diện, Toast', icon: Palette, iconColor: 'text-indigo-500', activeColor: 'border-indigo-600 text-indigo-700 bg-indigo-50' },
-  { id: 'notice', label: 'Nội Quy Hoạt Động', sublabel: 'Quy chế & điều khoản quỹ', icon: ScrollText, iconColor: 'text-emerald-500', activeColor: 'border-emerald-600 text-emerald-700 bg-emerald-50' },
-  { id: 'permissions', label: 'Phân Quyền Thành Viên', sublabel: 'Bảo mật & quyền hiển thị', icon: Sliders, iconColor: 'text-purple-500', activeColor: 'border-purple-600 text-purple-700 bg-purple-50' },
-  { id: 'security', label: 'Bảo Mật & Mật Khẩu', sublabel: 'Mật khẩu Admin & Thành viên', icon: KeyRound, iconColor: 'text-amber-500', activeColor: 'border-amber-600 text-amber-700 bg-amber-50' },
-  { id: 'bank', label: 'Tài Khoản & VietQR', sublabel: 'STK ngân hàng nhận tiền', icon: Building2, iconColor: 'text-teal-500', activeColor: 'border-teal-600 text-teal-700 bg-teal-50' },
-  { id: 'categories', label: 'Danh Mục Thu Chi', sublabel: 'Phân loại thu & chi', icon: Tag, iconColor: 'text-rose-500', activeColor: 'border-rose-600 text-rose-700 bg-rose-50' },
-  { id: 'language', label: 'Tùy Chỉnh Câu Chữ', sublabel: 'Toàn bộ từ ngữ & từ điển ứng dụng', icon: Languages, iconColor: 'text-sky-500', activeColor: 'border-sky-600 text-sky-700 bg-sky-50' },
-  { id: 'backup', label: 'Sao Lưu & Đồng Bộ', sublabel: 'Cloud Firestore & JSON', icon: Cloud, iconColor: 'text-blue-500', activeColor: 'border-blue-600 text-blue-700 bg-blue-50' },
-  { id: 'all', label: 'Tất Cả Cài Đặt', sublabel: 'Xem toàn bộ', icon: Sliders, iconColor: 'text-slate-500', activeColor: 'border-slate-800 text-slate-900 bg-slate-100' },
+  { id: 'branding', label: 'Nhận Diện & Giao Diện', shortLabel: 'Giao diện', sublabel: 'Tên nhóm, bảng màu & giao diện, Toast', icon: Palette, iconColor: 'text-indigo-500', activeColor: 'border-indigo-600 text-indigo-700 bg-indigo-50' },
+  { id: 'notice', label: 'Nội Quy Hoạt Động', shortLabel: 'Nội quy', sublabel: 'Quy chế & điều khoản quỹ', icon: ScrollText, iconColor: 'text-emerald-500', activeColor: 'border-emerald-600 text-emerald-700 bg-emerald-50' },
+  { id: 'permissions', label: 'Phân Quyền Thành Viên', shortLabel: 'Phân quyền', sublabel: 'Bảo mật & quyền hiển thị', icon: Sliders, iconColor: 'text-purple-500', activeColor: 'border-purple-600 text-purple-700 bg-purple-50' },
+  { id: 'security', label: 'Bảo Mật & Mật Khẩu', shortLabel: 'Bảo mật', sublabel: 'Mật khẩu Admin & Thành viên', icon: KeyRound, iconColor: 'text-amber-500', activeColor: 'border-amber-600 text-amber-700 bg-amber-50' },
+  { id: 'bank', label: 'Tài Khoản & VietQR', shortLabel: 'Tài khoản', sublabel: 'STK ngân hàng nhận tiền', icon: Building2, iconColor: 'text-teal-500', activeColor: 'border-teal-600 text-teal-700 bg-teal-50' },
+  { id: 'categories', label: 'Danh Mục Thu Chi', shortLabel: 'Danh mục', sublabel: 'Phân loại thu & chi', icon: Tag, iconColor: 'text-rose-500', activeColor: 'border-rose-600 text-rose-700 bg-rose-50' },
+  { id: 'language', label: 'Tùy Chỉnh Câu Chữ', shortLabel: 'Câu chữ', sublabel: 'Toàn bộ từ ngữ & từ điển ứng dụng', icon: Languages, iconColor: 'text-sky-500', activeColor: 'border-sky-600 text-sky-700 bg-sky-50' },
+  { id: 'backup', label: 'Sao Lưu & Đồng Bộ', shortLabel: 'Sao lưu', sublabel: 'Cloud Firestore & JSON', icon: Cloud, iconColor: 'text-blue-500', activeColor: 'border-blue-600 text-blue-700 bg-blue-50' },
+  { id: 'all', label: 'Tất Cả Cài Đặt', shortLabel: 'Tất cả', sublabel: 'Xem toàn bộ', icon: Sliders, iconColor: 'text-slate-500', activeColor: 'border-slate-800 text-slate-900 bg-slate-100' },
 ];
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({
@@ -146,6 +147,17 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
   // Active sub-tab in sidebar (desktop, tablet, mobile)
   const [activeSubTab, setActiveSubTab] = useState<SettingSubTab>('branding');
+  const mobileSubTabsRef = useRef<HTMLDivElement>(null);
+
+  // Auto scroll active pill into view on mobile when tab changes
+  useEffect(() => {
+    if (mobileSubTabsRef.current) {
+      const activeEl = document.getElementById(`mobile-subtab-${activeSubTab}`);
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+  }, [activeSubTab]);
 
   // App Branding state
   const [appTitle, setAppTitle] = useState(branding.appTitle || 'Quản Lý Quỹ');
@@ -719,41 +731,48 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         </div>
       </div>
 
-      {/* Mobile Horizontal Category Tabs Bar (Clean scrollable pills, non-sticky) */}
-      <div className="md:hidden relative w-full overflow-x-auto no-scrollbar py-1 -mx-1 px-1 flex items-center gap-1.5">
-        {SETTING_NAV_ITEMS.map((tab) => {
-          const isActive = activeSubTab === tab.id;
-          const isDirty = getTabDirty(tab.id);
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveSubTab(tab.id)}
-              style={isActive ? {
-                backgroundColor: activePreset.primary,
-                boxShadow: `0 2px 8px ${activePreset.primary}35`,
-              } : undefined}
-              className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                isActive
-                  ? 'text-white shadow-xs'
-                  : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{tab.label}</span>
-              {isDirty && (
-                <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-white animate-pulse' : 'bg-amber-500 animate-pulse'}`} />
-              )}
-            </button>
-          );
-        })}
+      {/* Mobile Horizontal Category Tabs Bar (Sticky directly below Top Navbar) */}
+      <div className="md:hidden sticky top-14 z-30 -mt-2 -mx-3 px-3 sm:-mx-6 sm:px-6 py-2 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 shadow-2xs transition-all">
+        <div
+          ref={mobileSubTabsRef}
+          className="overflow-x-auto no-scrollbar py-0.5 px-0.5 flex items-center gap-1.5 scroll-smooth"
+        >
+          {SETTING_NAV_ITEMS.map((tab) => {
+            const isActive = activeSubTab === tab.id;
+            const isDirty = getTabDirty(tab.id);
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                id={`mobile-subtab-${tab.id}`}
+                type="button"
+                onClick={() => setActiveSubTab(tab.id)}
+                title={tab.label}
+                style={isActive ? {
+                  backgroundColor: activePreset.primary,
+                  boxShadow: `0 2px 8px ${activePreset.primary}35`,
+                } : undefined}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
+                  isActive
+                    ? 'text-white shadow-xs'
+                    : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{tab.shortLabel}</span>
+                {isDirty && (
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? 'bg-white animate-pulse' : 'bg-amber-500 animate-pulse'}`} />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Main 2-Column Layout: Left Vertical Sidebar (Desktop & Tablet) + Right Settings Content */}
       <div className="flex flex-col md:flex-row gap-5 lg:gap-6 items-start">
         {/* Left Vertical Navigation Menu (Desktop & Tablet: md+) */}
-        <aside className="hidden md:block w-56 lg:w-64 shrink-0 bg-white dark:bg-slate-900 p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs md:sticky md:top-20 space-y-1">
+        <aside className="hidden md:block w-56 lg:w-64 shrink-0 bg-white dark:bg-slate-900 p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs md:sticky md:top-20 max-h-[calc(100vh-5.75rem)] overflow-y-auto custom-scrollbar space-y-1">
           <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center justify-between">
             <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
               Danh Mục Cài Đặt
