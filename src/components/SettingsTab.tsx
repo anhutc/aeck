@@ -879,11 +879,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                          Biểu Tượng
+                        <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                          <span>Icon / Biểu Tượng Website (Favicon)</span>
                         </label>
                         <input
                           type="text"
+                          title="Icon này hiển thị trên tab trình duyệt, thanh điều hướng và màn hình chính"
                           value={groupEmoji}
                           onChange={(e) => setGroupEmoji(e.target.value)}
                           className="w-full px-3 py-2 text-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-base focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
@@ -893,9 +894,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
                     {/* Quick Emoji selection */}
                     <div>
-                      <span className="text-[10px] text-slate-400 block mb-1">Chọn nhanh biểu tượng:</span>
-                      <div className="flex flex-wrap gap-1">
-                        {['💼', '🏫', '⚽', '🏡', '🎓', '✈️', '💰', '⭐', '🔥', '🏆', '🍕', '☕', '🎮', '🚗'].map(emoji => (
+                      <span className="text-[10px] text-slate-400 block mb-1">
+                        Chọn nhanh icon đại diện website & ứng dụng:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {['🌳', '💰', '💼', '⭐', '🔥', '🏆', '💎', '👑', '🌿', '🏫', '⚽', '🏡', '🎓', '✈️', '🎮', '🚗'].map(emoji => (
                           <button
                             key={emoji}
                             type="button"
@@ -914,6 +917,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                           </button>
                         ))}
                       </div>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
+                        💡 Icon này tự động đồng bộ làm <strong>Favicon trên tab trình duyệt</strong> và biểu tượng khi người dùng chọn <em>&ldquo;Thêm vào màn hình chính&rdquo;</em> trên điện thoại.
+                      </p>
                     </div>
 
                     <div>

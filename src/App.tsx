@@ -28,6 +28,7 @@ import {
 } from './data/initialData';
 import { Navbar } from './components/Navbar';
 import { LoginScreen } from './components/LoginScreen';
+import { updateFavicon } from './utils/favicon';
 import { OverviewTab } from './components/OverviewTab';
 import { TransactionsTab } from './components/TransactionsTab';
 import { CampaignsTab } from './components/CampaignsTab';
@@ -1055,7 +1056,13 @@ export default function App() {
     if (typeof document !== 'undefined') {
       document.title = `${newAppName} - Quản Lý Quỹ Minh Bạch`;
     }
+    updateFavicon(newBranding?.groupEmoji);
   };
+
+  // Synchronize website favicon with groupEmoji
+  useEffect(() => {
+    updateFavicon(branding?.groupEmoji);
+  }, [branding?.groupEmoji]);
 
   // Ensure the primary fund name stays synchronized with appTitle
   useEffect(() => {

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="50%" stop-color="#0d9488" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <linearGradient id="trunk" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#78350f" />
+      <stop offset="100%" stop-color="#92400e" />
+    </linearGradient>
+    <linearGradient id="star" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="100%" stop-color="#eab308" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#064e3b" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Background Squircle -->
+  <rect width="512" height="512" rx="128" fill="url(#bg)" />
+
+  <!-- Inner Soft Glow -->
+  <rect x="16" y="16" width="480" height="480" rx="116" fill="none" stroke="#ffffff" stroke-width="4" stroke-opacity="0.2" />
+
+  <!-- Main Tree & Star (Cây Khế & Khế Vàng) -->
+  <g filter="url(#shadow)">
+    <!-- Tree Trunk -->
+    <path d="M236 330 L236 410 C236 418 244 424 256 424 C268 424 276 418 276 410 L276 330 Z" fill="url(#trunk)" />
+
+    <!-- Tree Foliage Canopy -->
+    <!-- Bottom layer -->
+    <ellipse cx="256" cy="280" rx="130" ry="70" fill="#10b981" />
+    <!-- Middle layer -->
+    <circle cx="190" cy="240" r="75" fill="#34d399" />
+    <circle cx="322" cy="240" r="75" fill="#34d399" />
+    <!-- Top crown -->
+    <circle cx="256" cy="180" r="85" fill="#6ee7b7" />
+
+    <!-- Golden Star Fruit (Quả Khế Vàng) Accents -->
+    <!-- Star 1 (Center) -->
+    <path d="M256 220 L261 235 L276 235 L264 245 L268 260 L256 250 L244 260 L248 245 L236 235 L251 235 Z" fill="url(#star)" stroke="#ca8a04" stroke-width="2" />
+
+    <!-- Star 2 (Left) -->
+    <path d="M195 255 L198 265 L208 265 L200 272 L203 282 L195 275 L187 282 L190 272 L182 265 L192 265 Z" fill="url(#star)" stroke="#ca8a04" stroke-width="1.5" />
+
+    <!-- Star 3 (Right) -->
+    <path d="M317 255 L320 265 L330 265 L322 272 L325 282 L317 275 L309 282 L312 272 L304 265 L314 265 Z" fill="url(#star)" stroke="#ca8a04" stroke-width="1.5" />
+  </g>
+</svg>
