@@ -205,7 +205,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           }}
           className="p-3.5 sm:p-4 rounded-2xl border space-y-2.5"
         >
-          <div className="flex items-center justify-between pb-1">
+          <div
+            style={{ borderColor: `${activePreset.primary}20` }}
+            className="flex items-center justify-between pb-2 border-b"
+          >
             <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
               <span
                 style={{ backgroundColor: `${activePreset.primary}20`, color: activePreset.primary }}
@@ -227,7 +230,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             </span>
           </div>
 
-          <div className="space-y-2.5 text-xs">
+          <div className="space-y-2 text-xs pt-0.5">
 
             {/* Phone Number */}
             {ownerPhone && (
