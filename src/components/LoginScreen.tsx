@@ -205,10 +205,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           }}
           className="p-3.5 sm:p-4 rounded-2xl border space-y-2.5"
         >
-          <div
-            style={{ borderColor: `${activePreset.primary}20` }}
-            className="flex items-center justify-between pb-2 border-b"
-          >
+          <div className="flex items-center justify-between pb-1">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
               <span
                 style={{ backgroundColor: `${activePreset.primary}20`, color: activePreset.primary }}
@@ -230,11 +227,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             </span>
           </div>
 
-          <div className="space-y-2 text-xs">
+          <div className="space-y-2.5 text-xs">
 
             {/* Phone Number */}
             {ownerPhone && (
-              <div className="flex items-center justify-between pt-1 border-t border-slate-200/40 dark:border-slate-700/60">
+              <div className="flex items-center justify-between">
                 <span className="text-slate-500 dark:text-slate-400 text-[11px] flex items-center gap-1.5">
                   <span
                     style={{ backgroundColor: `${activePreset.primary}18`, color: activePreset.primary }}
@@ -270,7 +267,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
             {/* Bank Account Details */}
             {accountNumber && (
-              <div className="flex items-center justify-between pt-1 border-t border-slate-200/40 dark:border-slate-700/60">
+              <div
+                style={{ borderColor: `${activePreset.primary}20` }}
+                className="flex items-center justify-between pt-2 border-t"
+              >
                 <span className="text-slate-500 dark:text-slate-400 text-[11px] flex items-center gap-1.5">
                   <span
                     style={{ backgroundColor: `${activePreset.primary}18`, color: activePreset.primary }}
