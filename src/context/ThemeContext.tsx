@@ -30,7 +30,7 @@ interface ThemeContextType {
   privacyMode: boolean;
   setPrivacyMode: (privacy: boolean) => void;
   togglePrivacyMode: () => void;
-  maskAmount: (amount: string | number) => string;
+  maskAmount: (amount: string | number, prefix?: string) => string;
   activePreset: ThemePreset;
   isCustomizerOpen: boolean;
   setIsCustomizerOpen: (open: boolean) => void;
@@ -271,11 +271,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   }, []);
 
-  const maskAmount = useCallback((amount: string | number): string => {
+  const maskAmount = useCallback((amount: string | number, customPrefix?: string): string => {
     if (!privacyMode) {
-      return typeof amount === 'number' ? formatVND(amount) : amount;
+      const base = typeof amount === 'number' ? formatVND(amount) : amount;
+      return customPrefix ? `${customPrefix}${base}` : base;
     }
-    return '•••••••• ₫';
+    const str = typeof amount === 'string' ? amount.trim() : '';
+    let prefix = customPrefix || '';
+    if (!prefix) {
+      if (str.startsWith('+')) prefix = '+';
+      else if (str.startsWith('-')) prefix = '-';
+    }
+    return `${prefix}••••••••\u00A0₫`;
   }, [privacyMode]);
 
   const resetToDefaultTheme = useCallback(() => {

@@ -186,8 +186,8 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                 <div className="mt-3 flex items-baseline justify-between">
                   <div>
                     <span className="text-[11px] opacity-80 block">{t('theme_modal.total_fund_balance', 'Tổng số dư quỹ')}</span>
-                    <span className="text-xl sm:text-2xl font-black font-mono tracking-tight">
-                      {privacyMode ? '•••••••• ₫' : '45.850.000 ₫'}
+                    <span className="text-xl sm:text-2xl font-black font-mono tracking-tight whitespace-nowrap">
+                      {privacyMode ? '••••••••\u00A0₫' : '45.850.000\u00A0₫'}
                     </span>
                   </div>
                   <button

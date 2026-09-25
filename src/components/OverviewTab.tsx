@@ -62,8 +62,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   const [activeChartTab, setActiveChartTab] = useState<'monthly' | 'yearly' | 'trend' | 'categories'>('monthly');
 
   const displayVND = (amount: number, prefix: string = '') => {
-    if (privacyMode) return maskAmount(`${prefix}${formatVND(amount)}`);
-    return `${prefix}${formatVND(amount)}`;
+    return maskAmount(amount, prefix);
   };
 
   const appFundName = funds[0]?.name || branding?.appTitle?.trim() || t('funds.default_fund_name', 'AE Cây Khế');
@@ -246,7 +245,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   return (
     <div id="overview-tab-content" className="space-y-4 sm:space-y-5 pb-6">
       {/* 1. Main Fund Balance Banner (Clean, High Contrast, with Print Report action) */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-4 sm:p-5 shadow-xs border border-slate-200/80 dark:border-slate-800">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900/90 text-slate-900 dark:text-white p-4 sm:p-5 sm:p-6 shadow-sm border border-slate-200/90 dark:border-slate-800/90 backdrop-blur-xs">
+        {/* Ambient Glow Accent for High-End Financial Aesthetics */}
+        <div
+          aria-hidden="true"
+          style={{ background: `radial-gradient(circle at top right, ${activePreset.primary}20, transparent 65%)` }}
+          className="absolute -top-12 -right-12 w-64 h-64 rounded-full pointer-events-none blur-2xl opacity-70"
+        />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-5">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -273,7 +278,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
 
             <div className="flex items-baseline gap-3">
-              <div className="text-3xl sm:text-4xl font-mono font-black tracking-tight text-slate-900 dark:text-white">
+              <div className="text-3xl sm:text-4xl font-mono font-black tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
                 {displayVND(totalBalance)}
               </div>
             </div>

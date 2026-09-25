@@ -220,13 +220,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* Tồn Quỹ Capsule (with integrated cloud indicator + Privacy Eye) */}
               <div 
                 title={`Tổng tồn quỹ: ${privacyMode ? '•••••••• ₫' : formatVND(totalBalance)} • Bấm mắt để ẩn/hiện`}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs select-none"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs select-none shrink-0 whitespace-nowrap"
               >
                 <span className={`w-2 h-2 rounded-full shrink-0 ${
                   cloudSyncStatus === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500 animate-ping'
                 }`} />
-                <span className="text-xs font-black text-slate-900 dark:text-white font-mono">
-                  {privacyMode ? '•••••••• ₫' : formatVND(totalBalance)}
+                <span className="text-xs font-black text-slate-900 dark:text-white font-mono whitespace-nowrap leading-none">
+                  {privacyMode ? '••••••••\u00A0₫' : formatVND(totalBalance)}
                 </span>
                 <button
                   type="button"
@@ -235,7 +235,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     togglePrivacyMode();
                   }}
                   title={privacyMode ? 'Hiện số tiền quỹ' : 'Ẩn số tiền quỹ (Chế độ riêng tư)'}
-                  className="p-0.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer ml-0.5 transition-colors"
+                  className="p-1 -mr-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 cursor-pointer transition-colors shrink-0 flex items-center justify-center"
                 >
                   {privacyMode ? <EyeOff className="w-3.5 h-3.5" style={{ color: activePreset.primary }} /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
@@ -370,18 +370,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* Total Balance Pill */}
               <div 
                 title={`${t('nav.balance_title', 'Tổng tồn quỹ')}: ${privacyMode ? '•••••••• ₫' : formatVND(totalBalance)}`}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs select-none shrink-0 whitespace-nowrap"
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" style={{ color: activePreset.primary }}/>
-                <span className="text-xs font-black text-slate-900 dark:text-white font-mono">
-                  {privacyMode ? '•••••••• ₫' : formatVND(totalBalance)}
+                <span className="text-xs font-black text-slate-900 dark:text-white font-mono whitespace-nowrap leading-none">
+                  {privacyMode ? '••••••••\u00A0₫' : formatVND(totalBalance)}
                 </span>
                 <button
                   type="button"
                   onClick={togglePrivacyMode}
-                  className="p-0.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
+                  className="p-1 -mr-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 cursor-pointer transition-colors shrink-0 flex items-center justify-center"
                 >
-                  {privacyMode ? <EyeOff className="w-3 h-3" style={{ color: activePreset.primary }}/> : <Eye className="w-3 h-3" />}
+                  {privacyMode ? <EyeOff className="w-3.5 h-3.5" style={{ color: activePreset.primary }}/> : <Eye className="w-3.5 h-3.5" />}
                 </button>
               </div>
 

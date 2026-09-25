@@ -77,6 +77,22 @@ function deduplicateById<T extends { id: string }>(items: T[]): T[] {
   });
 }
 
+function sanitizeCampaigns(camps: ContributionCampaign[]): ContributionCampaign[] {
+  if (!Array.isArray(camps)) return [];
+  return camps.map(camp => ({
+    ...camp,
+    participants: (camp.participants || []).map(p => {
+      if (p.note && p.note.trim().toLowerCase() === 'chưa nộp') {
+        return {
+          ...p,
+          note: p.amountPaid >= p.amountRequired ? 'Đã nộp đủ tiền quỹ' : undefined,
+        };
+      }
+      return p;
+    }),
+  }));
+}
+
 export default function App() {
   const { activeCustomTexts, syncFromCloud } = useTranslation();
   const { showToast, showConfirm, setToastPosition } = useFeedback();
@@ -180,7 +196,7 @@ export default function App() {
   const [campaigns, setCampaigns] = useState<ContributionCampaign[]>(() => {
     try {
       const saved = safeStorage.getItem(STORAGE_KEYS.CAMPAIGNS);
-      return saved ? deduplicateById(JSON.parse(saved)) : INITIAL_CAMPAIGNS;
+      return saved ? sanitizeCampaigns(deduplicateById(JSON.parse(saved))) : INITIAL_CAMPAIGNS;
     } catch {
       return INITIAL_CAMPAIGNS;
     }
@@ -285,7 +301,7 @@ export default function App() {
           safeStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(newCats));
         }
         if (cloudData.campaigns && Array.isArray(cloudData.campaigns)) {
-          newCamps = deduplicateById(cloudData.campaigns);
+          newCamps = sanitizeCampaigns(deduplicateById(cloudData.campaigns));
           setCampaigns(newCamps);
           safeStorage.setItem(STORAGE_KEYS.CAMPAIGNS, JSON.stringify(newCamps));
         }
@@ -668,11 +684,17 @@ export default function App() {
           ...camp,
           participants: camp.participants.map(p => {
             if (p.memberId !== memberId) return p;
+            let effectiveNote = note !== undefined ? note : p.note;
+            if (amountPaid > 0 && effectiveNote && effectiveNote.trim().toLowerCase() === 'chưa nộp') {
+              effectiveNote = 'Đã nộp đủ tiền quỹ';
+            } else if (amountPaid === 0 && effectiveNote && effectiveNote.trim().toLowerCase() === 'chưa nộp') {
+              effectiveNote = undefined;
+            }
             return {
               ...p,
               amountPaid,
               paidDate: amountPaid > 0 ? paymentDate : undefined,
-              note: note !== undefined ? note : p.note,
+              note: effectiveNote,
             };
           }),
         };
@@ -852,7 +874,7 @@ export default function App() {
           ...c,
           fundId: c.fundId || 'fund_general',
         }));
-        setCampaigns(normalizedCamp);
+        setCampaigns(sanitizeCampaigns(normalizedCamp));
       }
 
       showToast('Đã nhập dữ liệu sao lưu thành công!', 'success');
@@ -971,7 +993,7 @@ export default function App() {
               safeStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(cleanCats));
             }
             if (cloudData.campaigns) {
-              const cleanCamps = deduplicateById(cloudData.campaigns);
+              const cleanCamps = sanitizeCampaigns(deduplicateById(cloudData.campaigns));
               setCampaigns(cleanCamps);
               safeStorage.setItem(STORAGE_KEYS.CAMPAIGNS, JSON.stringify(cleanCamps));
             }

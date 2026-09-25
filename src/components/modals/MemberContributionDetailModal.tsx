@@ -48,13 +48,12 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
   const handlePaymentUpdate = onUpdateParticipantPayment || onUpdatePayment;
   const { t } = useTranslation();
   const { showConfirm, showToast } = useFeedback();
-  const { activePreset, privacyMode } = useTheme();
+  const { activePreset, privacyMode, maskAmount } = useTheme();
   const [filterStatus, setFilterStatus] = useState<'all' | 'unpaid' | 'paid'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const displayVND = (val: number) => {
-    if (privacyMode) return '•••••••• ₫';
-    return formatVND(val);
+  const displayVND = (val: number, pfx: string = '') => {
+    return maskAmount(val, pfx);
   };
 
   const fundMap = useMemo(() => new Map(funds.map(f => [f.id, f])), [funds]);
@@ -417,7 +416,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                                 • {t('members.detail_campaign_paid_date', 'Ngày nộp:')} {formatDate(item.paidDate)}
                               </span>
                             )}
-                            {item.note && (
+                            {item.note && item.note.trim().toLowerCase() !== 'chưa nộp' && (
                               <span className="italic text-slate-400">
                                 • "{item.note}"
                               </span>
@@ -477,7 +476,7 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
                                       confirmText: t('members.detail_cancel_pay_confirm_btn', 'Hủy Ghi Nhận'),
                                       cancelText: t('common.cancel', 'Hủy bỏ'),
                                       onConfirm: () => {
-                                        handlePaymentUpdate(item.campaign.id, member.id, 0, undefined, t('campaigns.unpaid_status_label', 'Chưa nộp'));
+                                        handlePaymentUpdate(item.campaign.id, member.id, 0, undefined, '');
                                         showToast(t('members.detail_cancel_pay_toast', 'Đã hủy trạng thái nộp tiền'), 'info');
                                       },
                                     });

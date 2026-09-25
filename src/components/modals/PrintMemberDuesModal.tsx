@@ -969,7 +969,9 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                                         {item.paid > 0 && (
                                           <span className="text-emerald-700 font-semibold">• {t('dues.th_paid', 'Đã nộp')}: {formatVND(item.paid)}</span>
                                         )}
-                                        {item.note && <span className="italic text-slate-400">• {item.note}</span>}
+                                        {item.note && item.note.trim().toLowerCase() !== 'chưa nộp' && (
+                                          <span className="italic text-slate-400">• {item.note}</span>
+                                        )}
                                       </div>
                                     </div>
                                   ))}
@@ -1129,7 +1131,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                                     <span>
                                       {t('campaigns.target_amount', 'Mục tiêu')}: <strong className="text-slate-700">{formatVND(item.required)}</strong>
                                     </span>
-                                    {item.note && (
+                                    {item.note && item.note.trim().toLowerCase() !== 'chưa nộp' && (
                                       <span className="italic text-slate-400 truncate max-w-[150px]">
                                         ({item.note})
                                       </span>

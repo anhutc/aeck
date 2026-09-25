@@ -53,7 +53,11 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
           : requiredAmount
       );
       setPaidDate(initialPaidDate || targetLaunchDate || today);
-      setNote(initialNote || t('campaigns.paid_in_full_default_note', 'Đã nộp đủ tiền quỹ'));
+      const isUnpaidNote =
+        !initialNote ||
+        initialNote.trim().toLowerCase() === 'chưa nộp' ||
+        initialNote === t('campaigns.unpaid_status_label', 'Chưa nộp');
+      setNote(isUnpaidNote ? t('campaigns.paid_in_full_default_note', 'Đã nộp đủ tiền quỹ') : initialNote);
       setError('');
     }
   }, [isOpen, requiredAmount, initialPaidAmount, initialPaidDate, initialNote, targetLaunchDate, t]);
@@ -73,7 +77,13 @@ export const CampaignPayModal: React.FC<CampaignPayModalProps> = ({
       return;
     }
 
-    onConfirmPayment(parsedAmount, paidDate, note.trim());
+    const trimmedNote = note.trim();
+    const finalNote =
+      trimmedNote.toLowerCase() === 'chưa nộp' || trimmedNote === t('campaigns.unpaid_status_label', 'Chưa nộp')
+        ? t('campaigns.paid_in_full_default_note', 'Đã nộp đủ tiền quỹ')
+        : trimmedNote;
+
+    onConfirmPayment(parsedAmount, paidDate, finalNote);
     onClose();
   };
 

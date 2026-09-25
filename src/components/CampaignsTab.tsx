@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ContributionCampaign, Fund, Member, AppBranding } from '../types';
-import { formatVND, formatDate, copyToClipboard } from '../utils/formatters';
+import { formatVND, formatDate, copyToClipboard, getAvatarGradient } from '../utils/formatters';
 import { CampaignPayModal } from './modals/CampaignPayModal';
 import { useTranslation } from '../i18n/LanguageContext';
 import { useFeedback } from '../context/FeedbackContext';
@@ -135,7 +135,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
       payModalData.member.id,
       0,
       undefined,
-      t('campaigns.unpaid_status_label', 'Chưa nộp')
+      ''
     );
   };
 
@@ -656,16 +656,26 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                       <div className="truncate">
                         {t('campaigns.collected_label', 'Đã thu')}: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{displayVND(collected)}</strong> / {displayVND(camp.totalTarget)}
                       </div>
-                      <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
                         <span>{t('campaigns.progress_label', 'Tiến độ')}: <strong>{paidCount}/{camp.participants.length} {t('common.members_unit', 'người')}</strong></span>
-                        <span className="font-bold" style={{ color: activePreset.primary }}>{progress}%</span>
+                        {progress >= 100 ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200/80 dark:border-emerald-800/60">
+                            🎉 100%
+                          </span>
+                        ) : (
+                          <span className="font-bold text-xs" style={{ color: activePreset.primary }}>{progress}%</span>
+                        )}
                       </div>
                     </div>
 
-                    <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className="w-full h-3 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-700/50 shadow-inner">
                       <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${progress}%`, background: activePreset.gradient }}
+                        className="h-full rounded-full transition-all duration-700 relative"
+                        style={{
+                          width: `${progress}%`,
+                          background: progress >= 100 ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : activePreset.gradient,
+                          boxShadow: progress > 0 ? `0 0 10px ${activePreset.primary}50` : undefined,
+                        }}
                       />
                     </div>
 
@@ -782,22 +792,31 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                           const isPartial = p.amountPaid > 0 && p.amountPaid < p.amountRequired;
                           const memberCopiedKey = `${camp.id}_${p.memberId}`;
                           const isMemberCopied = copiedKey === memberCopiedKey;
+                          const memberName = member?.name || t('members.role_member', 'Thành viên');
 
                           return (
                             <div
                               key={p.memberId}
-                              className={`p-3 rounded-xl border transition-all duration-200 flex items-center justify-between gap-2 group/card ${
+                              className={`p-3 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-2.5 group/card ${
                                 isPaid
-                                  ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50 hover:border-emerald-300 hover:shadow-xs'
+                                  ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-200/80 dark:border-emerald-900/50 hover:border-emerald-300 hover:shadow-xs'
                                   : isPartial
-                                  ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50 hover:border-amber-300 hover:shadow-xs'
-                                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs'
+                                  ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-200/80 dark:border-amber-900/50 hover:border-amber-300 hover:shadow-xs'
+                                  : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800/90 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs'
                               }`}
                             >
+                              {/* Member Avatar */}
+                              <div
+                                style={{ background: getAvatarGradient(memberName) }}
+                                className="w-8 h-8 rounded-xl text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs"
+                              >
+                                {memberName.slice(0, 1).toUpperCase()}
+                              </div>
+
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">
                                   <span className="font-bold text-xs text-slate-900 dark:text-white truncate">
-                                    {member?.name || t('members.role_member', 'Thành viên')}
+                                    {memberName}
                                   </span>
 
                                   {/* Quick copy syntax button for this specific member */}

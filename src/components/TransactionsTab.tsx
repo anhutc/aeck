@@ -47,8 +47,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
 
   const displayVND = (amount: number, prefix: string = '') => {
-    if (privacyMode) return maskAmount(`${prefix}${formatVND(amount)}`);
-    return `${prefix}${formatVND(amount)}`;
+    return maskAmount(amount, prefix);
   };
   const [selectedBillFilter, setSelectedBillFilter] = useState<'all' | 'has_bill' | 'no_bill'>('all');
   const [startDate, setStartDate] = useState<string>('');
@@ -369,91 +368,111 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
         </div>
       </div>
 
-      {/* Mobile Card List View (< md) */}
-      <div className="block md:hidden space-y-2.5">
+      {/* Mobile Smart Card List View (< md) */}
+      <div className="block md:hidden space-y-3">
         {filteredTransactions.length > 0 ? (
           filteredTransactions.map((tx) => {
             const cat = catMap.get(tx.categoryId);
             const isIncome = tx.type === 'income';
             const isSelected = selectedTxIds.includes(tx.id);
+            const catColor = cat?.color || (isIncome ? '#10b981' : '#ef4444');
 
             return (
               <div
                 key={tx.id}
-                style={isSelected ? { borderColor: activePreset.primary } : undefined}
-                className={`p-3.5 rounded-xl border transition-all ${
+                style={isSelected ? { borderColor: activePreset.primary, boxShadow: `0 0 0 1px ${activePreset.primary}40` } : undefined}
+                className={`p-4 rounded-2xl border transition-all duration-200 active:scale-[0.99] ${
                   isSelected
-                    ? 'bg-slate-50/90 dark:bg-slate-800/80 shadow-xs'
-                    : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700'
+                    ? 'bg-slate-50/95 dark:bg-slate-800/90 shadow-sm'
+                    : 'bg-white/95 dark:bg-slate-900/90 border-slate-200/90 dark:border-slate-800/90 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 backdrop-blur-xs'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    {isAdmin && (
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggleSelectTx(tx.id)}
-                        style={{ accentColor: activePreset.primary }}
-                        className="rounded w-4 h-4 cursor-pointer"
-                      />
-                    )}
-                    <span className="font-mono text-xs text-slate-500 dark:text-slate-400 font-medium">
-                      {formatDate(tx.date)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium"
+                {/* Top Row: Category Icon + Title/Date + Amount */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    {/* Category Icon Badge */}
+                    <div
                       style={{
-                        backgroundColor: `${cat?.color || activePreset.primary}15`,
-                        color: cat?.color || activePreset.primary,
+                        backgroundColor: `${catColor}18`,
+                        color: catColor,
+                        borderColor: `${catColor}30`,
                       }}
+                      className="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-2xs"
                     >
-                      <Tag className="w-3 h-3" />
-                      {cat?.name || t('common.other', 'Khác')}
-                    </span>
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-[11px] ${
-                        isIncome
-                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60'
-                          : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200/80 dark:border-rose-800/60'
-                      }`}
-                    >
-                      {isIncome ? '+' : '-'}{isIncome ? t('transactions.type_income', 'Thu') : t('transactions.type_expense', 'Chi')}
-                    </span>
+                      <Tag className="w-5 h-5" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {isAdmin && (
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectTx(tx.id)}
+                            style={{ accentColor: activePreset.primary }}
+                            className="rounded w-3.5 h-3.5 cursor-pointer mr-0.5"
+                          />
+                        )}
+                        <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-medium">
+                          {formatDate(tx.date)}
+                        </span>
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.2 rounded-md text-[10px] font-bold"
+                          style={{
+                            backgroundColor: `${catColor}15`,
+                            color: catColor,
+                          }}
+                        >
+                          {cat?.name || t('common.other', 'Khác')}
+                        </span>
+                      </div>
+
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1 leading-snug line-clamp-2">
+                        {tx.description}
+                      </h4>
+                    </div>
                   </div>
-                </div>
 
-                <div className="text-sm font-semibold text-slate-900 dark:text-white mb-2.5 break-words">
-                  {tx.description}
-                </div>
-
-                {tx.billImage && (
-                  <div className="mb-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setViewingBillTx(tx)}
-                      style={{ color: activePreset.primary }}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:opacity-80 transition-opacity cursor-pointer active:scale-95"
-                    >
-                      <Receipt className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
-                      <span>{t('transactions.bill_view_btn', 'Xem ảnh')}</span>
-                    </button>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <div>
-                    <span className="text-[10px] text-slate-400 block uppercase font-bold">{t('common.amount', 'Số tiền')}</span>
+                  {/* Amount Column */}
+                  <div className="text-right shrink-0">
                     <span
-                      className={`font-mono font-bold text-base ${
+                      className={`font-mono font-black text-base block ${
                         isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                       }`}
                     >
                       {displayVND(tx.amount, isIncome ? '+' : '-')}
                     </span>
+                    <span
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded-md font-bold text-[10px] mt-0.5 ${
+                        isIncome
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40'
+                          : 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800/40'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${isIncome ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                      {isIncome ? t('transactions.type_income', 'Thu vào') : t('transactions.type_expense', 'Chi ra')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Bottom Row: Actions & Bill Receipt */}
+                <div className="flex items-center justify-between pt-2.5 mt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+                  <div className="flex items-center gap-2">
+                    {tx.billImage ? (
+                      <button
+                        type="button"
+                        onClick={() => setViewingBillTx(tx)}
+                        style={{ color: activePreset.primary, borderColor: `${activePreset.primary}30` }}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-50 dark:bg-slate-800/80 border hover:opacity-85 transition-all cursor-pointer active:scale-95 shadow-2xs"
+                      >
+                        <Receipt className="w-3.5 h-3.5" style={{ color: activePreset.primary }} />
+                        <span>{t('transactions.bill_view_btn', 'Xem hóa đơn')}</span>
+                      </button>
+                    ) : (
+                      <span className="text-[11px] text-slate-400 italic">
+                        {t('transactions.no_bill', 'Không có chứng từ')}
+                      </span>
+                    )}
                   </div>
 
                   {isAdmin && (
@@ -461,9 +480,9 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                       <button
                         onClick={() => onOpenTransactionModal(tx.type, tx)}
                         title={t('common.edit', 'Sửa')}
-                        className="p-2 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => {
@@ -480,9 +499,9 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                           });
                         }}
                         title={t('common.delete', 'Xóa')}
-                        className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   )}
@@ -491,7 +510,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
             );
           })
         ) : (
-          <div className="py-10 text-center bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-400 p-4">
+          <div className="py-10 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-400 p-4">
             <p className="text-sm font-medium">{t('transactions.empty', 'Không tìm thấy giao dịch nào phù hợp')}</p>
             <p className="text-xs mt-1 text-slate-500">{t('transactions.empty_hint', 'Thử thay đổi bộ lọc hoặc tạo giao dịch mới')}</p>
           </div>

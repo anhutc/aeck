@@ -240,3 +240,24 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 
   return false;
 }
+
+const AVATAR_GRADIENTS = [
+  'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', // Indigo to Purple
+  'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)', // Blue to Cyan
+  'linear-gradient(135deg, #059669 0%, #10b981 100%)', // Emerald to Green
+  'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)', // Amber to Orange
+  'linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)', // Pink to Rose
+  'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)', // Violet to Pink
+  'linear-gradient(135deg, #0d9488 0%, #0284c7 100%)', // Teal to Sky
+  'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)', // Indigo to Cyan
+];
+
+export function getAvatarGradient(name: string): string {
+  if (!name) return AVATAR_GRADIENTS[0];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % AVATAR_GRADIENTS.length;
+  return AVATAR_GRADIENTS[index];
+}

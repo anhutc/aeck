@@ -114,7 +114,9 @@ export const CampaignModal: React.FC<CampaignModalProps> = ({
         amountRequired: numAmount,
         amountPaid: existing ? existing.amountPaid : 0,
         paidDate: existing?.paidDate,
-        note: existing?.note,
+        note: existing?.note && existing.note.trim().toLowerCase() === 'chưa nộp'
+          ? (existing.amountPaid >= numAmount ? 'Đã nộp đủ tiền quỹ' : undefined)
+          : existing?.note,
         transactionId: existing?.transactionId,
       };
     });
