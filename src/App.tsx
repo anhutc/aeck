@@ -398,9 +398,13 @@ export default function App() {
       setTimeout(() => {
         isSyncingFromCloud.current = false;
       }, 300);
-    }, (err) => {
-      console.warn('Firestore subscription notice:', err);
-      setCloudSyncStatus('error');
+    }, (err: any) => {
+      if (err?.code === 'unavailable') {
+        console.info('Firestore is operating in offline mode / reconnecting...');
+      } else {
+        console.warn('Firestore subscription notice:', err);
+        setCloudSyncStatus('error');
+      }
     });
 
     return () => unsubscribe();

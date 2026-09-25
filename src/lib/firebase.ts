@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, Firestore } from 'firebase/firestore';
 import defaultFirebaseConfig from '../../firebase-applet-config.json';
 import { FirebaseCustomConfig } from '../types';
 import { safeStorage } from '../utils/safeStorage';
@@ -50,11 +50,26 @@ if (!getApps().length) {
   appInstance = getApp();
 }
 
-// Initialize Cloud Firestore using the databaseId from configuration
-export const db: Firestore = getFirestore(
-  appInstance, 
-  activeConfig.firestoreDatabaseId || (activeInfo.isCustom ? '(default)' : defaultFirebaseConfig.firestoreDatabaseId || '(default)')
-);
+const targetDbId =
+  activeConfig.firestoreDatabaseId ||
+  (activeInfo.isCustom ? '(default)' : defaultFirebaseConfig.firestoreDatabaseId || '(default)');
+
+// Initialize Cloud Firestore with auto-detect long polling enabled to handle proxy / iframe / restricted networks reliably
+let firestoreInstance: Firestore;
+try {
+  firestoreInstance = initializeFirestore(
+    appInstance,
+    {
+      experimentalAutoDetectLongPolling: true,
+    },
+    targetDbId
+  );
+} catch {
+  // If already initialized, fallback to getFirestore
+  firestoreInstance = getFirestore(appInstance, targetDbId);
+}
+
+export const db: Firestore = firestoreInstance;
 
 export { defaultFirebaseConfig };
 

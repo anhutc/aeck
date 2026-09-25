@@ -365,87 +365,47 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
             return (
               <div
                 key={camp.id}
-                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 overflow-hidden"
+                className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 relative ${
+                  isMenuOpen ? 'z-40' : 'z-1'
+                }`}
               >
                 {/* Campaign Header Card */}
-                <div className="p-4 sm:p-5">
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
-                    <div className="flex items-start justify-between sm:justify-start gap-2.5 sm:gap-3.5 w-full lg:w-auto">
-                      <div className="flex items-start gap-2.5 sm:gap-3.5 min-w-0 flex-1">
-                        <div
-                          style={{ backgroundColor: activePreset.primaryLight, color: activePreset.primary }}
-                          className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
-                        >
-                          <Target className="w-5 h-5" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">
-                            <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white break-words">
-                              {camp.title}
-                            </h3>
-                            <span
-                              style={{
-                                backgroundColor: `${activePreset.primary}12`,
-                                color: activePreset.primary,
-                                borderColor: `${activePreset.primary}30`,
-                              }}
-                              className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 border shrink-0"
-                            >
-                              <Calendar className="w-3 h-3" style={{ color: activePreset.primary }} />
-                              <span>{t('campaigns.launch_date_prefix', 'Phát động')}: {formatDate(camp.launchDate || camp.createdAt)}</span>
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-500 mt-1 line-clamp-2 sm:line-clamp-none">
-                            {camp.description || t('campaigns.no_description', 'Chưa có mô tả')}
-                          </p>
-                        </div>
+                <div className="p-3.5 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div
+                        style={{ backgroundColor: activePreset.primaryLight, color: activePreset.primary }}
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 shadow-2xs"
+                      >
+                        <Target className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
-
-                      {/* Header quick action icons on mobile (< sm): Edit, Delete, Collapse/Expand */}
-                      <div className="flex items-center gap-1 shrink-0 sm:hidden">
-                        {isAdmin && (
-                          <button
-                            onClick={() => onOpenCampaignModal(camp)}
-                            title={t('common.edit', 'Sửa đợt thu')}
-                            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                        )}
-                        {isAdmin && (
-                          <button
-                            onClick={() => {
-                              showConfirm({
-                                title: t('dialog.confirm_delete_title', 'Xác Nhận Xóa Dữ Liệu'),
-                                message: `${t('dialog.confirm_delete_campaign', 'Bạn có chắc chắn muốn xóa đợt thu quỹ này? Lịch sử đóng góp của đợt thu sẽ bị xóa.')}\n(${camp.title})`,
-                                type: 'danger',
-                                confirmText: t('dialog.confirm_delete_btn', 'Đồng Ý Xóa'),
-                                cancelText: t('common.cancel', 'Hủy bỏ'),
-                                onConfirm: () => {
-                                  onDeleteCampaign(camp.id);
-                                  showToast(t('common.saved_success', 'Đã xóa đợt thu thành công!'), 'success');
-                                },
-                              });
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center flex-wrap gap-1.5">
+                          <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white break-words">
+                            {camp.title}
+                          </h3>
+                          <span
+                            style={{
+                              backgroundColor: `${activePreset.primary}12`,
+                              color: activePreset.primary,
+                              borderColor: `${activePreset.primary}30`,
                             }}
-                            title={t('common.delete', 'Xóa đợt thu')}
-                            className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-all active:scale-95 cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+                            className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 border shrink-0"
                           >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                            <Calendar className="w-3 h-3" style={{ color: activePreset.primary }} />
+                            <span>{t('campaigns.launch_date_prefix', 'Phát động')}: {formatDate(camp.launchDate || camp.createdAt)}</span>
+                          </span>
+                        </div>
+                        {camp.description && camp.description.trim() && (
+                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
+                            {camp.description}
+                          </p>
                         )}
-                        <button
-                          onClick={() => toggleExpand(camp.id)}
-                          title={isExpanded ? t('campaigns.collapse_list', 'Thu gọn danh sách') : t('campaigns.expand_list', 'Mở rộng xem chi tiết từng người')}
-                          className="px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700 transition-all active:scale-95 cursor-pointer shadow-2xs min-h-[36px]"
-                        >
-                          <span>{isExpanded ? t('campaigns.collapse_list_short', 'Thu gọn') : t('campaigns.expand_list_short', 'Chi tiết')}</span>
-                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                        </button>
                       </div>
                     </div>
 
-                    {/* Quick Stats & Action Controls (Full-width 2-column grid on mobile, inline on desktop) */}
-                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full lg:w-auto shrink-0 pt-1 lg:pt-0">
+                    {/* Quick Stats & Action Controls (Inline toolbar) */}
+                    <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-center flex-wrap">
                       {/* Quick VietQR Button */}
                       <button
                         onClick={() => onOpenQRModal(camp.amountPerMember, `${prefix} ${camp.title}`.trim().toUpperCase())}
@@ -455,10 +415,10 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                           backgroundColor: `${activePreset.primary}10`,
                           color: activePreset.primary,
                         }}
-                        className="w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 hover:opacity-85 hover:shadow-xs active:scale-95 transition-all cursor-pointer min-h-[38px]"
+                        className="px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 hover:opacity-85 hover:shadow-2xs active:scale-95 transition-all cursor-pointer min-h-[34px]"
                       >
-                        <QrCode className="w-4 h-4 shrink-0" style={{ color: activePreset.primary }} />
-                        <span className="truncate">{t('campaigns.qr_code_label', 'Mã QR')} ({displayVND(camp.amountPerMember)})</span>
+                        <QrCode className="w-3.5 h-3.5 shrink-0" style={{ color: activePreset.primary }} />
+                        <span>{t('campaigns.qr_code_label', 'Mã QR')} ({displayVND(camp.amountPerMember)})</span>
                       </button>
 
                       {/* Admin Copy Dropdown Menu vs Member Direct Syntax Copy */}
@@ -601,57 +561,44 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                         </button>
                       )}
 
-                      {/* Desktop / Tablet Quick Actions (sm+) */}
-                      <div className="hidden sm:flex items-center gap-1">
-                        {/* Edit Button */}
-                        {isAdmin && (
-                          <button
-                            onClick={() => onOpenCampaignModal(camp)}
-                            title={t('common.edit', 'Sửa đợt thu')}
-                            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                        )}
-
-                        {/* Delete Button */}
-                        {isAdmin && (
-                          <button
-                            onClick={() => {
-                              showConfirm({
-                                title: t('dialog.confirm_delete_title', 'Xác Nhận Xóa Dữ Liệu'),
-                                message: `${t('dialog.confirm_delete_campaign', 'Bạn có chắc chắn muốn xóa đợt thu quỹ này? Lịch sử đóng góp của đợt thu sẽ bị xóa.')}\n(${camp.title})`,
-                                type: 'danger',
-                                confirmText: t('dialog.confirm_delete_btn', 'Đồng Ý Xóa'),
-                                cancelText: t('common.cancel', 'Hủy bỏ'),
-                                onConfirm: () => {
-                                  onDeleteCampaign(camp.id);
-                                  showToast(t('common.saved_success', 'Đã xóa đợt thu thành công!'), 'success');
-                                },
-                              });
-                            }}
-                            title={t('common.delete', 'Xóa đợt thu')}
-                            className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-all active:scale-95 cursor-pointer"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-
-                        {/* Toggle Collapse Button */}
+                      {/* Edit Button */}
+                      {isAdmin && (
                         <button
-                          onClick={() => toggleExpand(camp.id)}
-                          title={isExpanded ? t('campaigns.collapse_list', 'Thu gọn danh sách') : t('campaigns.expand_list', 'Mở rộng xem chi tiết từng người')}
-                          className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-2xs min-h-[38px]"
+                          onClick={() => onOpenCampaignModal(camp)}
+                          title={t('common.edit', 'Sửa đợt thu')}
+                          className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 cursor-pointer min-h-[34px] min-w-[34px] flex items-center justify-center border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
                         >
-                          <span>{isExpanded ? t('campaigns.collapse_list_short', 'Thu gọn') : t('campaigns.expand_list_short', 'Chi tiết')}</span>
-                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          <Edit2 className="w-4 h-4" />
                         </button>
-                      </div>
+                      )}
+
+                      {/* Delete Button */}
+                      {isAdmin && (
+                        <button
+                          onClick={() => {
+                            showConfirm({
+                              title: t('dialog.confirm_delete_title', 'Xác Nhận Xóa Dữ Liệu'),
+                              message: `${t('dialog.confirm_delete_campaign', 'Bạn có chắc chắn muốn xóa đợt thu quỹ này? Lịch sử đóng góp của đợt thu sẽ bị xóa.')}\n(${camp.title})`,
+                              type: 'danger',
+                              confirmText: t('dialog.confirm_delete_btn', 'Đồng Ý Xóa'),
+                              cancelText: t('common.cancel', 'Hủy bỏ'),
+                              onConfirm: () => {
+                                onDeleteCampaign(camp.id);
+                                showToast(t('common.saved_success', 'Đã xóa đợt thu thành công!'), 'success');
+                              },
+                            });
+                          }}
+                          title={t('common.delete', 'Xóa đợt thu')}
+                          className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-all active:scale-95 cursor-pointer min-h-[34px] min-w-[34px] flex items-center justify-center border border-transparent hover:border-rose-200 dark:hover:border-rose-900"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
                   {/* Progress Metric Bar */}
-                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+                  <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 text-xs text-slate-600 dark:text-slate-400">
                       <div className="truncate">
                         {t('campaigns.collected_label', 'Đã thu')}: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{displayVND(collected)}</strong> / {displayVND(camp.totalTarget)}
@@ -659,7 +606,7 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                       <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
                         <span>{t('campaigns.progress_label', 'Tiến độ')}: <strong>{paidCount}/{camp.participants.length} {t('common.members_unit', 'người')}</strong></span>
                         {progress >= 100 ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200/80 dark:border-emerald-800/60">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded-full border border-emerald-200/80 dark:border-emerald-800/60">
                             🎉 100%
                           </span>
                         ) : (
@@ -668,36 +615,36 @@ export const CampaignsTab: React.FC<CampaignsTabProps> = ({
                       </div>
                     </div>
 
-                    <div className="w-full h-3 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-700/50 shadow-inner">
+                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-700/50 shadow-2xs">
                       <div
                         className="h-full rounded-full transition-all duration-700 relative"
                         style={{
                           width: `${progress}%`,
                           background: progress >= 100 ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : activePreset.gradient,
-                          boxShadow: progress > 0 ? `0 0 10px ${activePreset.primary}50` : undefined,
+                          boxShadow: progress > 0 ? `0 0 8px ${activePreset.primary}50` : undefined,
                         }}
                       />
                     </div>
-
-                    {/* Full-width, prominent expand / collapse bar for easy one-tap access on all devices */}
-                    <button
-                      type="button"
-                      onClick={() => toggleExpand(camp.id)}
-                      className="w-full mt-2.5 pt-2 pb-0.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer group active:scale-[0.99] min-h-[40px]"
-                    >
-                      <span>
-                        {isExpanded
-                          ? t('campaigns.collapse_list', 'Thu gọn danh sách thành viên')
-                          : `${t('campaigns.expand_list', 'Xem chi tiết danh sách')} (${paidCount}/${camp.participants.length} ${t('common.members_unit', 'người đã nộp')})`}
-                      </span>
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform" />
-                      )}
-                    </button>
                   </div>
                 </div>
+
+                {/* Integrated Flush Footer Expand / Collapse Bar */}
+                <button
+                  type="button"
+                  onClick={() => toggleExpand(camp.id)}
+                  className="w-full py-1.5 px-3 bg-slate-50/70 hover:bg-slate-100/80 dark:bg-slate-800/30 dark:hover:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
+                >
+                  <span>
+                    {isExpanded
+                      ? t('campaigns.collapse_list', 'Thu gọn danh sách')
+                      : `${t('campaigns.expand_list', 'Xem chi tiết danh sách')} (${paidCount}/${camp.participants.length} ${t('common.members_unit', 'người đã nộp')})`}
+                  </span>
+                  {isExpanded ? (
+                    <ChevronUp className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform" />
+                  )}
+                </button>
 
                 {/* Expanded Member Checklist & Filtering */}
                 {isExpanded && (

@@ -3,7 +3,6 @@ import {
   setDoc, 
   updateDoc,
   getDoc,
-  getDocFromServer,
   onSnapshot, 
 } from 'firebase/firestore';
 import { db, getActiveFirebaseConfig, defaultFirebaseConfig } from './firebase';
@@ -67,7 +66,7 @@ export async function testCloudConnection(): Promise<CloudConnectionResult> {
   const info = getCloudConfigInfo();
   try {
     const testDocRef = doc(db, 'test', 'connection');
-    await getDocFromServer(testDocRef);
+    await getDoc(testDocRef);
     const latencyMs = Math.round(performance.now() - startTime);
     return {
       success: true,
@@ -77,7 +76,6 @@ export async function testCloudConnection(): Promise<CloudConnectionResult> {
       timestamp,
     };
   } catch (err: any) {
-    // If test doc doesn't exist, getting it from server still confirms connection
     const latencyMs = Math.round(performance.now() - startTime);
     const isNetworkError = err?.message?.includes('offline') || err?.code === 'unavailable';
     if (!isNetworkError) {
@@ -115,35 +113,29 @@ export function subscribeToCloudState(
       onData({}, false);
     }
   }, (err) => {
-    console.warn('Firestore subscription warning/error:', err);
+    if (err?.code === 'unavailable') {
+      console.info('Firestore is operating in offline mode / reconnecting...');
+    } else {
+      console.warn('Firestore subscription warning/error:', err);
+    }
     if (onError) onError(err);
   });
 
   return unsubscribe;
 }
 
-// Fetch state once from server
+// Fetch state once from server or cache
 export async function fetchCloudStateOnce(): Promise<Partial<CloudAppState> | null> {
   try {
     const docRef = doc(db, SETTINGS_COLLECTION, APP_DOC_ID);
-    const snapshot = await getDocFromServer(docRef);
+    const snapshot = await getDoc(docRef);
     if (snapshot.exists()) {
       return snapshot.data() as Partial<CloudAppState>;
     }
     return null;
   } catch (error) {
-    // Fallback to cache getDoc if getDocFromServer fails
-    try {
-      const docRef = doc(db, SETTINGS_COLLECTION, APP_DOC_ID);
-      const snapshot = await getDoc(docRef);
-      if (snapshot.exists()) {
-        return snapshot.data() as Partial<CloudAppState>;
-      }
-      return null;
-    } catch (fallbackErr) {
-      console.error('Error fetching Cloud Firestore state:', fallbackErr);
-      throw fallbackErr;
-    }
+    console.error('Error fetching Cloud Firestore state:', error);
+    throw error;
   }
 }
 
