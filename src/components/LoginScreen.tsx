@@ -205,9 +205,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           }}
           className="p-3.5 sm:p-4 rounded-2xl border space-y-2.5"
         >
+          {/* Tiêu đề mục: đường kẻ liền (solid) phân cách khối tiêu đề */}
           <div
-            style={{ borderColor: `${activePreset.primary}20` }}
-            className="flex items-center justify-between pb-2 border-b"
+            style={{ borderColor: `${activePreset.primary}35` }}
+            className="flex items-center justify-between pb-2.5 border-b"
           >
             <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
               <span
@@ -268,11 +269,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               </div>
             )}
 
-            {/* Bank Account Details */}
+            {/* Bank Account Details: đường kẻ nét đứt (dashed) phân cách các mục thông tin */}
             {accountNumber && (
               <div
-                style={{ borderColor: `${activePreset.primary}20` }}
-                className="flex items-center justify-between pt-2 border-t"
+                style={{ borderColor: `${activePreset.primary}25` }}
+                className="flex items-center justify-between pt-2 border-t border-dashed"
               >
                 <span className="text-slate-500 dark:text-slate-400 text-[11px] flex items-center gap-1.5">
                   <span
