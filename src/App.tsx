@@ -93,6 +93,21 @@ function sanitizeCampaigns(camps: ContributionCampaign[]): ContributionCampaign[
   }));
 }
 
+// Sanitize branding to strip obsolete transfer content notes and legacy phrases
+function sanitizeBranding(brand: AppBranding): AppBranding {
+  if (!brand) return brand;
+  const clean = { ...brand };
+  if (
+    clean.qrGuideNote &&
+    (clean.qrGuideNote.includes("đối soát") ||
+     clean.qrGuideNote.includes("nội dung") ||
+     clean.qrGuideNote.includes("cú pháp"))
+  ) {
+    clean.qrGuideNote = "Mở ứng dụng ngân hàng (Vietcombank, MB, Techcombank, Momo...) để quét mã";
+  }
+  return clean;
+}
+
 export default function App() {
   const { activeCustomTexts, syncFromCloud } = useTranslation();
   const { showToast, showConfirm, setToastPosition } = useFeedback();
@@ -326,7 +341,7 @@ export default function App() {
           safeStorage.setItem(STORAGE_KEYS.VIEW_PERMISSIONS, JSON.stringify(newPerms));
         }
         if (cloudData.branding) {
-          newBrand = cloudData.branding;
+          newBrand = sanitizeBranding(cloudData.branding);
           setBranding(newBrand);
           safeStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(newBrand));
           syncFromBranding(newBrand);
@@ -424,11 +439,6 @@ export default function App() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [isQrFromHeader, setIsQrFromHeader] = useState(false);
   const [qrAmount, setQrAmount] = useState<number | undefined>(undefined);
-  const [qrContent, setQrContent] = useState<string>(() => {
-    const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
-    const title = branding?.appTitle || '';
-    return `${prefix} ${title}`.trim().toUpperCase();
-  });
 
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [printFundId, setPrintFundId] = useState<string | undefined>(undefined);
@@ -909,18 +919,10 @@ export default function App() {
     setIsTransactionModalOpen(true);
   };
 
-  const handleOpenQRModal = (amount?: number, content?: string, fromHeader?: boolean) => {
-    const isHeader = fromHeader !== undefined ? fromHeader : (!amount && !content);
+  const handleOpenQRModal = (amount?: number, _content?: string, fromHeader?: boolean) => {
+    const isHeader = fromHeader !== undefined ? fromHeader : !amount;
     setIsQrFromHeader(isHeader);
     setQrAmount(isHeader ? undefined : amount);
-    if (isHeader) {
-      setQrContent('');
-    } else {
-      const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
-      const appTitle = branding?.appTitle || '';
-      const defaultSyntax = `${prefix} ${appTitle}`.trim().toUpperCase();
-      setQrContent(content !== undefined ? content : defaultSyntax);
-    }
     setIsQRModalOpen(true);
   };
 
@@ -1019,7 +1021,7 @@ export default function App() {
               safeStorage.setItem(STORAGE_KEYS.VIEW_PERMISSIONS, JSON.stringify(cloudData.viewPermissions));
             }
             if (cloudData.branding) {
-              setBranding(cloudData.branding);
+              setBranding(sanitizeBranding(cloudData.branding));
               safeStorage.setItem(STORAGE_KEYS.BRANDING, JSON.stringify(cloudData.branding));
               if (cloudData.branding.appTitle && typeof document !== 'undefined') {
                 document.title = `${cloudData.branding.appTitle.trim()} - Quản Lý Quỹ Minh Bạch`;
@@ -1291,7 +1293,6 @@ export default function App() {
         onClose={() => setIsQRModalOpen(false)}
         bankSettings={bankSettings}
         defaultAmount={qrAmount}
-        defaultContent={qrContent}
         branding={branding}
         isAdmin={!isMemberView}
         isFromHeader={isQrFromHeader}

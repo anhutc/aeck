@@ -164,7 +164,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [appSubtitle, setAppSubtitle] = useState(branding.appSubtitle || 'Sổ thu chi & đóng quỹ minh bạch');
   const [treasurerName, setTreasurerName] = useState(branding.treasurerName || 'Thủ Quỹ Ban Đại Diện');
   const [treasurerPhone, setTreasurerPhone] = useState(branding.treasurerPhone || '0988.888.888');
-  const [transferSyntaxPrefix, setTransferSyntaxPrefix] = useState(branding.transferSyntaxPrefix || 'NOP QUY');
   const [groupEmoji, setGroupEmoji] = useState(branding.groupEmoji || '💼');
 
   // Sync branding when props change from Cloud Firestore
@@ -174,7 +173,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setAppSubtitle(branding.appSubtitle || 'Sổ thu chi & đóng quỹ minh bạch');
       setTreasurerName(branding.treasurerName || 'Thủ Quỹ Ban Đại Diện');
       setTreasurerPhone(branding.treasurerPhone || '0988.888.888');
-      setTransferSyntaxPrefix(branding.transferSyntaxPrefix || 'NOP QUY');
       setGroupEmoji(branding.groupEmoji || '💼');
     }
   }, [branding]);
@@ -357,7 +355,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     appSubtitle.trim() !== (branding.appSubtitle || 'Sổ thu chi & đóng quỹ minh bạch').trim() ||
     treasurerName.trim() !== (branding.treasurerName || 'Thủ Quỹ Ban Đại Diện').trim() ||
     treasurerPhone.trim() !== (branding.treasurerPhone || '0988.888.888').trim() ||
-    transferSyntaxPrefix.trim().toUpperCase() !== (branding.transferSyntaxPrefix || 'NOP QUY').trim().toUpperCase() ||
     groupEmoji.trim() !== (branding.groupEmoji || '💼').trim();
 
   const savedAccent = (branding.themeAccent === 'blue' ? 'emerald' : branding.themeAccent) || 'emerald';
@@ -442,7 +439,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       appSubtitle: appSubtitle.trim(),
       treasurerName: treasurerName.trim(),
       treasurerPhone: treasurerPhone.trim(),
-      transferSyntaxPrefix: transferSyntaxPrefix.trim().toUpperCase() || 'NOP QUY',
       groupEmoji: groupEmoji.trim() || '💼',
       themeAccent,
       customColor: themeAccent === 'custom' ? customColor : undefined,
@@ -492,7 +488,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       setAppSubtitle(branding.appSubtitle || 'Sổ thu chi & đóng quỹ minh bạch');
       setTreasurerName(branding.treasurerName || 'Thủ Quỹ Ban Đại Diện');
       setTreasurerPhone(branding.treasurerPhone || '0988.888.888');
-      setTransferSyntaxPrefix(branding.transferSyntaxPrefix || 'NOP QUY');
       setGroupEmoji(branding.groupEmoji || '💼');
       setSelectedDefaultTheme(branding.themeMode || 'light');
       setDraftToastPosition((branding.toastPosition || 'top-center') as ToastPosition);
@@ -963,21 +958,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                        Tiền tố Cú Pháp Chuyển Khoản Mặc Định
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="VD: NOPQUY, DONGQUY, LOP12A..."
-                        value={transferSyntaxPrefix}
-                        onChange={(e) => setTransferSyntaxPrefix(e.target.value.toUpperCase())}
-                        className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-mono font-bold focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
-                      />
-                      <p className="text-[10px] text-slate-400 mt-1">
-                        Cú pháp sinh mã QR VietQR sẽ tự động nối: [Tiền tố] [Tên người nộp]
-                      </p>
-                    </div>
+
 
                     {/* Live Preview Box for Branding */}
                     <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2">
@@ -1003,19 +984,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             <div className="text-[11px] text-slate-500 truncate">{appSubtitle || 'Sổ thu chi & đóng quỹ minh bạch'}</div>
                           </div>
                         </div>
-                        {(treasurerName || transferSyntaxPrefix) && (
+                        {treasurerName && (
                           <div className="text-left sm:text-right shrink-0">
                             <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                              {treasurerName || 'Thủ Quỹ'} {treasurerPhone ? `(${treasurerPhone})` : ''}
-                            </div>
-                            <div
-                              className="text-[10px] font-mono font-bold px-2 py-0.5 rounded mt-0.5 inline-block"
-                              style={{
-                                backgroundColor: `${activePreset.primary}15`,
-                                color: activePreset.primary,
-                              }}
-                            >
-                              {transferSyntaxPrefix || 'NOPQUY'} [TEN THANH VIEN]
+                              {treasurerName} {treasurerPhone ? `(${treasurerPhone})` : ''}
                             </div>
                           </div>
                         )}
@@ -2162,7 +2134,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-bold text-slate-900 dark:text-white">
-                                6. Nút Quét Mã VietQR Chuyển Khoản
+                                6. Nút Quét Mã VietQR Nộp Quỹ
                               </span>
                               <span
                                 style={perms.allowQuickQR ? {
@@ -2179,7 +2151,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                               </span>
                             </div>
                             <span className="text-[11px] text-slate-600 dark:text-slate-400 block mt-0.5">
-                              Hiển thị nút quét mã VietQR tự sinh kèm cú pháp
+                              Hiển thị nút quét mã VietQR nạp tiền nhanh chóng cho thành viên
                             </span>
                           </div>
                         </div>

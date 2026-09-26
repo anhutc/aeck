@@ -106,7 +106,6 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
   const appTitle = branding?.appTitle?.trim() || t('branding.default_app_title', 'SỔ QUỸ AE CÂY KHẾ');
   const appSubtitle = branding?.appSubtitle?.trim() || t('branding.default_app_subtitle', 'Minh Bạch - Rõ Ràng - Kịp Thời');
   const treasurerName = branding?.treasurerName?.trim() || t('branding.default_treasurer_name', 'Ban Quản Trị Quỹ');
-  const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
 
   // Funds map for fast lookup
   const fundsMap = useMemo(() => {
@@ -346,7 +345,7 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
 
   // VietQR generation url
   const qrUrl = bankSettings?.accountNumber
-    ? getVietQRUrl(bankSettings, undefined, `${prefix} DONG QUY`)
+    ? getVietQRUrl(bankSettings, undefined, undefined)
     : '';
 
   // 1. Tải ảnh PNG chất lượng cao
@@ -1182,19 +1181,11 @@ export const PrintMemberDuesModal: React.FC<PrintMemberDuesModalProps> = ({
                       {t('settings.account_name', 'Tên chủ tài khoản')}:{' '}
                       <span className="font-bold uppercase text-slate-900">{bankSettings.accountName}</span>
                     </div>
-                    <div className="pt-0.5">
-                      {t('share.qr_instruction', 'Quét mã VietQR để nạp quỹ')}:{' '}
-                      <span
-                        style={{ color: activePreset.primary, backgroundColor: `${activePreset.primary}12`, borderColor: `${activePreset.primary}30` }}
-                        className="font-mono font-bold px-2 py-0.5 rounded border"
-                      >
-                        [HỌ TÊN] {prefix}
-                      </span>
-                    </div>
+
                   </div>
 
                   <p className="text-[11px] text-slate-500 italic pt-1">
-                    * {t('share.vietqr_notice', 'Mã VietQR tự động điền sẵn số tài khoản và thông tin chuyển khoản.')}
+                    * {t('share.vietqr_notice', 'Mã VietQR tự động điền sẵn số tài khoản ngân hàng thụ hưởng.')}
                   </p>
                 </div>
 

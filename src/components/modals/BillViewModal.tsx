@@ -100,7 +100,7 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
       >
         {/* Modal Header */}
         <div className="px-4 sm:px-6 py-3.5 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <div
               className={`w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs ${
                 isIncome ? 'bg-emerald-600 shadow-emerald-600/20' : 'bg-rose-600 shadow-rose-600/20'
@@ -108,11 +108,13 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
             >
               <Receipt className="w-5 h-5" />
             </div>
-            <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 truncate">
-                <span>{t('transactions.bill_modal_title', 'Hình ảnh đính kèm')}</span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+                  {t('transactions.bill_modal_title', 'Hình ảnh đính kèm')}
+                </h3>
                 <span
-                  className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
+                  className={`text-xs px-2 py-0.5 rounded-md font-bold shrink-0 font-mono ${
                     isIncome
                       ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                       : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
@@ -120,8 +122,8 @@ export const BillViewModal: React.FC<BillViewModalProps> = ({
                 >
                   {isIncome ? '+' : '-'}{formatVND(transaction.amount)}
                 </span>
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
                 {transaction.description}
               </p>
             </div>

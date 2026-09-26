@@ -55,7 +55,7 @@ export const INITIAL_BANK_SETTINGS: BankSettings = {
   bankName: 'Ngân hàng Quân Đội (MB Bank)',
   accountNumber: '999988886666',
   accountName: 'TRAN THI MAI (THU QUY)',
-  qrTemplate: 'compact',
+  qrTemplate: 'qr_only',
 };
 
 export const INITIAL_GROUP_NOTICE: GroupNotice = {
@@ -87,7 +87,6 @@ export const INITIAL_BRANDING: AppBranding = {
   customFooterText: 'Sổ quỹ minh bạch theo thời gian thực • Mọi ý kiến đóng góp hoặc thắc mắc thu chi xin vui lòng liên hệ Ban đại diện & Thủ quỹ.',
 
   // 4. VietQR & Chuyển khoản
-  transferSyntaxPrefix: 'DONG QUY',
   qrShareHeader: 'THÔNG TIN CHUYỂN KHOẢN ĐÓNG QUỸ',
   qrShareFooter: 'Trân trọng cảm ơn sự đồng hành và đóng góp của bạn! ✨',
 

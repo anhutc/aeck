@@ -120,18 +120,15 @@ export const MemberContributionDetailModal: React.FC<MemberContributionDetailMod
     return true;
   });
 
-  const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
 
   const handlePayAllMissing = () => {
     if (totalRemaining <= 0) return;
-    const syntax = `${prefix} TAT CA CAC DOT ${member.name}`.trim().toUpperCase();
-    onOpenQRModal(totalRemaining, syntax);
+    onOpenQRModal(totalRemaining);
   };
 
   const handlePaySingleCampaign = (item: typeof memberCampaignsData[0]) => {
     const amount = item.remaining > 0 ? item.remaining : item.required;
-    const syntax = `${prefix} ${item.campaign.title} ${member.name}`.trim().toUpperCase();
-    onOpenQRModal(amount, syntax);
+    onOpenQRModal(amount);
   };
 
   return (

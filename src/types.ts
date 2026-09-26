@@ -125,7 +125,6 @@ export interface AppBranding {
   customFooterText?: string;
 
   // 4. VietQR & Chuyển khoản
-  transferSyntaxPrefix?: string;
   qrGuideNote?: string;
   qrShareHeader?: string;
   qrShareFooter?: string;

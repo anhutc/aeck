@@ -535,7 +535,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                   </th>
                 )}
                 <th 
-                  className="py-3 px-3 cursor-pointer hover:opacity-80 select-none transition-opacity"
+                  className="py-3 px-3 cursor-pointer hover:opacity-80 select-none transition-opacity w-28 whitespace-nowrap"
                   onClick={() => setSortBy(prev => prev === 'date_desc' ? 'date_asc' : 'date_desc')}
                   title={t('transactions.sort_date_tooltip', 'Click để đổi chiều sắp xếp ngày')}
                 >
@@ -546,11 +546,11 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                     {!sortBy.startsWith('date') && <ArrowUpDown className="w-3 h-3 text-slate-400" />}
                   </div>
                 </th>
-                <th className="py-3 px-3">{t('transactions.table_type', 'Loại')}</th>
-                <th className="py-3 px-3">{t('transactions.table_category', 'Phân loại')}</th>
+                <th className="py-3 px-3 w-28 whitespace-nowrap">{t('transactions.table_type', 'Loại')}</th>
+                <th className="py-3 px-3 w-48 whitespace-nowrap">{t('transactions.table_category', 'Phân loại')}</th>
                 <th className="py-3 px-3">{t('transactions.table_description', 'Lý do / Nội dung')}</th>
                 <th 
-                  className="py-3 px-4 text-right cursor-pointer hover:opacity-80 select-none transition-opacity"
+                  className="py-3 px-4 text-right cursor-pointer hover:opacity-80 select-none transition-opacity w-36 whitespace-nowrap"
                   onClick={() => setSortBy(prev => prev === 'amount_desc' ? 'amount_asc' : 'amount_desc')}
                   title={t('transactions.sort_amount_tooltip', 'Click để đổi chiều sắp xếp số tiền')}
                 >
@@ -561,7 +561,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                     {!sortBy.startsWith('amount') && <ArrowUpDown className="w-3 h-3 text-slate-400" />}
                   </div>
                 </th>
-                {isAdmin && <th className="py-3 px-3 text-center">{t('transactions.table_actions', 'Thao tác')}</th>}
+                {isAdmin && <th className="py-3 px-3 text-center w-24 whitespace-nowrap">{t('transactions.table_actions', 'Thao tác')}</th>}
               </tr>
             </thead>
 
@@ -621,24 +621,24 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-3 max-w-md">
-                        <div className="font-semibold text-slate-900 dark:text-white line-clamp-2">
-                          {tx.description}
-                        </div>
-                        {tx.billImage && (
-                          <div className="mt-1">
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-slate-900 dark:text-white">
+                            {tx.description}
+                          </span>
+                          {tx.billImage && (
                             <button
                               type="button"
                               onClick={() => setViewingBillTx(tx)}
                               title={t('transactions.bill_view_tooltip', 'Nhấp để xem ảnh hóa đơn / bill')}
                               style={{ color: activePreset.primary }}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:opacity-80 transition-opacity cursor-pointer"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:opacity-80 transition-opacity cursor-pointer shrink-0"
                             >
                               <Receipt className="w-3 h-3" style={{ color: activePreset.primary }} />
                               <span>{t('transactions.bill_view_btn', 'Xem ảnh')}</span>
                             </button>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </td>
 
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">

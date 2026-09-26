@@ -3,6 +3,7 @@ import {
   Category,
   ContributionCampaign,
   Fund,
+  BankSettings,
   Member,
   Transaction,
   AppBranding,
@@ -29,6 +30,7 @@ interface MemberPortalViewProps {
   branding?: AppBranding;
   groupNotice?: GroupNotice;
   viewPermissions?: MemberViewPermissions;
+  bankSettings?: BankSettings;
   onOpenQRModal: (amount?: number, content?: string) => void;
   onOpenPrintModal: (fundId?: string) => void;
   activeTab?: TabType;
@@ -44,6 +46,7 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
   branding,
   groupNotice,
   viewPermissions = INITIAL_VIEW_PERMISSIONS,
+  bankSettings,
   onOpenQRModal,
   onOpenPrintModal,
   activeTab: propsActiveTab,
@@ -114,6 +117,7 @@ export const MemberPortalView: React.FC<MemberPortalViewProps> = ({
               campaigns={campaigns}
               funds={funds}
               members={members}
+              bankSettings={bankSettings}
               branding={branding}
               isAdmin={false}
               onOpenQRModal={onOpenQRModal}

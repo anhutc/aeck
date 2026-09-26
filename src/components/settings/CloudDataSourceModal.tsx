@@ -128,7 +128,7 @@ export const CloudDataSourceModal: React.FC<CloudDataSourceModalProps> = ({
 
       showToast('Đã nhận diện thành công cấu hình Firebase!', 'success');
     } catch {
-      setParseError('Không thể nhận diện cú pháp. Bạn có thể tự điền từng trường bên dưới.');
+      setParseError('Không thể nhận diện định dạng dữ liệu. Bạn có thể tự điền từng trường bên dưới.');
     }
   };
 

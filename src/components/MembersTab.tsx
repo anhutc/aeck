@@ -66,7 +66,6 @@ export const MembersTab: React.FC<MembersTabProps> = ({
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [copiedPhoneId, setCopiedPhoneId] = useState<string | null>(null);
 
-  const prefix = branding?.transferSyntaxPrefix?.trim() || 'DONG QUY';
 
   // Selected member for detail modal
   const [detailMember, setDetailMember] = useState<Member | null>(null);
@@ -687,8 +686,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                       <button
                         onClick={() => {
                           const dueAmount = stats.totalRemaining > 0 ? stats.totalRemaining : (stats.totalPaid > 0 ? stats.totalPaid : 200000);
-                          const syntax = `${prefix} ${member.name}`.trim().toUpperCase();
-                          onOpenQRModal(dueAmount, syntax);
+                          onOpenQRModal(dueAmount);
                         }}
                         title={`${t('members.create_vietqr_for', 'Tạo mã VietQR thu quỹ cho')} ${member.name}`}
                         style={{

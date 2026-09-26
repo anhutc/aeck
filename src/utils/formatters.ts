@@ -161,7 +161,8 @@ export function getVietQRUrl(
 ): string {
   const bankId = bank.bankId || 'MB';
   const accNum = bank.accountNumber || '';
-  const template = bank.qrTemplate || 'compact';
+  // Use qr_only to ensure pure QR matrix without third-party template text or transfer memo banners
+  const template = 'qr_only';
   
   let url = `https://img.vietqr.io/image/${bankId}-${accNum}-${template}.png`;
   const params: string[] = [];
